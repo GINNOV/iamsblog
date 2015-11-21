@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # Michael Saunby. April 2013   
-# 
+# Forked by Mario Esposito November 2015
+#
 # Read temperature from the TMP006 sensor in the TI SensorTag 
 # It's a BLE (Bluetooth low energy) device so using gatttool to
 # read and write values. 
@@ -59,7 +60,7 @@ tool.expect('\[LE\]>')
 print "Preparing to connect. You might need to press the side button..."
 tool.sendline('connect')
 # test for success of connect
-tool.expect('\[CON\].*>')
+tool.expect('Connection successful')
 tool.sendline('char-write-cmd 0x29 01')
 tool.expect('\[LE\]>')
 while True:
