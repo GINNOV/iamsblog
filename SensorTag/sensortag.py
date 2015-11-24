@@ -41,7 +41,7 @@ class SensorTag:
         print "Preparing to connect. You might need to press the side button..."
         self.con.sendline('connect')
         # test for success of connect
-	self.con.expect('Connection successful.*\[LE\]>')
+	self.con.expect('Connection successful')
         # Earlier versions of gatttool returned a different message.  Use this pattern -
         #self.con.expect('\[CON\].*>')
         self.cb = {}
