@@ -1,0 +1,26 @@
+{
+  "name": "qlogger",
+  "description": "Implementation of a nested asynchronous job queue in Node.js and Sensor Tag by TI",
+  "author": {
+    "name": "Mario Esposito"
+  },
+  "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kywix/iamsblog.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kywix/iamsblog/issues"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/kywix/iamsblog/LICENSE"
+    }
+  ],
+  "dependencies": {
+    "kue": "~0.6.2"
+  },
+  "devDependencies": {},
+  "readmeFilename": "README.md"
+}
