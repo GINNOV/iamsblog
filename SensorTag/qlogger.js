@@ -102,7 +102,7 @@ SensorTag.discover(function(tag) {
 	}
 
 	//
-	// Build time stamp according to YYYY:MM:DD:HH:MM:SS
+	// Build time stamp according to YYYY:MM:DD:HH:MM:SS:MS
 	// 
 	function getDateTime() {
 
@@ -117,6 +117,9 @@ SensorTag.discover(function(tag) {
 		var sec = date.getSeconds();
 		sec = (sec < 10 ? "0" : "") + sec;
 
+		var ms = date.getMilliseconds();
+		ms = (ms < 10 ? "0" : "") + ms
+
 		var year = date.getFullYear();
 
 		var month = date.getMonth() + 1;
@@ -125,9 +128,10 @@ SensorTag.discover(function(tag) {
 		var day = date.getDate();
 		day = (day < 10 ? "0" : "") + day;
 
-		return year + ":" + month + ":" + day + ":" + hour + ":" + min + ":" + sec;
+		return year + ":" + month + ":" + day + ":" + hour + ":" + min + ":" + sec + ":" + ms;
 
 	}
+
 
 	// Now that you've defined all the functions, start the process:
 	connectAndSetUpMe();
