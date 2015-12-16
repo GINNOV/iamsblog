@@ -1,23 +1,25 @@
 /*
-	SensorTag data logger with queue support from IAmSensoria.com blog
+	SLEEPIA PROJECT
+	Author: Mario Esposito
+
 	Libraries:	
-		Sandeep Mistry's sensortag library for node.js is leveraged to read data from a TI sensorTag.
+		Sandeep Mistry's sensortag
 		Kue
 		Redis
 */
 
 
 var SensorTag = require('sensortag'); // sensortag library
-var kue = require('kue');
+var kue = require('kue');			  // queue management library
 var queue = kue.createQueue({
 	prefix: 'q',
 	redis: {
 		port: 6379,
 		host: 'localhost',
-		auth: '',
-		db: 0, // if provided select a non-default redis db
+		auth: '',			// use a password even if not exposed to the Internet!!
+		db: 0, 				// database ID
 		options: {
-			// see https://github.com/mranney/node_redis#rediscreateclient
+							// see https://github.com/mranney/node_redis#rediscreateclient
 		}
 	}
 });
@@ -29,6 +31,8 @@ SensorTag.discover(function(tag) {
 	//
 	tag.on('disconnect', function() {
 		console.log('# Device Disconnected!');
+		kue.shutdown(2000, function(err) {
+  		console.log('Kue shutdown: ', err || '');
 	});
 
 	//
@@ -55,9 +59,9 @@ SensorTag.discover(function(tag) {
 	// Activate which service we want to be notified by
 	//
 	function notifyMe() {
-		tag.notifyAccelerometer(notificationManager); // setup call back for accelerometer
-		tag.notifyIrTemperature(notificationManager); // setup call back for IR temp
-		tag.notifySimpleKey(listenForButton); // setup call back for button/switches
+		tag.notifyAccelerometer(notificationManager); 	// setup call back for accelerometer
+		tag.notifyIrTemperature(notificationManager); 	// setup call back for IR temp
+		tag.notifySimpleKey(listenForButton); 			// setup call back for button/switches
 	}
 
 	//
@@ -95,18 +99,11 @@ SensorTag.discover(function(tag) {
 
 			// if both buttons are pressed, disconnect:
 			if (left && right) {
-				process.once('SIGTERM', function(sig) {
-
-					kue.shutdown(5000, function(err) {
-						console.log('Kue shutdown: ', err || '');
-
-						process.exit(0);
-					});
-				});
 				tag.disconnect();
 			}
 		});
 	}
+
 	//
 	// Build time stamp according to YYYY:MM:DD:HH:MM:SS:MS
 	// 
@@ -134,7 +131,7 @@ SensorTag.discover(function(tag) {
 		var day = date.getDate();
 		day = (day < 10 ? "0" : "") + day;
 
-		return year + ":" + month + ":" + day + ":" + hour + ":" + min + ":" + sec + ":" + ms;
+		return year + "-" + month + "-" + day + " " + hour + ":" + min + ":" + sec + ":" + ms;
 
 	}
 
@@ -156,12 +153,12 @@ SensorTag.discover(function(tag) {
 		});
 
 		job.on('complete', function() {
-				console.log('Job ID', job.id, 'with values', job.data.timestamp, job.data.x, job.data.y, job.data.z, job.data.t, 'is done');
-			});
+			console.log('Job ID', job.id, 'with values', job.data.timestamp, job.data.x, job.data.y, job.data.z, job.data.t, 'is done');
+		});
 
 		job.on('failed', function() {
-				console.log('Job ID', job.id, job.data.timestamp, 'with values', job.data.x, 'has failed');
-			});
+			console.log('Job ID', job.id, job.data.timestamp, 'with values', job.data.x, 'has failed');
+		});
 
 		job.save();
 	}
@@ -172,4 +169,16 @@ SensorTag.discover(function(tag) {
 	queue.process('sleepia', function(job, done) {
 		/* carry out all the job function here */
 		done && done();
+	});
+
+	//
+	// Shutdown grecefully if CTRL+C is pressed
+	//
+	process.once('SIGTERM', function(sig) {
+
+		kue.shutdown(5000, function(err) {
+			console.log('Graceful shutdown started: ', err || '');
+
+			process.exit(0);
+		});
 	});
