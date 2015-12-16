@@ -1,0 +1,28 @@
+{
+  "name": "slogger",
+  "description": "A tool to collect temperature and movement data using sensortag from TI.",
+  "author": {
+    "name": "Mario Esposito"
+  },
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kywix/iamsblog.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kywix/iamsblog/issues"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/kywix/iamsblog/LICENSE"
+    }
+  ],
+  "dependencies": {
+    "kue": "~0.6.2",
+    "sensortag" : "~1.1.0",
+    "redis" : "~2.4.2"
+  },
+  "devDependencies": {},
+  "readmeFilename": "https://github.com/kywix/iamsblog/README.md"
+}
