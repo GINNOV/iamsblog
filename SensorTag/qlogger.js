@@ -49,11 +49,11 @@ SensorTag.discover(function(tag) {
 	// This function enables the accelerometer stream
 	//
 	function enableSensors() { // attempt to enable the accelerometer
-		console.log('Enable Sensors (Acc, IR Temp)');
+		console.log('# Enable Sensors (Acc, IR Temp)');
 		// when you enable the accelerometer, start accelerometer notifications:
 		tag.enableAccelerometer(notifyMe); // start the accelerometer listner
 		tag.enableIrTemperature(notifyMe); // start the IR temp sensor listner
-		console.log('Timestamp,X,Y,Z,Objtemp,AmbientTemp');
+		console.log('timestamp,X,Y,Z,objtemp,ambienttemp');
 	}
 
 	//
@@ -137,32 +137,32 @@ SensorTag.discover(function(tag) {
 	connectAndSetUpMe();
 });
 
-	//
-	// Job - this is what actually queues your data
-	//
-	function newAccelDataJob(x,y,z) {
-		// x = x || 'Default_val';
-		var job = jobs.create('accelermeter', {
-			x: x,
-			y: y,
-			z: z
-		});
-
-		job
-			.on('complete', function() {
-				console.log('Job ID', job.id, 'with values', job.data.x, job.data.y, job.data.z, 'is done');
-			})
-
-			.on('failed', function() {
-				console.log('Job ID', job.id, 'with values', job.data.x, 'has failed');
-			});
-		job.save();
-	}
-
-	//
-	// Close the transaction opened by the new job function
-	//
-	jobs.process('new job', function(job, done) {
-		/* carry out all the job function here */
-		done && done();
+//
+// Job - this is what actually queues your data
+//
+function newAccelDataJob(x, y, z) {
+	// x = x || 'Default_val';
+	var job = jobs.create('accelerometer', {
+		x: x,
+		y: y,
+		z: z
 	});
+
+	job
+		.on('complete', function() {
+			console.log('Job ID', job.id, 'with values', job.data.x, job.data.y, job.data.z, 'is done');
+		})
+
+	.on('failed', function() {
+		console.log('Job ID', job.id, 'with values', job.data.x, 'has failed');
+	});
+	job.save();
+}
+
+//
+// Close the transaction opened by the new job function
+//
+jobs.process('accelerometer', function(job, done) {
+	/* carry out all the job function here */
+	done && done();
+});

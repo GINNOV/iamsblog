@@ -9,113 +9,116 @@
 */
 
 
-var SensorTag = require('sensortag'); // sensortag library
-var kue = require('kue'); // queue management library
+var SensorTag = require('sensortag'); 	// sensortag library
+var kue = require('kue'); 				// queue management library
 var queue = kue.createQueue({
 	prefix: 'q',
 	redis: {
 		port: 6379,
 		host: 'localhost',
-		auth: '', // use a password even if not exposed to the Internet!!
-		db: 0, // database ID
+		auth: '', 						// use a password even if not exposed to the Internet!!
+		db: 0,							// database ID
 		options: {
-			// see https://github.com/mranney/node_redis#rediscreateclient
+										// see https://github.com/mranney/node_redis#rediscreateclient
 		}
 	}
 });
 
-if(process.argv[1] == "foo")
-	console.log('test done');
-
+//
 // listen for tags:
+//
 SensorTag.discover(function(tag) {
 
+	//
 	// when you disconnect from a tag, exit the program:
 	//
 	tag.on('disconnect', function() {
+
 		console.log('# Device Disconnected!');
-		kue.shutdown(2000, function(err) {
+
+		queue.shutdown(2000, function(err) {
 			console.log('# Shutting down: ', err || '');
 		});
-
-		//
-		// Connect and setup
-		//
-		function connectAndSetUpMe() { // attempt to connect to the tag
-			console.log('# Connecting...');
-			tag.connectAndSetUp(enableSensors); // when you connect and device is setup, call enableAccelMe
-		}
-
-		//
-		// This function enables the accelerometer stream
-		//
-		function enableSensors() { // attempt to enable the accelerometer
-			console.log('# Enabled Sensors (Acc, IR Temp)');
-			// when you enable the accelerometer, start accelerometer notifications:
-			tag.enableAccelerometer(notifyMe); // start the accelerometer listner
-			tag.enableIrTemperature(notifyMe); // start the IR temp sensor listner
-
-			console.log('timestamp, X, Y, Z, ambientTemp');
-		}
-
-		//
-		// Activate which service we want to be notified by
-		//
-		function notifyMe() {
-			tag.notifyAccelerometer(notificationManager); // setup call back for accelerometer
-			tag.notifyIrTemperature(notificationManager); // setup call back for IR temp
-			tag.notifySimpleKey(listenForButton); // setup call back for button/switches
-		}
-
-		//
-		// When you get an accelermeter change, print it out:
-		//
-		function notificationManager() {
-			var at = 0;
-			var ot = 0;
-
-			tag.on('irTemperatureChange', function(objectTemp, ambientTemp) {
-				ot = objectTemp.toFixed(1);
-				at = ambientTemp.toFixed(1);
-			});
-
-			tag.on('accelerometerChange', function(x, y, z) {
-				// timestamp, 3 axes, temperature
-				newSensorDataJob(getDateTime(), x.toFixed(1), y.toFixed(1), z.toFixed(1), at);
-				// console.log('%s,%d,%d,%d,%d,%d', getDateTime(), x.toFixed(1), y.toFixed(1), z.toFixed(1), ot, at);
-			});
-		}
-
-		// when you get a button change, print it out:
-		//
-		function listenForButton() {
-
-			tag.on('simpleKeyChange', function(left, right) {
-
-				if (left) {
-					console.log('marker1: ' + left);
-				}
-
-				if (right) {
-					console.log('marker2: ' + right);
-				}
-
-				// if both buttons are pressed, disconnect:
-				if (left && right) {
-					tag.disconnect();
-				}
-			});
-		}
-
-		// Now that you've defined all the functions, start the process:
-		connectAndSetUpMe();
 	});
+
+	//
+	// Connect and setup
+	//
+	function connectAndSetUp() { // attempt to connect to the tag
+		console.log('# Connecting...');
+		tag.connectAndSetUp(enableSensors); // when you connect and device is setup, call enableAccelMe
+	}
+
+	//
+	// This function enables the accelerometer stream
+	//
+	function enableSensors() { // attempt to enable the accelerometer
+		console.log('# Enabled Sensors (Acc, IR Temp)');
+		// when you enable the accelerometer, start accelerometer notifications:
+		tag.enableAccelerometer(notifyMe); // start the accelerometer listner
+		tag.enableIrTemperature(notifyMe); // start the IR temp sensor listner
+
+		console.log('timestamp, X, Y, Z, Temp');
+	}
+
+	//
+	// Activate which service we want to be notified by
+	//
+	function notifyMe() {
+		tag.notifyAccelerometer(notificationManager); // setup call back for accelerometer
+		tag.notifyIrTemperature(notificationManager); // setup call back for IR temp
+		tag.notifySimpleKey(listenForButton); // setup call back for button/switches
+	}
+
+	//
+	// When you get an accelermeter change, print it out:
+	//
+	function notificationManager() {
+		var at = 0;
+		var ot = 0;
+
+		tag.on('irTemperatureChange', function(objectTemp, ambientTemp) {
+			ot = objectTemp.toFixed(1);
+			at = ambientTemp.toFixed(1);
+		});
+
+		tag.on('accelerometerChange', function(x, y, z) {
+			// timestamp, 3 axes, temperature
+			newSensorDataJob(getTimeStamp(), x.toFixed(1), y.toFixed(1), z.toFixed(1), at);
+			// console.log('%s,%d,%d,%d,%d,%d', getTimeStamp(), x.toFixed(1), y.toFixed(1), z.toFixed(1), ot, at);
+		});
+	}
+
+	//
+	// when you get a button change, print it out:
+	//
+	function listenForButton() {
+
+		tag.on('simpleKeyChange', function(left, right) {
+
+			if (left) {
+				console.log('marker1: ' + left);
+			}
+
+			if (right) {
+				console.log('marker2: ' + right);
+			}
+
+			// if both buttons are pressed, disconnect:
+			if (left && right) {
+				tag.disconnect();
+			}
+		});
+	}
+
+	// Start seeking for the tags:
+	connectAndSetUp();
 });
 
 //
 // Build time stamp according to YYYY:MM:DD:HH:MM:SS:MS
 // 
-function getDateTime() {
+function getTimeStamp() {
 
 	var date = new Date();
 
@@ -180,9 +183,8 @@ queue.process('sleepia', function(job, done) {
 //
 process.once('SIGTERM', function(sig) {
 
-	kue.shutdown(5000, function(err) {
-		console.log('Graceful shutdown started: ', err || '');
-
+	queue.shutdown(5000, function(err) {
+		console.log('# Graceful shutdown started: ', err || '');
 		process.exit(0);
 	});
 });
