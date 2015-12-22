@@ -6,13 +6,25 @@
 		Sandeep Mistry's sensortag
 		Kue
 		Redis
+
+	References:
+		https://www.npmjs.com/package/kue-mod
 */
 
 
+var DEBUG = false;
+
 var SensorTag = require('sensortag'); 	// sensortag library
 var kue = require('kue'); 				// queue management library
+var redis = require('redis')			// the db man
+
+// ----------------------------------------------------------------------
+
+//
+//  Create a queue object
+//
 var queue = kue.createQueue({
-	prefix: 'q',
+	prefix: 'sleepia',
 	redis: {
 		port: 6379,
 		host: 'localhost',
@@ -22,7 +34,20 @@ var queue = kue.createQueue({
 										// see https://github.com/mranney/node_redis#rediscreateclient
 		}
 	}
-});
+ });
+
+
+//
+// START HERE
+//
+console.log('# Turn on the device...');
+
+if (process.argv[2] == "-debug") {
+	DEBUG = true;
+}
+
+// ----------------------------------------------------------------------
+
 
 //
 // listen for tags:
@@ -35,9 +60,10 @@ SensorTag.discover(function(tag) {
 	tag.on('disconnect', function() {
 
 		console.log('# Device Disconnected!');
-
+		// this crashes due to a bug in Kue - issue 783
 		queue.shutdown(2000, function(err) {
 			console.log('# Shutting down: ', err || '');
+            process.exit();
 		});
 	});
 
@@ -57,8 +83,9 @@ SensorTag.discover(function(tag) {
 		// when you enable the accelerometer, start accelerometer notifications:
 		tag.enableAccelerometer(notifyMe); // start the accelerometer listner
 		tag.enableIrTemperature(notifyMe); // start the IR temp sensor listner
-
-		console.log('timestamp, X, Y, Z, Temp');
+		if (DEBUG) {
+			console.log('timestamp, X, Y, Z, Temp');
+		}
 	}
 
 	//
@@ -85,7 +112,10 @@ SensorTag.discover(function(tag) {
 		tag.on('accelerometerChange', function(x, y, z) {
 			// timestamp, 3 axes, temperature
 			newSensorDataJob(getTimeStamp(), x.toFixed(1), y.toFixed(1), z.toFixed(1), at);
-			// console.log('%s,%d,%d,%d,%d,%d', getTimeStamp(), x.toFixed(1), y.toFixed(1), z.toFixed(1), ot, at);
+			
+            if(DEBUG) {
+                console.log('%s,%d,%d,%d,%d,%d', getTimeStamp(), x.toFixed(1), y.toFixed(1), z.toFixed(1), ot, at);
+            }
 		});
 	}
 
@@ -150,8 +180,8 @@ function getTimeStamp() {
 // Job - this is what actually queues your data
 //
 function newSensorDataJob(t, x, y, z, temp) {
-	// x = x || 'Default_val';
-	var job = queue.create('sleepia', {
+
+	var job = queue.create('sleepia_queue', {
 		timestamp: t,
 		x: x,
 		y: y,
@@ -160,11 +190,15 @@ function newSensorDataJob(t, x, y, z, temp) {
 	});
 
 	job.on('complete', function() {
-		console.log('Job ID', job.id, 'with values', job.data.timestamp, job.data.x, job.data.y, job.data.z, job.data.t, 'is done');
+		if (DEBUG) {
+			console.log('Job ID', job.id, 'with values', job.data.timestamp, job.data.x, job.data.y, job.data.z, job.data.t, 'is done');
+		}
 	});
 
 	job.on('failed', function() {
-		console.log('Job ID', job.id, job.data.timestamp, 'with values', job.data.x, 'has failed');
+		if (DEBUG) {
+			console.log('Job ID', job.id, job.data.timestamp, 'with values', job.data.x, 'has failed');
+		}
 	});
 
 	job.save();
@@ -173,7 +207,7 @@ function newSensorDataJob(t, x, y, z, temp) {
 //
 // Close the transaction opened by the new job function
 //
-queue.process('sleepia', function(job, done) {
+queue.process('sleepia_queue', function(job, done) {
 	/* carry out all the job function here */
 	done && done();
 });
