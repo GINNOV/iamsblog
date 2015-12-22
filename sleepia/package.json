@@ -19,9 +19,9 @@
     }
   ],
   "dependencies": {
-    "kue": "~0.6.2",
-    "sensortag" : "~1.1.0",
-    "redis" : "~2.4.2"
+    "kue": "^0.10.4",
+    "sensortag" : "^1.1.0",
+    "redis" : "^2.4.0"
   },
   "devDependencies": {},
   "readmeFilename": "https://github.com/kywix/iamsblog/README.md"
