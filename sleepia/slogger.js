@@ -84,7 +84,7 @@ SensorTag.discover(function(tag) {
 		tag.enableAccelerometer(notifyMe); // start the accelerometer listner
 		tag.enableIrTemperature(notifyMe); // start the IR temp sensor listner
 		if (DEBUG) {
-			console.log('timestamp, X, Y, Z, Temp');
+			console.log('timestamp, X, Y, Z, temp');
 		}
 	}
 
