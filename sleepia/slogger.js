@@ -20,6 +20,12 @@ var redis = require('redis')			// the db man
 
 // ----------------------------------------------------------------------
 
+var serverName = "localhost";
+
+if (process.argv[2] == "-s") {
+	serverName = process.argv[3];
+}
+
 //
 //  Create a queue object
 //
@@ -27,7 +33,7 @@ var queue = kue.createQueue({
 	prefix: generateKeyDate(),
 	redis: {
 		port: 6379,
-		host: 'localhost',
+		host: serverName,
 		auth: '', 						// use a password even if not exposed to the Internet!!
 		db: 0,							// database ID
 		options: {
