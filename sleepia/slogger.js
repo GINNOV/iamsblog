@@ -24,7 +24,7 @@ var redis = require('redis')			// the db man
 //  Create a queue object
 //
 var queue = kue.createQueue({
-	prefix: 'sleepia',
+	prefix: generateKeyDate(),
 	redis: {
 		port: 6379,
 		host: 'localhost',
@@ -71,7 +71,7 @@ SensorTag.discover(function(tag) {
 	// Connect and setup
 	//
 	function connectAndSetUp() { // attempt to connect to the tag
-		console.log('# Connecting...');
+		console.log('# Connecting to ' + tag.type + ' with id:' +tag.id);
 		tag.connectAndSetUp(enableSensors); // when you connect and device is setup, call enableAccelMe
 	}
 
@@ -94,7 +94,6 @@ SensorTag.discover(function(tag) {
 	function notifyMe() {
 		tag.notifyAccelerometer(notificationManager); // setup call back for accelerometer
 		tag.notifyIrTemperature(notificationManager); // setup call back for IR temp
-		tag.notifySimpleKey(listenForButton); // setup call back for button/switches
 	}
 
 	//
@@ -119,28 +118,6 @@ SensorTag.discover(function(tag) {
 		});
 	}
 
-	//
-	// when you get a button change, print it out:
-	//
-	function listenForButton() {
-
-		tag.on('simpleKeyChange', function(left, right) {
-
-			if (left) {
-				console.log('marker1: ' + left);
-			}
-
-			if (right) {
-				console.log('marker2: ' + right);
-			}
-
-			// if both buttons are pressed, disconnect:
-			if (left && right) {
-				tag.disconnect();
-			}
-		});
-	}
-
 	// Start seeking for the tags:
 	connectAndSetUp();
 });
@@ -161,8 +138,24 @@ function getTimeStamp() {
 	var sec = date.getSeconds();
 	sec = (sec < 10 ? "0" : "") + sec;
 
-	var ms = date.getMilliseconds();
-	ms = (ms < 10 ? "0" : "") + ms
+	var year = date.getFullYear();
+
+	var month = date.getMonth() + 1;
+	month = (month < 10 ? "0" : "") + month;
+
+	var day = date.getDate();
+	day = (day < 10 ? "0" : "") + day;
+
+	return year + "-" + month + "-" + day + " " + hour + ":" + min + ":" + sec;
+
+}
+
+//
+// Build key using date according to YYYY:MM:DD
+// 
+function generateKeyDate() {
+
+	var date = new Date();
 
 	var year = date.getFullYear();
 
@@ -172,7 +165,7 @@ function getTimeStamp() {
 	var day = date.getDate();
 	day = (day < 10 ? "0" : "") + day;
 
-	return year + "-" + month + "-" + day + " " + hour + ":" + min + ":" + sec + ":" + ms;
+	return "sleepia:" + year + month + day;
 
 }
 
@@ -189,6 +182,7 @@ function newSensorDataJob(t, x, y, z, temp) {
 		t: temp
 	});
 
+    
 	job.on('complete', function() {
 		if (DEBUG) {
 			console.log('Job ID', job.id, 'with values', job.data.timestamp, job.data.x, job.data.y, job.data.z, job.data.t, 'is done');
@@ -209,6 +203,7 @@ function newSensorDataJob(t, x, y, z, temp) {
 //
 queue.process('sleepia_queue', function(job, done) {
 	/* carry out all the job function here */
+    
 	done && done();
 });
 
