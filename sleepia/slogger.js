@@ -85,7 +85,7 @@ SensorTag.discover(function(tag) {
 	// This function enables the accelerometer stream
 	//
 	function enableSensors() { // attempt to enable the accelerometer
-		console.log('# Enabled Sensors (Acc, IR Temp)');
+		console.log('# Enabled Sensors (Acc, IR-Temp)');
 		// when you enable the accelerometer, start accelerometer notifications:
 		tag.enableAccelerometer(notifyMe); // start the accelerometer listner
 		tag.enableIrTemperature(notifyMe); // start the IR temp sensor listner
@@ -98,7 +98,8 @@ SensorTag.discover(function(tag) {
 	// Activate which service we want to be notified by
 	//
 	function notifyMe() {
-		tag.notifyAccelerometer(notificationManager); // setup call back for accelerometer
+		console.log('# Collection started...');
+        tag.notifyAccelerometer(notificationManager); // setup call back for accelerometer
 		tag.notifyIrTemperature(notificationManager); // setup call back for IR temp
 	}
 
