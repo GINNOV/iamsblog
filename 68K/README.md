@@ -1,6 +1,8 @@
 # Amiga
-In this folder you find all code used in the Learning Amiga Assembler series posted on IAMSENSORIA.COM
+In this folder you find all code used in the [Learning Amiga Assembler](http://iamsensoria.com/post/178065440276/amiga-learning-assembler) series posted on IAMSENSORIA.COM
 
-### **POST URLs**
+## Folders ##
 
-* [Lessons Index](http://iamsensoria.com/post/178065440276/amiga-learning-assembler) the begin of a new retro-era for wanna be weekend warriors developers of a lost era.
+* *vasm_intro* used to show all the mechanism of building Amiga assembler with a cross platform assembler.
+* *lesson9* building our first assembler program. Wait for a mouse click to continue (whoooo ahhhh)
+
