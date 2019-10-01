@@ -1,0 +1,554 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		ACC907A823419CC700EC1088 /* DinoBasic WatchKit App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = ACC907A723419CC700EC1088 /* DinoBasic WatchKit App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		ACC907AE23419CC700EC1088 /* Interface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = ACC907AC23419CC700EC1088 /* Interface.storyboard */; };
+		ACC907B023419CC900EC1088 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = ACC907AF23419CC900EC1088 /* Assets.xcassets */; };
+		ACC907B723419CC900EC1088 /* DinoBasic WatchKit Extension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = ACC907B623419CC900EC1088 /* DinoBasic WatchKit Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		ACC907BC23419CC900EC1088 /* InterfaceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACC907BB23419CC900EC1088 /* InterfaceController.swift */; };
+		ACC907BE23419CC900EC1088 /* ExtensionDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACC907BD23419CC900EC1088 /* ExtensionDelegate.swift */; };
+		ACC907C023419CC900EC1088 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = ACC907BF23419CC900EC1088 /* Assets.xcassets */; };
+		ACC907D02341A20500EC1088 /* DetailInterfaceController.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACC907CF2341A20500EC1088 /* DetailInterfaceController.swift */; };
+		ACC907D22341A38700EC1088 /* DinoRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACC907D12341A38700EC1088 /* DinoRow.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		ACC907A923419CC700EC1088 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = ACC9079D23419CC700EC1088 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = ACC907A623419CC700EC1088;
+			remoteInfo = "DinoBasic WatchKit App";
+		};
+		ACC907B823419CC900EC1088 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = ACC9079D23419CC700EC1088 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = ACC907B523419CC900EC1088;
+			remoteInfo = "DinoBasic WatchKit Extension";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		ACC907C723419CC900EC1088 /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				ACC907B723419CC900EC1088 /* DinoBasic WatchKit Extension.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		ACC907CB23419CC900EC1088 /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				ACC907A823419CC700EC1088 /* DinoBasic WatchKit App.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		ACC907A323419CC700EC1088 /* DinoBasic.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DinoBasic.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		ACC907A723419CC700EC1088 /* DinoBasic WatchKit App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "DinoBasic WatchKit App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		ACC907AD23419CC700EC1088 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Interface.storyboard; sourceTree = "<group>"; };
+		ACC907AF23419CC900EC1088 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		ACC907B123419CC900EC1088 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		ACC907B623419CC900EC1088 /* DinoBasic WatchKit Extension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "DinoBasic WatchKit Extension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
+		ACC907BB23419CC900EC1088 /* InterfaceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InterfaceController.swift; sourceTree = "<group>"; };
+		ACC907BD23419CC900EC1088 /* ExtensionDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtensionDelegate.swift; sourceTree = "<group>"; };
+		ACC907BF23419CC900EC1088 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		ACC907C123419CC900EC1088 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		ACC907CF2341A20500EC1088 /* DetailInterfaceController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailInterfaceController.swift; sourceTree = "<group>"; };
+		ACC907D12341A38700EC1088 /* DinoRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DinoRow.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		ACC907B323419CC900EC1088 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		ACC9079C23419CC700EC1088 = {
+			isa = PBXGroup;
+			children = (
+				ACC907AB23419CC700EC1088 /* DinoBasic WatchKit App */,
+				ACC907BA23419CC900EC1088 /* DinoBasic WatchKit Extension */,
+				ACC907A423419CC700EC1088 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		ACC907A423419CC700EC1088 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				ACC907A323419CC700EC1088 /* DinoBasic.app */,
+				ACC907A723419CC700EC1088 /* DinoBasic WatchKit App.app */,
+				ACC907B623419CC900EC1088 /* DinoBasic WatchKit Extension.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		ACC907AB23419CC700EC1088 /* DinoBasic WatchKit App */ = {
+			isa = PBXGroup;
+			children = (
+				ACC907AC23419CC700EC1088 /* Interface.storyboard */,
+				ACC907AF23419CC900EC1088 /* Assets.xcassets */,
+				ACC907B123419CC900EC1088 /* Info.plist */,
+			);
+			path = "DinoBasic WatchKit App";
+			sourceTree = "<group>";
+		};
+		ACC907BA23419CC900EC1088 /* DinoBasic WatchKit Extension */ = {
+			isa = PBXGroup;
+			children = (
+				ACC907BB23419CC900EC1088 /* InterfaceController.swift */,
+				ACC907BD23419CC900EC1088 /* ExtensionDelegate.swift */,
+				ACC907BF23419CC900EC1088 /* Assets.xcassets */,
+				ACC907C123419CC900EC1088 /* Info.plist */,
+				ACC907CF2341A20500EC1088 /* DetailInterfaceController.swift */,
+				ACC907D12341A38700EC1088 /* DinoRow.swift */,
+			);
+			path = "DinoBasic WatchKit Extension";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		ACC907A223419CC700EC1088 /* DinoBasic */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = ACC907CC23419CC900EC1088 /* Build configuration list for PBXNativeTarget "DinoBasic" */;
+			buildPhases = (
+				ACC907A123419CC700EC1088 /* Resources */,
+				ACC907CB23419CC900EC1088 /* Embed Watch Content */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				ACC907AA23419CC700EC1088 /* PBXTargetDependency */,
+			);
+			name = DinoBasic;
+			productName = DinoBasic;
+			productReference = ACC907A323419CC700EC1088 /* DinoBasic.app */;
+			productType = "com.apple.product-type.application.watchapp2-container";
+		};
+		ACC907A623419CC700EC1088 /* DinoBasic WatchKit App */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = ACC907C823419CC900EC1088 /* Build configuration list for PBXNativeTarget "DinoBasic WatchKit App" */;
+			buildPhases = (
+				ACC907A523419CC700EC1088 /* Resources */,
+				ACC907C723419CC900EC1088 /* Embed App Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				ACC907B923419CC900EC1088 /* PBXTargetDependency */,
+			);
+			name = "DinoBasic WatchKit App";
+			productName = "DinoBasic WatchKit App";
+			productReference = ACC907A723419CC700EC1088 /* DinoBasic WatchKit App.app */;
+			productType = "com.apple.product-type.application.watchapp2";
+		};
+		ACC907B523419CC900EC1088 /* DinoBasic WatchKit Extension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = ACC907C423419CC900EC1088 /* Build configuration list for PBXNativeTarget "DinoBasic WatchKit Extension" */;
+			buildPhases = (
+				ACC907B223419CC900EC1088 /* Sources */,
+				ACC907B323419CC900EC1088 /* Frameworks */,
+				ACC907B423419CC900EC1088 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "DinoBasic WatchKit Extension";
+			productName = "DinoBasic WatchKit Extension";
+			productReference = ACC907B623419CC900EC1088 /* DinoBasic WatchKit Extension.appex */;
+			productType = "com.apple.product-type.watchkit2-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		ACC9079D23419CC700EC1088 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 1100;
+				LastUpgradeCheck = 1100;
+				ORGANIZATIONNAME = "The Garage Innovation";
+				TargetAttributes = {
+					ACC907A223419CC700EC1088 = {
+						CreatedOnToolsVersion = 11.0;
+					};
+					ACC907A623419CC700EC1088 = {
+						CreatedOnToolsVersion = 11.0;
+					};
+					ACC907B523419CC900EC1088 = {
+						CreatedOnToolsVersion = 11.0;
+					};
+				};
+			};
+			buildConfigurationList = ACC907A023419CC700EC1088 /* Build configuration list for PBXProject "DinoBasic" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = ACC9079C23419CC700EC1088;
+			productRefGroup = ACC907A423419CC700EC1088 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				ACC907A223419CC700EC1088 /* DinoBasic */,
+				ACC907A623419CC700EC1088 /* DinoBasic WatchKit App */,
+				ACC907B523419CC900EC1088 /* DinoBasic WatchKit Extension */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		ACC907A123419CC700EC1088 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		ACC907A523419CC700EC1088 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				ACC907B023419CC900EC1088 /* Assets.xcassets in Resources */,
+				ACC907AE23419CC700EC1088 /* Interface.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		ACC907B423419CC900EC1088 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				ACC907C023419CC900EC1088 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		ACC907B223419CC900EC1088 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				ACC907D02341A20500EC1088 /* DetailInterfaceController.swift in Sources */,
+				ACC907BE23419CC900EC1088 /* ExtensionDelegate.swift in Sources */,
+				ACC907D22341A38700EC1088 /* DinoRow.swift in Sources */,
+				ACC907BC23419CC900EC1088 /* InterfaceController.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		ACC907AA23419CC700EC1088 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = ACC907A623419CC700EC1088 /* DinoBasic WatchKit App */;
+			targetProxy = ACC907A923419CC700EC1088 /* PBXContainerItemProxy */;
+		};
+		ACC907B923419CC900EC1088 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = ACC907B523419CC900EC1088 /* DinoBasic WatchKit Extension */;
+			targetProxy = ACC907B823419CC900EC1088 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		ACC907AC23419CC700EC1088 /* Interface.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				ACC907AD23419CC700EC1088 /* Base */,
+			);
+			name = Interface.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		ACC907C223419CC900EC1088 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		ACC907C323419CC900EC1088 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		ACC907C523419CC900EC1088 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_COMPLICATION_NAME = Complication;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 4G38V92ED7;
+				INFOPLIST_FILE = "DinoBasic WatchKit Extension/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.thegarageinnovation.DinoBasic.watchkitapp.watchkitextension;
+				PRODUCT_NAME = "${TARGET_NAME}";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 6.0;
+			};
+			name = Debug;
+		};
+		ACC907C623419CC900EC1088 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_COMPLICATION_NAME = Complication;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 4G38V92ED7;
+				INFOPLIST_FILE = "DinoBasic WatchKit Extension/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.thegarageinnovation.DinoBasic.watchkitapp.watchkitextension;
+				PRODUCT_NAME = "${TARGET_NAME}";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 6.0;
+			};
+			name = Release;
+		};
+		ACC907C923419CC900EC1088 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 4G38V92ED7;
+				IBSC_MODULE = DinoBasic_WatchKit_Extension;
+				INFOPLIST_FILE = "DinoBasic WatchKit App/Info.plist";
+				PRODUCT_BUNDLE_IDENTIFIER = com.thegarageinnovation.DinoBasic.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 6.0;
+			};
+			name = Debug;
+		};
+		ACC907CA23419CC900EC1088 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 4G38V92ED7;
+				IBSC_MODULE = DinoBasic_WatchKit_Extension;
+				INFOPLIST_FILE = "DinoBasic WatchKit App/Info.plist";
+				PRODUCT_BUNDLE_IDENTIFIER = com.thegarageinnovation.DinoBasic.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 6.0;
+			};
+			name = Release;
+		};
+		ACC907CD23419CC900EC1088 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 4G38V92ED7;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.thegarageinnovation.DinoBasic;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		ACC907CE23419CC900EC1088 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 4G38V92ED7;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.thegarageinnovation.DinoBasic;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		ACC907A023419CC700EC1088 /* Build configuration list for PBXProject "DinoBasic" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				ACC907C223419CC900EC1088 /* Debug */,
+				ACC907C323419CC900EC1088 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		ACC907C423419CC900EC1088 /* Build configuration list for PBXNativeTarget "DinoBasic WatchKit Extension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				ACC907C523419CC900EC1088 /* Debug */,
+				ACC907C623419CC900EC1088 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		ACC907C823419CC900EC1088 /* Build configuration list for PBXNativeTarget "DinoBasic WatchKit App" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				ACC907C923419CC900EC1088 /* Debug */,
+				ACC907CA23419CC900EC1088 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		ACC907CC23419CC900EC1088 /* Build configuration list for PBXNativeTarget "DinoBasic" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				ACC907CD23419CC900EC1088 /* Debug */,
+				ACC907CE23419CC900EC1088 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = ACC9079D23419CC700EC1088 /* Project object */;
+}

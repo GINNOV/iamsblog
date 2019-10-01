@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder.WatchKit.Storyboard" version="3.0" toolsVersion="14868" targetRuntime="watchKit" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="AgC-eL-Hgc">
+    <device id="watch38"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14824"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBWatchKitPlugin" version="14643"/>
+    </dependencies>
+    <scenes>
+        <!--Interface Controller-->
+        <scene sceneID="aou-V4-d1y">
+            <objects>
+                <controller id="AgC-eL-Hgc" customClass="InterfaceController" customModule="DinoBasic_WatchKit_App" customModuleProvider="target">
+                    <items>
+                        <table alignment="left" id="yAj-2B-73n">
+                            <items>
+                                <tableRow identifier="DinoRow" id="wOy-Aa-bPx" customClass="DinoRow" customModule="DinoBasic_WatchKit_Extension">
+                                    <group key="rootItem" width="1" alignment="left" id="Og3-mn-YC1">
+                                        <items>
+                                            <label alignment="center" verticalAlignment="center" text="dino name" id="AsV-lo-S3p"/>
+                                        </items>
+                                    </group>
+                                    <connections>
+                                        <outlet property="dinoName" destination="AsV-lo-S3p" id="eoo-XM-bde"/>
+                                    </connections>
+                                </tableRow>
+                            </items>
+                        </table>
+                    </items>
+                    <connections>
+                        <outlet property="tableView" destination="yAj-2B-73n" id="wf7-pS-eEJ"/>
+                    </connections>
+                </controller>
+            </objects>
+            <point key="canvasLocation" x="34" y="31"/>
+        </scene>
+        <!--showDetails-->
+        <scene sceneID="hKw-QJ-Xfw">
+            <objects>
+                <controller identifier="showDetails" id="XWl-ik-XSE" customClass="DetailInterfaceController" customModule="DinoBasic_WatchKit_Extension">
+                    <items>
+                        <label alignment="center" text="Brontosaurus" id="zwh-Ei-q30"/>
+                        <imageView alignment="center" image="brontosaurus" id="5Bb-1S-fFY"/>
+                        <label alignment="center" text="What it does" id="WCF-cw-TKH"/>
+                        <label alignment="center" text="complains" id="FwC-TS-2Mh"/>
+                    </items>
+                    <connections>
+                        <outlet property="dinoImage" destination="5Bb-1S-fFY" id="V4L-G1-Wgs"/>
+                        <outlet property="dinoName" destination="zwh-Ei-q30" id="jID-YY-wrd"/>
+                        <outlet property="whatInfo" destination="FwC-TS-2Mh" id="8Vp-wd-nK3"/>
+                    </connections>
+                </controller>
+            </objects>
+            <point key="canvasLocation" x="287" y="31"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="brontosaurus" width="512" height="512"/>
+    </resources>
+</document>
