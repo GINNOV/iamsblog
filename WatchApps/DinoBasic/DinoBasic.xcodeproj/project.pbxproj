@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AC42FA4E2344051500FFBF01 /* allosaurus.wav in Resources */ = {isa = PBXBuildFile; fileRef = AC42FA4A2344051500FFBF01 /* allosaurus.wav */; };
+		AC42FA4F2344051500FFBF01 /* ankylosaurus.wav in Resources */ = {isa = PBXBuildFile; fileRef = AC42FA4B2344051500FFBF01 /* ankylosaurus.wav */; };
+		AC42FA502344051500FFBF01 /* brachiosaurus.wav in Resources */ = {isa = PBXBuildFile; fileRef = AC42FA4C2344051500FFBF01 /* brachiosaurus.wav */; };
+		AC42FA512344051500FFBF01 /* ceratosaurus.wav in Resources */ = {isa = PBXBuildFile; fileRef = AC42FA4D2344051500FFBF01 /* ceratosaurus.wav */; };
 		ACC907A823419CC700EC1088 /* DinoBasic WatchKit App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = ACC907A723419CC700EC1088 /* DinoBasic WatchKit App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		ACC907AE23419CC700EC1088 /* Interface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = ACC907AC23419CC700EC1088 /* Interface.storyboard */; };
 		ACC907B023419CC900EC1088 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = ACC907AF23419CC900EC1088 /* Assets.xcassets */; };
@@ -61,6 +65,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		AC42FA4A2344051500FFBF01 /* allosaurus.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = allosaurus.wav; sourceTree = "<group>"; };
+		AC42FA4B2344051500FFBF01 /* ankylosaurus.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = ankylosaurus.wav; sourceTree = "<group>"; };
+		AC42FA4C2344051500FFBF01 /* brachiosaurus.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = brachiosaurus.wav; sourceTree = "<group>"; };
+		AC42FA4D2344051500FFBF01 /* ceratosaurus.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = ceratosaurus.wav; sourceTree = "<group>"; };
 		ACC907A323419CC700EC1088 /* DinoBasic.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DinoBasic.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		ACC907A723419CC700EC1088 /* DinoBasic WatchKit App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "DinoBasic WatchKit App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		ACC907AD23419CC700EC1088 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Interface.storyboard; sourceTree = "<group>"; };
@@ -86,6 +94,17 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		AC42FA49234404D200FFBF01 /* Sounds */ = {
+			isa = PBXGroup;
+			children = (
+				AC42FA4A2344051500FFBF01 /* allosaurus.wav */,
+				AC42FA4B2344051500FFBF01 /* ankylosaurus.wav */,
+				AC42FA4C2344051500FFBF01 /* brachiosaurus.wav */,
+				AC42FA4D2344051500FFBF01 /* ceratosaurus.wav */,
+			);
+			path = Sounds;
+			sourceTree = "<group>";
+		};
 		ACC9079C23419CC700EC1088 = {
 			isa = PBXGroup;
 			children = (
@@ -120,10 +139,11 @@
 			children = (
 				ACC907BB23419CC900EC1088 /* InterfaceController.swift */,
 				ACC907BD23419CC900EC1088 /* ExtensionDelegate.swift */,
-				ACC907BF23419CC900EC1088 /* Assets.xcassets */,
-				ACC907C123419CC900EC1088 /* Info.plist */,
 				ACC907CF2341A20500EC1088 /* DetailInterfaceController.swift */,
 				ACC907D12341A38700EC1088 /* DinoRow.swift */,
+				AC42FA49234404D200FFBF01 /* Sounds */,
+				ACC907C123419CC900EC1088 /* Info.plist */,
+				ACC907BF23419CC900EC1088 /* Assets.xcassets */,
 			);
 			path = "DinoBasic WatchKit Extension";
 			sourceTree = "<group>";
@@ -244,7 +264,11 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AC42FA512344051500FFBF01 /* ceratosaurus.wav in Resources */,
+				AC42FA502344051500FFBF01 /* brachiosaurus.wav in Resources */,
+				AC42FA4E2344051500FFBF01 /* allosaurus.wav in Resources */,
 				ACC907C023419CC900EC1088 /* Assets.xcassets in Resources */,
+				AC42FA4F2344051500FFBF01 /* ankylosaurus.wav in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

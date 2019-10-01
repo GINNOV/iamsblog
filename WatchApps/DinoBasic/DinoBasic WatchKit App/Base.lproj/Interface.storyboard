@@ -38,10 +38,21 @@
             <objects>
                 <controller identifier="showDetails" id="XWl-ik-XSE" customClass="DetailInterfaceController" customModule="DinoBasic_WatchKit_Extension">
                     <items>
-                        <label alignment="center" text="Brontosaurus" id="zwh-Ei-q30"/>
+                        <label alignment="center" text="Brontosaurus" id="zwh-Ei-q30">
+                            <fontDescription key="font" style="UICTFontTextStyleTitle3"/>
+                        </label>
                         <imageView alignment="center" image="brontosaurus" id="5Bb-1S-fFY"/>
-                        <label alignment="center" text="What it does" id="WCF-cw-TKH"/>
-                        <label alignment="center" text="complains" id="FwC-TS-2Mh"/>
+                        <label alignment="center" text="What it does:" id="WCF-cw-TKH">
+                            <fontDescription key="font" style="UICTFontTextStyleHeadline"/>
+                        </label>
+                        <label alignment="center" text="complains" numberOfLines="3" id="FwC-TS-2Mh"/>
+                        <button width="1" alignment="center" title="Sounds like..." id="pmj-ut-5ib">
+                            <color key="titleColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <connections>
+                                <action selector="soundButton" destination="XWl-ik-XSE" id="DL7-Ge-w1s"/>
+                            </connections>
+                        </button>
                     </items>
                     <connections>
                         <outlet property="dinoImage" destination="5Bb-1S-fFY" id="V4L-G1-Wgs"/>
