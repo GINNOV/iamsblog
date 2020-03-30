@@ -1,0 +1,27 @@
+{
+  "name": "WFH Googler",
+  "version": "1.0",
+  "description": "Hack your life while working from home.",
+  "permissions": ["activeTab","declarativeContent", "storage"],
+  "background": {
+      "scripts": ["jquery.js", "options.js", "background.js"],
+      "persistent": false
+    },
+    "options_page": "options.html",
+    "page_action": {
+      "default_popup": "popup.html",
+      "default_icon": {
+        "16": "images/appIcon_16.png",
+        "32": "images/appIcon_32.png",
+        "48": "images/appIcon_48.png",
+        "128": "images/appIcon_128.png"
+      }
+    },
+    "icons": {
+      "16": "images/appIcon_16.png",
+        "32": "images/appIcon_32.png",
+        "48": "images/appIcon_48.png",
+        "128": "images/appIcon_128.png"
+    },
+  "manifest_version": 2
+}
