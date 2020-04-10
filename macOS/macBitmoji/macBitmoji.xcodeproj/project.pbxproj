@@ -1,0 +1,376 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		AC3228C3243D37BD009AC42B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC3228C2243D37BD009AC42B /* AppDelegate.swift */; };
+		AC3228C5243D37BD009AC42B /* Login.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC3228C4243D37BD009AC42B /* Login.swift */; };
+		AC3228C7243D37BE009AC42B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AC3228C6243D37BE009AC42B /* Assets.xcassets */; };
+		AC3228CA243D37BE009AC42B /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AC3228C8243D37BE009AC42B /* Main.storyboard */; };
+		AC3228D3243D3C5E009AC42B /* Catalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC3228D2243D3C5E009AC42B /* Catalog.swift */; };
+		AC3228D6243D3ECF009AC42B /* PhotoItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC3228D4243D3ECF009AC42B /* PhotoItem.swift */; };
+		AC3228D7243D3ECF009AC42B /* PhotoItem.xib in Resources */ = {isa = PBXBuildFile; fileRef = AC3228D5243D3ECF009AC42B /* PhotoItem.xib */; };
+		AC3228D9243D4317009AC42B /* PhotoInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC3228D8243D4317009AC42B /* PhotoInfo.swift */; };
+		AC3228DB243D434A009AC42B /* PhotoHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC3228DA243D434A009AC42B /* PhotoHelper.swift */; };
+		ACBD0C85243E6635009784B0 /* Templates.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACBD0C84243E6635009784B0 /* Templates.swift */; };
+		ACC1DB3D243FF84600D7614C /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACC1DB3C243FF84600D7614C /* Constants.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		AC3228BF243D37BD009AC42B /* macBitmoji.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = macBitmoji.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AC3228C2243D37BD009AC42B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		AC3228C4243D37BD009AC42B /* Login.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Login.swift; sourceTree = "<group>"; };
+		AC3228C6243D37BE009AC42B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		AC3228C9243D37BE009AC42B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		AC3228CB243D37BE009AC42B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		AC3228CC243D37BE009AC42B /* macBitmoji.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = macBitmoji.entitlements; sourceTree = "<group>"; };
+		AC3228D2243D3C5E009AC42B /* Catalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Catalog.swift; sourceTree = "<group>"; };
+		AC3228D4243D3ECF009AC42B /* PhotoItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoItem.swift; sourceTree = "<group>"; };
+		AC3228D5243D3ECF009AC42B /* PhotoItem.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = PhotoItem.xib; sourceTree = "<group>"; };
+		AC3228D8243D4317009AC42B /* PhotoInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoInfo.swift; sourceTree = "<group>"; };
+		AC3228DA243D434A009AC42B /* PhotoHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoHelper.swift; sourceTree = "<group>"; };
+		ACBD0C84243E6635009784B0 /* Templates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Templates.swift; sourceTree = "<group>"; };
+		ACC1DB3C243FF84600D7614C /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		AC3228BC243D37BD009AC42B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		AC3228B6243D37BD009AC42B = {
+			isa = PBXGroup;
+			children = (
+				AC3228C1243D37BD009AC42B /* macBitmoji */,
+				AC3228C0243D37BD009AC42B /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		AC3228C0243D37BD009AC42B /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				AC3228BF243D37BD009AC42B /* macBitmoji.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		AC3228C1243D37BD009AC42B /* macBitmoji */ = {
+			isa = PBXGroup;
+			children = (
+				AC3228C2243D37BD009AC42B /* AppDelegate.swift */,
+				AC3228DD243D43A9009AC42B /* UI */,
+				AC3228C6243D37BE009AC42B /* Assets.xcassets */,
+				AC3228C8243D37BE009AC42B /* Main.storyboard */,
+				AC3228CB243D37BE009AC42B /* Info.plist */,
+				AC3228CC243D37BE009AC42B /* macBitmoji.entitlements */,
+				AC3228DC243D438C009AC42B /* Item */,
+				AC3228D8243D4317009AC42B /* PhotoInfo.swift */,
+				AC3228DA243D434A009AC42B /* PhotoHelper.swift */,
+				ACBD0C84243E6635009784B0 /* Templates.swift */,
+				ACC1DB3C243FF84600D7614C /* Constants.swift */,
+			);
+			path = macBitmoji;
+			sourceTree = "<group>";
+		};
+		AC3228DC243D438C009AC42B /* Item */ = {
+			isa = PBXGroup;
+			children = (
+				AC3228D4243D3ECF009AC42B /* PhotoItem.swift */,
+				AC3228D5243D3ECF009AC42B /* PhotoItem.xib */,
+			);
+			path = Item;
+			sourceTree = "<group>";
+		};
+		AC3228DD243D43A9009AC42B /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				AC3228C4243D37BD009AC42B /* Login.swift */,
+				AC3228D2243D3C5E009AC42B /* Catalog.swift */,
+			);
+			path = UI;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		AC3228BE243D37BD009AC42B /* macBitmoji */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AC3228CF243D37BE009AC42B /* Build configuration list for PBXNativeTarget "macBitmoji" */;
+			buildPhases = (
+				AC3228BB243D37BD009AC42B /* Sources */,
+				AC3228BC243D37BD009AC42B /* Frameworks */,
+				AC3228BD243D37BD009AC42B /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = macBitmoji;
+			productName = macBitmoji;
+			productReference = AC3228BF243D37BD009AC42B /* macBitmoji.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		AC3228B7243D37BD009AC42B /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 1140;
+				LastUpgradeCheck = 1140;
+				ORGANIZATIONNAME = "IENA WHITE";
+				TargetAttributes = {
+					AC3228BE243D37BD009AC42B = {
+						CreatedOnToolsVersion = 11.4;
+					};
+				};
+			};
+			buildConfigurationList = AC3228BA243D37BD009AC42B /* Build configuration list for PBXProject "macBitmoji" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = AC3228B6243D37BD009AC42B;
+			productRefGroup = AC3228C0243D37BD009AC42B /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				AC3228BE243D37BD009AC42B /* macBitmoji */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		AC3228BD243D37BD009AC42B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AC3228C7243D37BE009AC42B /* Assets.xcassets in Resources */,
+				AC3228D7243D3ECF009AC42B /* PhotoItem.xib in Resources */,
+				AC3228CA243D37BE009AC42B /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		AC3228BB243D37BD009AC42B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AC3228D3243D3C5E009AC42B /* Catalog.swift in Sources */,
+				AC3228D9243D4317009AC42B /* PhotoInfo.swift in Sources */,
+				AC3228C5243D37BD009AC42B /* Login.swift in Sources */,
+				AC3228C3243D37BD009AC42B /* AppDelegate.swift in Sources */,
+				ACBD0C85243E6635009784B0 /* Templates.swift in Sources */,
+				AC3228DB243D434A009AC42B /* PhotoHelper.swift in Sources */,
+				AC3228D6243D3ECF009AC42B /* PhotoItem.swift in Sources */,
+				ACC1DB3D243FF84600D7614C /* Constants.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		AC3228C8243D37BE009AC42B /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				AC3228C9243D37BE009AC42B /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		AC3228CD243D37BE009AC42B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		AC3228CE243D37BE009AC42B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+			};
+			name = Release;
+		};
+		AC3228D0243D37BE009AC42B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = macBitmoji/macBitmoji.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = 4G38V92ED7;
+				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_FILE = macBitmoji/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.thegarageinnovation.macBitmoji;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		AC3228D1243D37BE009AC42B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = macBitmoji/macBitmoji.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = 4G38V92ED7;
+				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_FILE = macBitmoji/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.thegarageinnovation.macBitmoji;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		AC3228BA243D37BD009AC42B /* Build configuration list for PBXProject "macBitmoji" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AC3228CD243D37BE009AC42B /* Debug */,
+				AC3228CE243D37BE009AC42B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AC3228CF243D37BE009AC42B /* Build configuration list for PBXNativeTarget "macBitmoji" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AC3228D0243D37BE009AC42B /* Debug */,
+				AC3228D1243D37BE009AC42B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = AC3228B7243D37BD009AC42B /* Project object */;
+}
