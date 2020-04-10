@@ -16,9 +16,9 @@ Do what you want with it edition. If you improved it, please go ahead a make a P
 ##References
 To learn what to do what I wanted to do, I did research that hit the following good list of links
 
-https://github.com/foundry/NSViewControllerPresentation
-https://www.appcoda.com/macos-programming/
-https://www.raywenderlich.com/666-filemanager-class-tutorial-for-macos-getting-started-with-the-file-system
-https://stackoverflow.com/questions/33572444/how-do-i-add-settings-to-my-cocoa-application-in-swift
-https://developer.apple.com/swift/blog/?id=37
-https://bluelemonbits.com/2016/12/19/simple-animations-on-macos-swift-3/
+* https://github.com/foundry/NSViewControllerPresentation
+* https://www.appcoda.com/macos-programming/
+* https://www.raywenderlich.com/666-filemanager-class-tutorial-for-macos-getting-started-with-the-file-system
+* https://stackoverflow.com/questions/33572444/how-do-i-add-settings-to-my-cocoa-application-in-swift
+* https://developer.apple.com/swift/blog/?id=37
+* https://bluelemonbits.com/2016/12/19/simple-animations-on-macos-swift-3/
