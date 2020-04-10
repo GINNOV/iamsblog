@@ -6,15 +6,11 @@
 //
 //  Created by Mario Esposito on 4/7/20.
 //
-//  ref: https://github.com/foundry/NSViewControllerPresentation
-//  ref: https://www.appcoda.com/macos-programming/
-//  ref: https://www.raywenderlich.com/666-filemanager-class-tutorial-for-macos-getting-started-with-the-file-system
-//  ref: https://stackoverflow.com/questions/33572444/how-do-i-add-settings-to-my-cocoa-application-in-swift
-//  ref: https://developer.apple.com/swift/blog/?id=37
+
 
 import Cocoa
 
-class Login: NSViewController {
+class Login: NSViewController, MessagesToUser {
     
     @IBOutlet weak var username: NSTextField!
     @IBOutlet weak var password: NSSecureTextField!
@@ -23,10 +19,12 @@ class Login: NSViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        AppHelper.shared.delegate = self
+        
         let home = FileManager.default.homeDirectoryForCurrentUser
         let cacheFolder = "Pictures/macMoji"
         let picturesfolder = home.appendingPathComponent(cacheFolder)
-        if directoryExistsAtPath(picturesfolder.absoluteString) {
+        if AppHelper.shared.directoryExistsAtPath(picturesfolder.absoluteString) {
             let storyboardName = NSStoryboard.Name(stringLiteral: "Main")
             let storyboard = NSStoryboard(name: storyboardName, bundle: nil)
             let storyboardID = NSStoryboard.SceneIdentifier(stringLiteral: "CatalogID")
@@ -53,124 +51,27 @@ class Login: NSViewController {
     
     func setupAccount() -> Void {
         // 2: get ID
-        //getBitmojiAccessToken(email: username.stringValue, password: password.stringValue)
+        //AppHelper.shared.getBitmojiAccessToken(email: username.stringValue, password: password.stringValue)
         // 3: get avatar ID
-        //getAvatarID()
+        //AppHelper.shared.getAvatarID()
         // 4: cache images
-        getTemplates()
+        AppHelper.shared.getTemplates()
         // 5: go show images
-        
     }
     
-    // MARK: HELPER
+    // MARK: DELEGATES
     
-    func getBitmojiAccessToken(email : String, password : String) -> Void {
-        let semaphore = DispatchSemaphore (value: 0)
-        
-        let parameters = "client_id=imoji&username=\(email)&password=\(password)&client_secret=secret&grant_type=password"
-        let postData =  parameters.data(using: .utf8)
-        
-        var request = URLRequest(url: URL(string: EndPoints.LoginURL)!,timeoutInterval: Double.infinity)
-        request.addValue(EndPoints.RefererURL, forHTTPHeaderField: "Referer")
-        request.addValue(EndPoints.HostURL, forHTTPHeaderField: "Host")
-        request.addValue(EndPoints.OriginURL, forHTTPHeaderField: "Origin")
-        request.addValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
-        
-        request.httpMethod = "POST"
-        request.httpBody = postData
-        
-        let task = URLSession.shared.dataTask(with: request) { data, response, error in
-            guard let data = data else {
-                self.errorLabel.stringValue = String(describing: error)
-                return
-            }
-            // print(String(data: data, encoding: .utf8)!)
-            do {
-                let jsonWithObjectRoot = try JSONSerialization.jsonObject(with: data, options: [])
-                if let dictionary = jsonWithObjectRoot as? [String: Any] {
-                    if let token = dictionary["access_token"] as? String {
-                        UserDefaults.standard.set(token, forKey: "bitmoji-token")
-                        self.errorLabel.stringValue = "Token acquired."
-                    }
-                }
-            } catch let error {
-                self.errorLabel.stringValue = error.localizedDescription
-            }
-            semaphore.signal()
+    func showMessage(message: String) {
+        DispatchQueue.main.async {
+            AppHelper.shared.fadeViewInThenOut(view: self.errorLabel, delay: 5.0)
+            self.errorLabel.stringValue = "ℹ️ \(message)"
         }
-        
-        task.resume()
-        semaphore.wait()
     }
     
-    func getAvatarID() -> Void {
-        let bitmoji_token = UserDefaults.standard.string(forKey: "bitmoji-token")!
-        let semaphore = DispatchSemaphore (value: 0)
-
-        var request = URLRequest(url: URL(string: EndPoints.AvatarURL)!,timeoutInterval: Double.infinity)
-        request.addValue(bitmoji_token, forHTTPHeaderField: "bitmoji-token")
-        request.addValue("bitmoji_bsauth_token=\(bitmoji_token)", forHTTPHeaderField: "Cookie")
-
-        request.httpMethod = "GET"
-
-        let task = URLSession.shared.dataTask(with: request) { data, response, error in
-          guard let data = data else {
-            self.errorLabel.stringValue = String(describing: error)
-            return
-          }
-          do {
-              let jsonWithObjectRoot = try JSONSerialization.jsonObject(with: data, options: [])
-              if let dictionary = jsonWithObjectRoot as? [String: Any] {
-                  if let token = dictionary["avatar_version_uuid"] as? String {
-                      UserDefaults.standard.set(token, forKey: "avatar_version_uuid")
-                      self.errorLabel.stringValue = "Avatar ID acquired."
-                  }
-              }
-          } catch let error {
-              self.errorLabel.stringValue = error.localizedDescription
-          }
-          semaphore.signal()
+    func showError(message: Error) {
+        DispatchQueue.main.async {
+            AppHelper.shared.fadeViewInThenOut(view: self.errorLabel, delay: 5.0)
+            self.errorLabel.stringValue = "🤦🏻‍♀️ \(message.localizedDescription)"
         }
-
-        task.resume()
-        semaphore.wait()
-    }
-    
-    func getTemplates() -> Void {
-
-        let semaphore = DispatchSemaphore (value: 0)
-
-        var request = URLRequest(url: URL(string: EndPoints.TemplatesURL)!,timeoutInterval: Double.infinity)
-        request.httpMethod = "GET"
-
-        let task = URLSession.shared.dataTask(with: request) { data, response, error in
-          guard let data = data else {
-            self.errorLabel.stringValue = String(describing: error)
-            return
-          }
-          do {
-            let jsonWithObjectRoot = try JSONSerialization.jsonObject(with: data, options: [])
-              if let dictionary = jsonWithObjectRoot as? [String: Any] {
-                for(key, value) in dictionary {
-                    print("key: \(key)")
-                    print("value: \(value)")
-                }
-              }
-          } catch let error {
-            self.errorLabel.stringValue = error.localizedDescription
-          }
-          semaphore.signal()
-        }
-
-        task.resume()
-        semaphore.wait()
-
-    }
-    
-    fileprivate func directoryExistsAtPath(_ path: String) -> Bool {
-        var isDirectory = ObjCBool(true)
-        let exists = FileManager.default.fileExists(atPath: path, isDirectory: &isDirectory)
-        return exists && isDirectory.boolValue
     }
 }
-

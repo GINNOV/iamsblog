@@ -18,6 +18,9 @@
 		AC3228DB243D434A009AC42B /* PhotoHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC3228DA243D434A009AC42B /* PhotoHelper.swift */; };
 		ACBD0C85243E6635009784B0 /* Templates.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACBD0C84243E6635009784B0 /* Templates.swift */; };
 		ACC1DB3D243FF84600D7614C /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACC1DB3C243FF84600D7614C /* Constants.swift */; };
+		ACC1DB3F244004DB00D7614C /* AppShared.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACC1DB3E244004DB00D7614C /* AppShared.swift */; };
+		ACC1DB412440069C00D7614C /* readme.md in Resources */ = {isa = PBXBuildFile; fileRef = ACC1DB402440069C00D7614C /* readme.md */; };
+		ACC1DB432440088200D7614C /* Protocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACC1DB422440088200D7614C /* Protocols.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -35,6 +38,9 @@
 		AC3228DA243D434A009AC42B /* PhotoHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoHelper.swift; sourceTree = "<group>"; };
 		ACBD0C84243E6635009784B0 /* Templates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Templates.swift; sourceTree = "<group>"; };
 		ACC1DB3C243FF84600D7614C /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		ACC1DB3E244004DB00D7614C /* AppShared.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppShared.swift; sourceTree = "<group>"; };
+		ACC1DB402440069C00D7614C /* readme.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = readme.md; sourceTree = "<group>"; };
+		ACC1DB422440088200D7614C /* Protocols.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Protocols.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -78,6 +84,9 @@
 				AC3228DA243D434A009AC42B /* PhotoHelper.swift */,
 				ACBD0C84243E6635009784B0 /* Templates.swift */,
 				ACC1DB3C243FF84600D7614C /* Constants.swift */,
+				ACC1DB3E244004DB00D7614C /* AppShared.swift */,
+				ACC1DB402440069C00D7614C /* readme.md */,
+				ACC1DB422440088200D7614C /* Protocols.swift */,
 			);
 			path = macBitmoji;
 			sourceTree = "<group>";
@@ -160,6 +169,7 @@
 			files = (
 				AC3228C7243D37BE009AC42B /* Assets.xcassets in Resources */,
 				AC3228D7243D3ECF009AC42B /* PhotoItem.xib in Resources */,
+				ACC1DB412440069C00D7614C /* readme.md in Resources */,
 				AC3228CA243D37BE009AC42B /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -176,9 +186,11 @@
 				AC3228C5243D37BD009AC42B /* Login.swift in Sources */,
 				AC3228C3243D37BD009AC42B /* AppDelegate.swift in Sources */,
 				ACBD0C85243E6635009784B0 /* Templates.swift in Sources */,
+				ACC1DB432440088200D7614C /* Protocols.swift in Sources */,
 				AC3228DB243D434A009AC42B /* PhotoHelper.swift in Sources */,
 				AC3228D6243D3ECF009AC42B /* PhotoItem.swift in Sources */,
 				ACC1DB3D243FF84600D7614C /* Constants.swift in Sources */,
+				ACC1DB3F244004DB00D7614C /* AppShared.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
