@@ -1,3 +1,8 @@
+// Working from Home Extension for Chrome desktop
+// You can change the color of your HUE lights based on your Google calendar settings
+// IAMSENSORIA.COM BLOG - SOURCE CODE
+//
+
 let changeColor = document.getElementById('changeColor');
 let autoDetectInvites = document.getElementById('autoDetectInvites');
 
@@ -31,7 +36,7 @@ changeColor.onclick = function(element) {
   });
 
   $(document).ready(function() {
-        var apiBaseUrl  = "http://192.168.86.84/api/TY3DAV1lO43IKmscVCdsOQZxAORrIvJURTVwoevE";
+        var apiBaseUrl  = "bridge ip plus userid for registered device here";  //http://192.x.x.x/API/token_here
      
         // onLoad
         $.getJSON(apiBaseUrl, function(data) {

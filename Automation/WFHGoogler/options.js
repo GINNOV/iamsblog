@@ -26,7 +26,7 @@ function setup() {
   });
 
   $(document).ready(function() {
-  var apiBaseUrl = "http://192.168.86.84/api";
+  var apiBaseUrl = "http://YOUR_HUE_BRIDGE_IP_HERE/api";
 
   $("#registerHue").click(function(){
     var settings = {
