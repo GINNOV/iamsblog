@@ -1,5 +1,5 @@
 #macBitmoji
-a very basic addon for macOS that allows you to retrieve your customized avatars from any app even if you don't have your browser running.
+a very basic addon for macOS that allows you to retrieve your customized avatars from any app even if you don't have your browser running. 
 
 ##Why I built this?
 A few reasons starting with a good excuse to write my first macOS app. With ObjC I always felt that it was a lot of work to put any basic app together. With Swift and lots of paradigms much closer to iOS I figured that this was the right time.
@@ -22,3 +22,4 @@ To learn what to do what I wanted to do, I did research that hit the following g
 * https://stackoverflow.com/questions/33572444/how-do-i-add-settings-to-my-cocoa-application-in-swift
 * https://developer.apple.com/swift/blog/?id=37
 * https://bluelemonbits.com/2016/12/19/simple-animations-on-macos-swift-3/
+* https://medium.com/swift2go/building-safe-url-in-swift-using-urlcomponents-and-urlqueryitem-alfian-losari-510a7b1f3c7e

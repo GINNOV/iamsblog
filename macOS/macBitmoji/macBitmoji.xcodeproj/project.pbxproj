@@ -3,10 +3,12 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AC25BD982457BBD400BDF226 /* Bits.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC25BD972457BBD400BDF226 /* Bits.swift */; };
+		AC25BD9A2457BF1A00BDF226 /* Protocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC25BD992457BF1A00BDF226 /* Protocols.swift */; };
 		AC3228C3243D37BD009AC42B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC3228C2243D37BD009AC42B /* AppDelegate.swift */; };
 		AC3228C5243D37BD009AC42B /* Login.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC3228C4243D37BD009AC42B /* Login.swift */; };
 		AC3228C7243D37BE009AC42B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AC3228C6243D37BE009AC42B /* Assets.xcassets */; };
@@ -16,14 +18,14 @@
 		AC3228D7243D3ECF009AC42B /* PhotoItem.xib in Resources */ = {isa = PBXBuildFile; fileRef = AC3228D5243D3ECF009AC42B /* PhotoItem.xib */; };
 		AC3228D9243D4317009AC42B /* PhotoInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC3228D8243D4317009AC42B /* PhotoInfo.swift */; };
 		AC3228DB243D434A009AC42B /* PhotoHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC3228DA243D434A009AC42B /* PhotoHelper.swift */; };
-		ACBD0C85243E6635009784B0 /* Templates.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACBD0C84243E6635009784B0 /* Templates.swift */; };
+		AC7D2A6324774D7A007B1291 /* Logging in Frameworks */ = {isa = PBXBuildFile; productRef = AC7D2A6224774D7A007B1291 /* Logging */; };
 		ACC1DB3D243FF84600D7614C /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACC1DB3C243FF84600D7614C /* Constants.swift */; };
-		ACC1DB3F244004DB00D7614C /* AppShared.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACC1DB3E244004DB00D7614C /* AppShared.swift */; };
-		ACC1DB432440088200D7614C /* Protocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACC1DB422440088200D7614C /* Protocols.swift */; };
-		ACC1DB452440140900D7614C /* readme.md in Resources */ = {isa = PBXBuildFile; fileRef = ACC1DB442440140900D7614C /* readme.md */; };
+		ACC1DB3F244004DB00D7614C /* AppHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACC1DB3E244004DB00D7614C /* AppHelper.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		AC25BD972457BBD400BDF226 /* Bits.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bits.swift; sourceTree = "<group>"; };
+		AC25BD992457BF1A00BDF226 /* Protocols.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Protocols.swift; sourceTree = "<group>"; };
 		AC3228BF243D37BD009AC42B /* macBitmoji.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = macBitmoji.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AC3228C2243D37BD009AC42B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		AC3228C4243D37BD009AC42B /* Login.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Login.swift; sourceTree = "<group>"; };
@@ -36,11 +38,8 @@
 		AC3228D5243D3ECF009AC42B /* PhotoItem.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = PhotoItem.xib; sourceTree = "<group>"; };
 		AC3228D8243D4317009AC42B /* PhotoInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoInfo.swift; sourceTree = "<group>"; };
 		AC3228DA243D434A009AC42B /* PhotoHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoHelper.swift; sourceTree = "<group>"; };
-		ACBD0C84243E6635009784B0 /* Templates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Templates.swift; sourceTree = "<group>"; };
 		ACC1DB3C243FF84600D7614C /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
-		ACC1DB3E244004DB00D7614C /* AppShared.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppShared.swift; sourceTree = "<group>"; };
-		ACC1DB422440088200D7614C /* Protocols.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Protocols.swift; sourceTree = "<group>"; };
-		ACC1DB442440140900D7614C /* readme.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = readme.md; sourceTree = "<group>"; };
+		ACC1DB3E244004DB00D7614C /* AppHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppHelper.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -48,6 +47,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AC7D2A6324774D7A007B1291 /* Logging in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -57,7 +57,6 @@
 		AC3228B6243D37BD009AC42B = {
 			isa = PBXGroup;
 			children = (
-				ACC1DB442440140900D7614C /* readme.md */,
 				AC3228C1243D37BD009AC42B /* macBitmoji */,
 				AC3228C0243D37BD009AC42B /* Products */,
 			);
@@ -75,38 +74,54 @@
 			isa = PBXGroup;
 			children = (
 				AC3228C2243D37BD009AC42B /* AppDelegate.swift */,
-				AC3228DD243D43A9009AC42B /* UI */,
+				AC3228DD243D43A9009AC42B /* Controllers */,
 				AC3228C6243D37BE009AC42B /* Assets.xcassets */,
 				AC3228C8243D37BE009AC42B /* Main.storyboard */,
 				AC3228CB243D37BE009AC42B /* Info.plist */,
 				AC3228CC243D37BE009AC42B /* macBitmoji.entitlements */,
-				AC3228DC243D438C009AC42B /* Item */,
-				AC3228D8243D4317009AC42B /* PhotoInfo.swift */,
-				AC3228DA243D434A009AC42B /* PhotoHelper.swift */,
-				ACBD0C84243E6635009784B0 /* Templates.swift */,
-				ACC1DB3C243FF84600D7614C /* Constants.swift */,
-				ACC1DB3E244004DB00D7614C /* AppShared.swift */,
-				ACC1DB422440088200D7614C /* Protocols.swift */,
+				ACC1DB472440159000D7614C /* Models */,
+				ACC1DB462440156E00D7614C /* Shared */,
 			);
 			path = macBitmoji;
 			sourceTree = "<group>";
 		};
-		AC3228DC243D438C009AC42B /* Item */ = {
+		AC3228DC243D438C009AC42B /* Collection Item */ = {
 			isa = PBXGroup;
 			children = (
 				AC3228D4243D3ECF009AC42B /* PhotoItem.swift */,
 				AC3228D5243D3ECF009AC42B /* PhotoItem.xib */,
 			);
-			path = Item;
+			path = "Collection Item";
 			sourceTree = "<group>";
 		};
-		AC3228DD243D43A9009AC42B /* UI */ = {
+		AC3228DD243D43A9009AC42B /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				AC3228DC243D438C009AC42B /* Collection Item */,
 				AC3228C4243D37BD009AC42B /* Login.swift */,
 				AC3228D2243D3C5E009AC42B /* Catalog.swift */,
 			);
-			path = UI;
+			path = Controllers;
+			sourceTree = "<group>";
+		};
+		ACC1DB462440156E00D7614C /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				AC25BD992457BF1A00BDF226 /* Protocols.swift */,
+				AC3228DA243D434A009AC42B /* PhotoHelper.swift */,
+				ACC1DB3C243FF84600D7614C /* Constants.swift */,
+				ACC1DB3E244004DB00D7614C /* AppHelper.swift */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		ACC1DB472440159000D7614C /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				AC3228D8243D4317009AC42B /* PhotoInfo.swift */,
+				AC25BD972457BBD400BDF226 /* Bits.swift */,
+			);
+			path = Models;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -125,6 +140,9 @@
 			dependencies = (
 			);
 			name = macBitmoji;
+			packageProductDependencies = (
+				AC7D2A6224774D7A007B1291 /* Logging */,
+			);
 			productName = macBitmoji;
 			productReference = AC3228BF243D37BD009AC42B /* macBitmoji.app */;
 			productType = "com.apple.product-type.application";
@@ -136,7 +154,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 1140;
-				LastUpgradeCheck = 1140;
+				LastUpgradeCheck = 1150;
 				ORGANIZATIONNAME = "IENA WHITE";
 				TargetAttributes = {
 					AC3228BE243D37BD009AC42B = {
@@ -153,6 +171,9 @@
 				Base,
 			);
 			mainGroup = AC3228B6243D37BD009AC42B;
+			packageReferences = (
+				AC7D2A6124774D7A007B1291 /* XCRemoteSwiftPackageReference "swift-log" */,
+			);
 			productRefGroup = AC3228C0243D37BD009AC42B /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -169,7 +190,6 @@
 			files = (
 				AC3228C7243D37BE009AC42B /* Assets.xcassets in Resources */,
 				AC3228D7243D3ECF009AC42B /* PhotoItem.xib in Resources */,
-				ACC1DB452440140900D7614C /* readme.md in Resources */,
 				AC3228CA243D37BE009AC42B /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -183,14 +203,14 @@
 			files = (
 				AC3228D3243D3C5E009AC42B /* Catalog.swift in Sources */,
 				AC3228D9243D4317009AC42B /* PhotoInfo.swift in Sources */,
+				AC25BD982457BBD400BDF226 /* Bits.swift in Sources */,
+				AC25BD9A2457BF1A00BDF226 /* Protocols.swift in Sources */,
 				AC3228C5243D37BD009AC42B /* Login.swift in Sources */,
 				AC3228C3243D37BD009AC42B /* AppDelegate.swift in Sources */,
-				ACBD0C85243E6635009784B0 /* Templates.swift in Sources */,
-				ACC1DB432440088200D7614C /* Protocols.swift in Sources */,
 				AC3228DB243D434A009AC42B /* PhotoHelper.swift in Sources */,
 				AC3228D6243D3ECF009AC42B /* PhotoItem.swift in Sources */,
 				ACC1DB3D243FF84600D7614C /* Constants.swift in Sources */,
-				ACC1DB3F244004DB00D7614C /* AppShared.swift in Sources */,
+				ACC1DB3F244004DB00D7614C /* AppHelper.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -326,6 +346,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = macBitmoji/macBitmoji.entitlements;
+				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = 4G38V92ED7;
@@ -346,6 +367,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = macBitmoji/macBitmoji.entitlements;
+				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = 4G38V92ED7;
@@ -383,6 +405,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		AC7D2A6124774D7A007B1291 /* XCRemoteSwiftPackageReference "swift-log" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-log.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.2.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		AC7D2A6224774D7A007B1291 /* Logging */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AC7D2A6124774D7A007B1291 /* XCRemoteSwiftPackageReference "swift-log" */;
+			productName = Logging;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = AC3228B7243D37BD009AC42B /* Project object */;
 }
