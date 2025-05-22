@@ -1,11 +1,8 @@
-# BLOG CODE SNIPPETS
-Repository for code fragments or small projects posted on <a href="http://iamsensoria.com">I Am Sensoria</a> blog.
+# One man's junk is another man’s treasure
 
-Every code snippet/samples comes with a reference to a specific blog post, if you see it missing or have suggestion please file an issue and I will take a look.
+I have skills, passions and hobbies across multiple spaces.
 
-There's no actual order or logic to the folder as it was not (originally) meant to be navigationally friendly since the entry point is the blog. 
+I make stuff for myself and if in the process I realize that someone else could have an adrenaline shot at the end of long Google search, I share as is, no frills.
 
-I added a readme for each folder to ease the search of content. 
-
-Thanks for stopping by!
+I hope, today, that's you.
 ;mE
