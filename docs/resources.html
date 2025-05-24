@@ -1,0 +1,92 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resources - Amiga Dev Hub</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1>Amiga Dev Hub</h1>
+            <button class="menu-toggle"><i class="fas fa-bars"></i></button>
+        </div>
+        <nav class="sidebar">
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="resources.html" class="active">Resources</a></li>
+                <li><a href="about.html">About</a></li>
+            </ul>
+            <button id="theme-toggle">Dark Mode</button>
+        </nav>
+    </header>
+    <main>
+        <section>
+            <h2>Developer Resources</h2>
+            <p>A curated collection of tools, emulators, and communities for Amiga developers.</p>
+            <h3>Compilers & Tools</h3>
+            <ul>
+                <li><a href="https://github.com/bebbo/amiga-gcc">amiga-gcc</a>: GCC cross-compiler for m68k Amiga development.</li>
+                <li><a href="http://www.sasg.com/vbcc/">VBCC</a>: Optimizing C compiler for Amiga systems.</li>
+                <li><a href="https://github.com/dirkwhoffmann/vAmiga">vAmiga</a>: User-friendly Amiga 500/1000/2000 emulator for macOS. <a href="https://dirkwhoffmann.github.io/vAmiga/">Website</a>.</li>
+                <li><a href="https://fs-uae.net/">FS-UAE</a>: Cross-platform Amiga emulator with a focus on accuracy.</li>
+            </ul>
+            <h3>Documentation & Tutorials</h3>
+            <ul>
+                <li><a href="http://amigadev.elowar.com/">Amiga Developer Docs</a>: Official AmigaOS programming documentation.</li>
+                <li><a href="https://www.amigacoding.com/">Amiga Coding</a>: Tutorials for 68k assembly and C programming.</li>
+            </ul>
+            <h3>Communities</h3>
+            <ul>
+                <li><a href="https://eab.abime.net/">English Amiga Board</a>: Active forum for developers and enthusiasts.</li>
+                <li><a href="https://www.amiga.org/forums/">Amiga.org</a>: Community for Amiga support and discussions.</li>
+            </ul>
+        </section>
+    </main>
+    <footer>
+        <p>© 2025 Amiga Dev Hub. Built for the Amiga developer community.</p>
+    </footer>
+    <script src="script.js"></script>
+</body>
+</html>
