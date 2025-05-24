@@ -1,76 +1,99 @@
-<script type="text/javascript">
-        var gk_isXlsx = false;
-        var gk_xlsxFileLookup = {};
-        var gk_fileData = {};
-        function filledCell(cell) {
-          return cell !== '' && cell != null;
-        }
-        function loadFileData(filename) {
-        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
-            try {
-                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
-                var firstSheetName = workbook.SheetNames[0];
-                var worksheet = workbook.Sheets[firstSheetName];
-
-                // Convert sheet to JSON to filter blank rows
-                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
-                // Filter out blank rows (rows where all cells are empty, null, or undefined)
-                var filteredData = jsonData.filter(row => row.some(filledCell));
-
-                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
-                var headerRowIndex = filteredData.findIndex((row, index) =>
-                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
-                );
-                // Fallback
-                if (headerRowIndex === -1 || headerRowIndex > 25) {
-                  headerRowIndex = 0;
-                }
-
-                // Convert filtered JSON back to CSV
-                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
-                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
-                return csv;
-            } catch (e) {
-                console.error(e);
-                return "";
-            }
-        }
-        return gk_fileData[filename] || "";
-        }
-        </script><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Amiga Dev Hub</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-</head>
-<body>
-    <header>
-        <div class="header-content">
-            <h1>Amiga Dev Hub</h1>
-            <button class="menu-toggle"><i class="fas fa-bars"></i></button>
-        </div>
-        <nav class="sidebar">
-            <ul>
-                <li><a href="index.html" class="active">Home</a></li>
-                <li><a href="resources.html">Resources</a></li>
-                <li><a href="about.html">About</a></li>
-            </ul>
-            <button id="theme-toggle">Dark Mode</button>
-        </nav>
-    </header>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Projects - Back to Amiga Dev Hub</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+  </head>
+  <body class="dark-theme projects-page-dark-theme">
+    
+    <div id="header-placeholder"></div>
+
     <main>
-        <section>
-            <h2>Welcome to the Amiga Dev Hub</h2>
-            <p>The Commodore Amiga is a legendary platform that revolutionized computing with its advanced graphics, sound, and multitasking. This site is dedicated to developers who share a passion for coding on the Amiga, whether in 68k assembly, C, or modern AmigaOS.</p>
-            <p>Explore our <a href="resources.html">Resources</a> page for tools like compilers, emulators, and documentation, or learn more <a href="about.html">About</a> my journey with the Amiga. Join the community and keep the Amiga spirit alive!</p>
-        </section>
+      <section class="text-center mb-16">
+        <img
+          src="./images/projects-header.jpg"
+          alt="Project Showcase"
+          class="projects-title-image"
+          onerror="this.onerror=null;this.src='https://placehold.co/700x150/0F172A/FF8800?text=PROJECT+SHOWCASE&font=press-start-2p';this.alt='Project Showcase';"
+        />
+      </section>
+
+      <article class="project-card">
+        <div class="md-img-container">
+          <img
+            src="./images/tools/send2adf.png"
+            onerror="this.onerror=null;this.src='https://placehold.co/600x350/0F172A/FF8800?text=send+to+ADF&font=press-start-2p';this.alt='send to ADF';"
+            alt="send to ADF"
+            class="project-image"
+          />
+        </div>
+        <div class="md-text-container">
+          <h3>send to ADF</h3>
+          <p>
+            <b>need:</b> Quite often I find myself to test out a demo that I baked from source code. 
+            Resources, additional pieces needed to make it run. Often I do those things from command
+            line. I know about xdftool but I wanted something more independent that the whole amitools package.
+            </p> 
+            <p>
+            <br><b>solution:</b> send2adf, it's a C based tool that you can keep in your /usr/local/bin folder
+            and leverage at any time to create a disk image on the fly from your terminal window.
+          </p>
+          <div class="project-button-container">
+            <a href="#" class="download-button project-button">
+              <i class="fas fa-download"></i>Download
+            </a>
+            <a href="#" class="source-button project-button">
+              <i class="fab fa-github"></i>Source Code
+            </a>
+             <a href="#" class="learn-button project-button">
+              <i class="fas fa-book"></i>Learn More
+            </a>
+          </div>
+        </div>
+      </article>
+
+      <article class="project-card reverse">
+        <div class="md-img-container">
+          <img
+            src="./images/tools/adf-finder.png"
+            onerror="this.onerror=null;this.src='https://placehold.co/600x350/0F172A/FF8800?text=ADF+Finder&font=press-start-2p';this.alt='ADF Finder';"
+            alt="ADF Finder"
+            class="project-image"
+          />
+        </div>
+        <div class="md-text-container">
+          <h3>ADF.inder</h3>
+          <p>
+            <b>need:</b> found many tools out there that do amazing things with ADF files, but I wanted something that
+            would allow me the same operations that you normally do with a file system on a macOS but with a GUI.
+            </p> 
+            <p>
+            <br><b>solution:</b> ADF.inder allows you to browse ADF files, look at their content in a quickview style and much more.
+          </p>
+          <div class="project-button-container">
+            <a href="#" class="download-button project-button">
+              <i class="fas fa-download"></i>Download
+            </a>
+            <a href="#" class="source-button project-button">
+              <i class="fab fa-github"></i>Source Code
+            </a>
+            <a href="#" class="learn-button project-button">
+              <i class="fas fa-book"></i>Learn More
+            </a>
+          </div>
+        </div>
+      </article>
     </main>
-    <footer>
-        <p>© 2025 Amiga Dev Hub. Built for the Amiga developer community.</p>
-    </footer>
-    <script src="script.js"></script>
-</body>
+
+    <div id="footer-placeholder"></div>
+
+    <script src="_load-header-footer.js"></script>
+    </body>
 </html>
