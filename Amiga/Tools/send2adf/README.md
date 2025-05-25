@@ -59,34 +59,6 @@ send2adf -o <output.adf> -N  [-v|-vv] <file_or_dir1> [file_or_dir2 ...]
     ./send2adf -h
     ```
 
-## How it Works (Internally)
-
-1.  **Initialization**:
-    * Parses command-line arguments.
-    * Initializes the ADFlib environment.
-    * Adds the "dump" device driver (used by ADFlib to treat a host file as a block device).
-2.  **ADF Creation**:
-    * Creates a new device representation for the output ADF file (`adfDevCreate`).
-    * Formats this device as an Amiga floppy disk with the specified volume name and OFS filesystem (`adfCreateFlop`).
-3.  **Mounting**:
-    * Mounts the newly created device (`adfDevMount`).
-    * Mounts the primary volume (partition 0) from the device to make it active (`adfVolMount`).
-4.  **Adding Files/Directories**:
-    * For each host file/directory provided:
-        * Resets the ADF's current directory to the root (`adfToRootDir`).
-        * **If it's a file**: Adds it directly to the current ADF directory (root) using `adfFileOpen` and `adfFileWrite`.
-        * **If it's a directory**:
-            * Creates the top-level directory in the current ADF directory (root) using `adfCreateDir`.
-            * Changes the ADF's current directory into this new directory (`adfChangeDir`).
-            * Recursively processes the host directory's contents:
-                * Subdirectories are created using `adfCreateDir` in the current ADF directory.
-                * The ADF current directory is changed into new subdirectories (`adfChangeDir`) before further recursion and changed back to the parent (`adfParentDir`) afterwards.
-                * Files are added using `adfFileOpen` and `adfFileWrite` in the current ADF directory.
-5.  **Cleanup**:
-    * Unmounts the volume and device.
-    * Closes the device.
-    * Cleans up the ADFlib environment.
-
 ## Notes for Developers
 
 * The directory recursion uses POSIX-standard functions (`dirent.h`, `sys/stat.h`).
@@ -96,7 +68,7 @@ send2adf -o <output.adf> -N  [-v|-vv] <file_or_dir1> [file_or_dir2 ...]
 
 ## License
 
-The `file2adf` tool is licensed under the **GNU General Public License v3.0 (GPLv3)**. This is in line with its dependency, ADFlib, which is also typically licensed under the GPL. You can find a copy of the GPLv3 license [here](https://www.gnu.org/licenses/gpl-3.0.en.html) or in a `LICENSE` file accompanying this project.
+The `send2adf` tool is licensed under the **GNU General Public License v3.0 (GPLv3)**. This is in line with its dependency, ADFlib, which is also typically licensed under the GPL. You can find a copy of the GPLv3 license [here](https://www.gnu.org/licenses/gpl-3.0.en.html) or in a `LICENSE` file accompanying this project.
 
 Under the GPL, you are free to use, study, share, and modify the software. This includes commercial use.
 

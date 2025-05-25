@@ -1,19 +1,48 @@
-## **The Journey to a Working `file2adf.c`**
+## **The Journey to a Working `send2adf.c`**
 
-Creating a program that interacts with a library like [ADFLib](https://github.com/adflib/ADFlib/tree/v0.10.2/examples), especially when dealing with low-level disk image manipulation is something that I have never done. The successful creation of `file2adf.c` was a testament of patience and learning on the spot. 
+Creating a program that interacts with a library like [ADFLib](https://github.com/adflib/ADFlib/tree/v0.10.2/examples), especially when dealing with low-level disk image manipulation is something that I have never done. The successful creation of `send2adf.c` was a testament of patience and learning on the spot. 
 
 The only reason why I started this journey was because I wanted a quick way to test amiga code via vAmiga. I know that amitools offers **xdftool** but I wanted to have more control and possibly expanding it over time.
 
 Naturally I did a search to see if anyone had already done something and I found this [repo](https://github.com/troydm/file2adf) but it didn't work. It compiled but wasn't mounting the disk and failing with an error that I couldn't trace.
 
-## The story of how I got it to work
+## How it Works (Internally)
+
+1.  **Initialization**:
+    * Parses command-line arguments.
+    * Initializes the ADFlib environment.
+    * Adds the "dump" device driver (used by ADFlib to treat a host file as a block device).
+2.  **ADF Creation**:
+    * Creates a new device representation for the output ADF file (`adfDevCreate`).
+    * Formats this device as an Amiga floppy disk with the specified volume name and OFS filesystem (`adfCreateFlop`).
+3.  **Mounting**:
+    * Mounts the newly created device (`adfDevMount`).
+    * Mounts the primary volume (partition 0) from the device to make it active (`adfVolMount`).
+4.  **Adding Files/Directories**:
+    * For each host file/directory provided:
+        * Resets the ADF's current directory to the root (`adfToRootDir`).
+        * **If it's a file**: Adds it directly to the current ADF directory (root) using `adfFileOpen` and `adfFileWrite`.
+        * **If it's a directory**:
+            * Creates the top-level directory in the current ADF directory (root) using `adfCreateDir`.
+            * Changes the ADF's current directory into this new directory (`adfChangeDir`).
+            * Recursively processes the host directory's contents:
+                * Subdirectories are created using `adfCreateDir` in the current ADF directory.
+                * The ADF current directory is changed into new subdirectories (`adfChangeDir`) before further recursion and changed back to the parent (`adfParentDir`) afterwards.
+                * Files are added using `adfFileOpen` and `adfFileWrite` in the current ADF directory.
+5.  **Cleanup**:
+    * Unmounts the volume and device.
+    * Closes the device.
+    * Cleans up the ADFlib environment.
+
+
+## The details of how I got it to work
 This will be likely boring material to the most but just in case you are me in the future, struggling to find something that no AI had figure out, here's a summary of the issues we (my kitty helped...) encountered and how they were addressed:
 
 ### **1\. Initial Compilation Hurdles**
 
 * **Missing Header Declarations**: Early on, many errors were due to the C compiler not finding the declarations for ADFLib functions (e.g., `adfInit`, `adfCreateDumpDevice`, `FS_OFS`). This was resolved by:  
   * Ensuring the Makefile's include paths (`-I/usr/local/adflib/include/adf`) were correct.  
-  * Systematically adding the necessary individual ADFLib header files (e.g., `adflib.h`, `adf_env.h`, `adf_dev.h`, `adf_vol.h`, `adf_file.h`, `adf_blk.h`, `adf_types.h`, `adf_err.h`, `adf_dev_driver_dump.h`, `adf_dev_drivers.h`, `adf_dev_flop.h`) to `file2adf.c`. This ensured all function prototypes, structure definitions, and constants were visible to the compiler.  
+  * Systematically adding the necessary individual ADFLib header files (e.g., `adflib.h`, `adf_env.h`, `adf_dev.h`, `adf_vol.h`, `adf_file.h`, `adf_blk.h`, `adf_types.h`, `adf_err.h`, `adf_dev_driver_dump.h`, `adf_dev_drivers.h`, `adf_dev_flop.h`) to `send2adf.c`. This ensured all function prototypes, structure definitions, and constants were visible to the compiler.  
 * **Incorrect Function Arguments/Types**: We also adjusted arguments for functions like `adfFileWrite` (ensuring correct parameter order and types) and used the correct structure types (e.g., `struct AdfFile`). The filesystem type constant for OFS was identified as `ADF_DOSFS_OFS` (defined in `adf_blk.h`). The file opening mode was corrected to use the `AdfFileMode` enum (e.g., `ADF_FILE_MODE_WRITE`).
 
 ### **2\. Runtime: Device Creation Failures (`adfDevCreate`)**
@@ -40,7 +69,7 @@ This was the most complex part. Once the device (ADF file) was created, making t
 
 ### **How the Working Code Operates:**
 
-The final, successful version of `file2adf.c` follows this robust sequence:
+The final, successful version of `send2adf.c` follows this robust sequence:
 
 1. **Initialization**:  
    * `adfLibInit()`: Initializes the core ADFLib library.  
