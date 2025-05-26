@@ -4,7 +4,7 @@ I found myself wanting to work on an ADF image in the same way modern computers 
 
 macOS spoils users with the easy going user interface and I didn't find any tool out there that would offer the rich experience and being compatible with the need of an amiga engineer.
 
-So I start building it. More details [here](https://ginnov.github.io/littlethings/)
+So I start building it. Details and pre-built app are [here](https://ginnov.github.io/littlethings/)
 
 ## Features List (aka wishlist)
 
