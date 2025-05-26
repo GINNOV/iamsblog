@@ -6,6 +6,6 @@ just run this command `xattr -rc ~/Downloads/ADFinder.app`
 
 **GUI**: Sentil is a great app for managing the quarantine and signing. Free to use. It's [here](https://github.com/alienator88/Sentinel).
 
-**Prerefences**: If you know what this means I don't have to explain it how to use it. :-) 
+**Prerefences**: If you know what this means I don't have to explain how to use it. :-) 
 
 Enjoy.
