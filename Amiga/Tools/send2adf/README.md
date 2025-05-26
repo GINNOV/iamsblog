@@ -1,5 +1,6 @@
 # send2adf - Amiga Disk File (ADF) Creation Tool
 
+![](demo_usage.gif)
 `send2adf` is a **command-line** utility for creating Amiga Disk File (.adf) images. It allows you to add multiple files and **directories** from your host system into a new ADF image, preserving directory structures. This tool leverages the [ADFlib](https://github.com/lclevy/ADFlib) library for ADF manipulation. It's for macOS Apple Silicon but it's C so if you know what you have to do, it can work everywhere.
 
 ## Features
