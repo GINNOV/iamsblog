@@ -22,7 +22,7 @@ So I start building it. More details [here](https://ginnov.github.io/littlething
 12.  ✅ Show disk layout, file usage and other stats
 
 # Main Window
-![distribution/shot_ 2025-05-25-1](distribution/shot_ 2025-05-25-1.png)
+![distribution/shot_ 2025-05-25-1](./distribution/shot_ 2025-05-25-1.png)
 
 # Hex Viewer
-![distribution/shot_ 2025-05-25-1](distribution/shot_ 2025-05-25-2.png)
+![distribution/shot_ 2025-05-25-1](./distribution/shot_ 2025-05-25-2.png)

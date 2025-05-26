@@ -1,6 +1,7 @@
 # send2adf - Amiga Disk File (ADF) Creation Tool
+This is part of a suite of tools that I am building for my "back to the amiga dev times". More details [here](https://ginnov.github.io/littlethings/).
 
-![](demo_usage.gif)
+![](docs/demo_usage.gif)
 `send2adf` is a **command-line** utility for creating Amiga Disk File (.adf) images. It allows you to add multiple files and **directories** from your host system into a new ADF image, preserving directory structures. This tool leverages the [ADFlib](https://github.com/lclevy/ADFlib) library for ADF manipulation. It's for macOS Apple Silicon but it's C so if you know what you have to do, it can work everywhere.
 
 ## Features
@@ -15,19 +16,19 @@
 
 ## Dependencies
 
-* **ADFlib**: Without their work I would still cheasiling bits and bytes together. So thank you for  making the [ADFlib](https://github.com/lclevy/ADFlib) folks.
-* The provided Makefile can help clone and build ADFlib if it's not already present in a local `./adflib` directory.
+* **ADFlib**: Without their work I would still cheasiling bits and bytes together. So thank you for making the [ADFlib](https://github.com/lclevy/ADFlib) folks.
+* I provided a Makefile can help clone and build ADFlib if it's not already present in a local `./adflib` directory.
 * A C compiler (e.g., GCC or Clang, Xcode will do it).
 * Standard POSIX build tools (`make`, `autoreconf` for ADFlib).
 
 ## Building
 
-I have provided the compiled version if you don't want to deal with the building of the code but if you do, all you have to do is to launch make and the makefile will do the rest. Including buildng the ADFLib if you don't already have it installed in your /usr/local/bin/adf
+I have provided the [compiled](https://github.com/GINNOV/littlethings/raw/master/Amiga/Tools/releases/send2adf.zip) version if you don't want to deal with the building of the code but if you do, all you have to do is to launch make and the makefile will do the rest. Including buildng the ADFLib if you don't already have it installed in your /usr/local/bin/adf. If you are curious about the details of how to compile the library on your own, I documented it [here](docs/build_adflib.md).
 
 ## Usage
 
 
-send2adf -o <output.adf> -N  [-v|-vv] <file_or_dir1> [file_or_dir2 ...]
+`send2adf -o <output.adf> -N  [-v | -vv] <file_or_dir1> [file_or_dir2 ...]`
 
 
 **Options:**
