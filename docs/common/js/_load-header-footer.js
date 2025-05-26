@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 let navId = '';
                 if (currentPage === 'index.html' || currentPage === '') {
                     navId = 'nav-projects';
-                } else if (currentPage === 'tutorials.html') {
+                } else if (currentPage === 'walkthroughs.html') {
                     navId = 'nav-tutorials';
                 } else if (currentPage === 'resources.html') {
                     navId = 'nav-resources';
