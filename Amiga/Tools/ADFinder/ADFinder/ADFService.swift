@@ -8,17 +8,25 @@
 import Foundation
 import SwiftUI
 
+@_cdecl("swift_log_bridge")
+func swift_log_bridge(msg: UnsafePointer<CChar>?) {
+    guard let msg = msg else { return }
+    let logMessage = String(cString: msg)
+    // Using print's terminator allows the C library's own newline characters to work correctly.
+    print("[ADFLib C-Log]: \(logMessage)", terminator: "")
+}
+
+
 @Observable
 class ADFService {
     private var adfDevice: UnsafeMutablePointer<AdfDevice>?
     private var adfVolume: UnsafeMutablePointer<AdfVolume>?
     private var adflibInitialized = false
 
-    var currentVolumeName: String? // This will be updated by populateDiskInfo
+    var currentVolumeName: String?
     var currentPath: [String] = []
 
-    // Properties for Disk Information (Feature 2)
-    // Initialize with placeholder values
+    // Properties for Disk Information
     var filesystemType: String = "N/A"
     var isBootable: Bool = false
     var volumeLabel: String = "N/A"
@@ -32,6 +40,11 @@ class ADFService {
     init() {
         if adfLibInit() == ADF_RC_OK {
             adflibInitialized = true
+            print("ADFService: ADFLib Initialized OK.")
+            
+            setup_logging()
+            print("ADFService: ADFLib logging redirected to Swift console via C shim.")
+
             if register_dump_driver_helper() != ADF_RC_OK {
                 print("ADFService: Warning - Failed to add dump device driver via helper.")
             }
@@ -41,7 +54,7 @@ class ADFService {
     }
 
     deinit {
-        closeADF() // Ensures resources are freed
+        closeADF()
         if adflibInitialized {
             adfLibCleanUp()
         }
@@ -60,49 +73,49 @@ class ADFService {
         usedSizeString = "N/A"
         freeSizeString = "N/A"
         percentFullString = "N/A"
-        currentVolumeName = nil // Also reset this as it's part of disk info
+        currentVolumeName = nil
     }
 
     func openADF(filePath: String) -> Bool {
         guard adflibInitialized else {
-            print("ADFService: ADFLib not initialized.")
+            print("ADFService: ADFLib not initialized. Cannot open file.")
             return false
         }
-        closeADF() // Resets state including disk info
+        closeADF()
 
         print("ADFService: Attempting to open ADF with path: \"\(filePath)\"")
 
         self.adfDevice = filePath.withCString { cFilePath -> UnsafeMutablePointer<AdfDevice>? in
-            return adfDevOpen(cFilePath, AdfAccessMode(rawValue: UInt32(ACCESS_MODE_READONLY_SWIFT)))
+            return adfDevOpenWithDriver("dump", cFilePath, AdfAccessMode(rawValue: UInt32(ACCESS_MODE_READWRITE_SWIFT)))
         }
 
         if self.adfDevice == nil {
-            print(getADFLibError(context: "adfDevOpen for \"\(filePath)\""))
+            print("ADFService: adfDevOpenWithDriver returned nil. Check C-Log above for details.")
             return false
         }
         
+        print("ADFService: adfDevOpenWithDriver OK. Mounting device...")
         if adfDevMount(self.adfDevice) != ADF_RC_OK {
-            print(getADFLibError(context: "adfDevMount"))
+            print("ADFService: adfDevMount failed. Check C-Log above.")
             adfDevClose(self.adfDevice)
             self.adfDevice = nil
             return false
         }
         
-        // Assuming only one volume (partition 0) for typical ADFs
-        self.adfVolume = adfVolMount(self.adfDevice, 0, AdfAccessMode(rawValue: UInt32(ACCESS_MODE_READONLY_SWIFT)))
+        print("ADFService: adfDevMount OK. Mounting volume 0...")
+        self.adfVolume = adfVolMount(self.adfDevice, 0, AdfAccessMode(rawValue: UInt32(ACCESS_MODE_READWRITE_SWIFT)))
         if self.adfVolume == nil {
-            print(getADFLibError(context: "adfVolMount"))
-            adfDevUnMount(self.adfDevice) // Clean up device if volume mount fails
+            print("ADFService: adfVolMount failed. Check C-Log above.")
+            adfDevUnMount(self.adfDevice)
             adfDevClose(self.adfDevice)
             self.adfDevice = nil
             return false
         }
         
-        currentPath = [] // Reset path for the new disk
-        populateDiskInfo() // Populate disk info after successful mount
+        currentPath = []
+        populateDiskInfo()
 
-        // currentVolumeName is set within populateDiskInfo from the volume's actual label
-        print("ADFService: Successfully opened ADF. Volume: \(self.currentVolumeName ?? "N/A")")
+        print("ADFService: Successfully opened and mounted ADF. Volume: \(self.currentVolumeName ?? "N/A")")
         return true
     }
 
@@ -112,9 +125,8 @@ class ADFService {
             return
         }
 
-        // Filesystem Type
         var fsTempType = ""
-        if adfVolIsFFS(vol) == true { // Explicitly compare with true for clarity
+        if adfVolIsFFS(vol) == true {
             fsTempType = "FFS"
         } else {
             fsTempType = "OFS"
@@ -127,62 +139,52 @@ class ADFService {
         }
         self.filesystemType = fsTempType.trimmingCharacters(in: .whitespaces)
 
-
-        // Volume Label (from AdfVolume struct)
         if let volNameCStr = vol.pointee.volName {
             self.volumeLabel = String(cString: volNameCStr)
         } else {
             self.volumeLabel = "Unnamed"
         }
-        self.currentVolumeName = self.volumeLabel // Keep currentVolumeName consistent
+        self.currentVolumeName = self.volumeLabel
 
-
-        // Bootable status (from BootBlock)
-        var bootBlock = AdfBootBlock() // Note: AdfBootBlock is a C struct
+        var bootBlock = AdfBootBlock()
         if adfReadBootBlock(vol, &bootBlock) == ADF_RC_OK {
-            // A common check for bootable is if dosType starts with "DOS"
-            // The dosType field is char dosType[4];
             let dosTypeBytes = [bootBlock.dosType.0, bootBlock.dosType.1, bootBlock.dosType.2]
-            let dosTypeString = String(cString: dosTypeBytes.map { UInt8(bitPattern: $0) } + [0]) // Ensure null termination for safety
+            let dosTypeString = String(cString: dosTypeBytes.map { UInt8(bitPattern: $0) } + [0])
             isBootable = (dosTypeString == "DOS")
         } else {
             isBootable = false
-            print("ADFService: Failed to read boot block for bootable status.")
+            print("ADFService: Could not read boot block.")
         }
 
-        // Creation Date (from RootBlock)
         let rootBlockSector = adfVolCalcRootBlk(vol)
-        var rootBlock = AdfRootBlock() // Note: AdfRootBlock is a C struct
+        var rootBlock = AdfRootBlock()
         if adfReadRootBlock(vol, UInt32(rootBlockSector), &rootBlock) == ADF_RC_OK {
-            // Using cDays, cMins, cTicks for creation date as per sketch
             var components = DateComponents()
-            components.year = 1978 // Amiga epoch start
+            components.year = 1978
             components.month = 1
             components.day = 1
             
             if let amigaEpoch = Calendar.current.date(from: components) {
                 var totalSeconds = TimeInterval(rootBlock.cDays * 24 * 60 * 60)
                 totalSeconds += TimeInterval(rootBlock.cMins * 60)
-                totalSeconds += TimeInterval(rootBlock.cTicks) / 50.0 // 50 ticks per second
+                totalSeconds += TimeInterval(rootBlock.cTicks) / 50.0
                 let creationDate = amigaEpoch.addingTimeInterval(totalSeconds)
                 
                 let dateFormatter = DateFormatter()
-                dateFormatter.dateFormat = "dd-MMM-yy HH:mm:ss" // e.g., 28-Sep-95 14:54:01
+                dateFormatter.dateFormat = "dd-MMM-yy HH:mm:ss"
                 creationDateString = dateFormatter.string(from: creationDate)
             } else {
                 creationDateString = "Date Calc Error"
             }
         } else {
             creationDateString = "N/A (RootBlock Error)"
-            print("ADFService: Failed to read root block for creation date.")
+            print("ADFService: Failed to read root block.")
         }
 
-        // Size information
-        // adfVolGetSizeInBlocks returns int32_t, adfCountFreeBlocks returns int32_t
-        let totalBlocks = Int64(adfVolGetSizeInBlocks(vol)) // Use Int64 for calculations to avoid overflow
+        let totalBlocks = Int64(adfVolGetSizeInBlocks(vol))
         let freeBlocks = Int64(adfCountFreeBlocks(vol))
         let usedBlocks = totalBlocks - freeBlocks
-        let blockSize = Int64(vol.pointee.datablockSize) // Typically 512
+        let blockSize = Int64(vol.pointee.blockSize)
 
         if blockSize > 0 {
             let totalSizeKB = (totalBlocks * blockSize) / 1024
@@ -216,7 +218,7 @@ class ADFService {
             adfDevClose(dev)
             self.adfDevice = nil
         }
-        resetDiskInfo() // Reset info when closing
+        resetDiskInfo()
         currentPath = []
         print("ADFService: ADF closed.")
     }
@@ -247,7 +249,7 @@ class ADFService {
         let adfListHead: UnsafeMutablePointer<AdfList>? = adfGetDirEnt(vol, dirSector)
         
         if adfListHead == nil {
-            print("ADFService: adfGetDirEnt returned nil for sector \(dirSector). (Empty directory or error)")
+            // This is normal for an empty directory.
         }
 
         var currentAdfListNode = adfListHead

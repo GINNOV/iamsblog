@@ -9,9 +9,9 @@ import SwiftUI
 import UniformTypeIdentifiers // Needed for UTType
 
 struct ContentView: View {
-    @State private var adfService = ADFService() // Assumes ADFService is defined elsewhere
+    @State private var adfService = ADFService()
     @State private var showingFileImporter = false
-    @State private var currentEntries: [AmigaEntry] = [] // Assumes AmigaEntry is defined elsewhere
+    @State private var currentEntries: [AmigaEntry] = []
     @State private var selectedFile: URL?
     @State private var alertMessage: String?
     @State private var showingAlert = false
@@ -19,16 +19,15 @@ struct ContentView: View {
     @State private var selectedEntryForView: AmigaEntry?
     @State private var fileContentData: Data?
     @State private var showingFileViewer = false
-    @State private var isLoadingFileContent = false // State for loading spinner
-    @State private var loadingTask: Task<Void, Never>? // Store the loading task for cancellation
+    @State private var isLoadingFileContent = false
+    @State private var loadingTask: Task<Void, Never>?
     
-    // For Drag and Drop
-    @State private var isDetailViewTargetedForDrop = false // Specific to the detail view
+    @State private var isDetailViewTargetedForDrop = false
     
-    static let adfUTType = UTType(filenameExtension: "adf", conformingTo: .data) ?? .data
+    static let adfUTType = UTType("public.retro.adf")!
 
     var currentPathString: String {
-        (adfService.currentVolumeName ?? "No Volume") + ":" + (adfService.currentPath.isEmpty ? "" : adfService.currentPath.joined(separator: "/")) + "/"
+        (adfService.currentVolumeName ?? "No Volume") + ":" + (adfService.currentPath.isEmpty ? "" : adfService.currentPath.joined(separator: "/"))
     }
     
     @State private var showingAboutView = false
@@ -73,7 +72,7 @@ struct ContentView: View {
                 Spacer()
                 
                 if selectedFile != nil {
-                    DiskInfoView(adfService: adfService) // Using the separate DiskInfoView
+                    DiskInfoView(adfService: adfService)
                         .padding(.top)
                 }
             }
@@ -81,7 +80,7 @@ struct ContentView: View {
             .navigationSplitViewColumnWidth(min: 280, ideal: 300, max: 500)
 
         } detail: {
-            // Main content view for file listing - THIS IS THE DROP TARGET
+            // Main content view
             ZStack {
                 VStack {
                     if selectedFile == nil {
@@ -145,8 +144,8 @@ struct ContentView: View {
                         Button { showingAboutView = true } label: { Label("About ADFinder", systemImage: "info.circle") }
                     }
                 }
-                .onDrop(of: [Self.adfUTType, .fileURL], isTargeted: $isDetailViewTargetedForDrop) { providers -> Bool in
-                    handleDrop(providers: providers)
+                .onDrop(of: [.fileURL, Self.adfUTType], isTargeted: $isDetailViewTargetedForDrop) { providers in
+                    return handleDrop(providers: providers)
                 }
                 .overlay(
                     isDetailViewTargetedForDrop ?
@@ -157,11 +156,10 @@ struct ContentView: View {
                         : nil
                 )
 
-                // Use the new LoadingSpinnerView
                 LoadingSpinnerView(
                     isLoading: $isLoadingFileContent,
                     onCancel: {
-                        loadingTask?.cancel() // Cancel the loading task
+                        loadingTask?.cancel()
                         isLoadingFileContent = false
                         loadingTask = nil
                     }
@@ -182,105 +180,69 @@ struct ContentView: View {
              if let entry = selectedEntryForView, let data = fileContentData { FileHexView(fileName: entry.name, data: data) }
         }
         .sheet(isPresented: $showingAboutView) {
-            AboutView() // Using the separate AboutView
+            AboutView()
         }
     }
 
     func handleDrop(providers: [NSItemProvider]) -> Bool {
-        guard let provider = providers.first else {
-            return false
-        }
-
-        print("ContentView: Drop detected. Provider: \(provider)")
-
-        if provider.canLoadObject(ofClass: URL.self) {
-            _ = provider.loadObject(ofClass: URL.self) { (item, error) in
-                DispatchQueue.main.async {
-                    guard let url = item else {
-                        if let error = error {
-                            self.showAlert(message: "Error loading dropped item as URL: \(error.localizedDescription)")
-                            print("ContentView: Error loading dropped item as URL: \(error)")
-                        } else {
-                            self.showAlert(message: "Could not retrieve URL from dropped item.")
-                            print("ContentView: Could not retrieve URL from dropped item.")
-                        }
-                        return
-                    }
-                    
-                    print("ContentView: Dropped URL: \(url.path)")
-                    if url.pathExtension.lowercased() == "adf" {
-                        self.processDroppedURL(url)
-                    } else {
-                        self.showAlert(message: "Dropped file '\(url.lastPathComponent)' is not a recognized ADF file (requires .adf extension).")
-                        print("ContentView: Dropped file is not an ADF: \(url.lastPathComponent)")
-                    }
-                }
-            }
-            return true
-        } else {
-            print("ContentView: Provider cannot load as URL.")
-        }
+        guard let provider = providers.first else { return false }
         
+        print("ContentView: Drop detected. Available types:", provider.registeredTypeIdentifiers)
+
         if provider.hasItemConformingToTypeIdentifier(Self.adfUTType.identifier) {
-            print("ContentView: Provider conforms to adfUTType. Attempting to load data representation.")
-            provider.loadDataRepresentation(forTypeIdentifier: Self.adfUTType.identifier) { (data, error) in
+            provider.loadItem(forTypeIdentifier: Self.adfUTType.identifier, options: nil) { (item, error) in
                 DispatchQueue.main.async {
-                    guard let data = data, let suggestedName = provider.suggestedName else {
-                        if let error = error {
-                            self.showAlert(message: "Error loading dropped data: \(error.localizedDescription)")
-                            print("ContentView: Error loading dropped data: \(error)")
-                        } else {
-                             self.showAlert(message: "Could not retrieve data from dropped item.")
-                             print("ContentView: Could not retrieve data from dropped item for adfUTType.")
-                        }
-                        return
-                    }
-                    print("ContentView: Dropped data for \(suggestedName). Saving to temporary file.")
-                    let tempDir = FileManager.default.temporaryDirectory
-                    let tempURL = tempDir.appendingPathComponent(suggestedName)
-                    
-                    do {
-                        try data.write(to: tempURL, options: .atomic)
-                        print("ContentView: Successfully saved dropped data to \(tempURL.path)")
-                        self.processDroppedURL(tempURL)
-                    } catch {
-                        self.showAlert(message: "Could not save dropped data to a temporary file: \(error.localizedDescription)")
-                        print("ContentView: Could not save dropped data to temp file: \(error)")
+                    if let data = item as? Data, let url = URL(dataRepresentation: data, relativeTo: nil) {
+                        print("ContentView: Successfully loaded file via custom UTI '\(Self.adfUTType.identifier)': \(url.path)")
+                        self.processDroppedURL(url)
+                    } else if let url = item as? URL {
+                        print("ContentView: Loaded file as direct URL from custom UTI drop: \(url.path)")
+                        self.processDroppedURL(url)
+                    } else if error != nil {
+                         self.showAlert(message: "Failed to load dropped file data: \(error!.localizedDescription)")
+                    } else {
+                        self.showAlert(message: "Could not read the dropped file.")
                     }
                 }
             }
             return true
-        } else {
-            print("ContentView: Provider does not conform to adfUTType directly.")
+        }
+
+        if provider.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier) {
+            _ = provider.loadObject(ofClass: URL.self) { (url, error) in
+                DispatchQueue.main.async {
+                    if let url = url {
+                        print("ContentView: Successfully loaded file via fallback .fileURL type: \(url.path)")
+                        self.processDroppedURL(url)
+                    }
+                }
+            }
+            return true
         }
         
         return false
     }
 
     func processDroppedURL(_ url: URL) {
-        print("ContentView: Processing URL: \(url.path)")
         let didStartAccessing = url.startAccessingSecurityScopedResource()
-        if !didStartAccessing {
-            print("ContentView: Warning - Could not start accessing security-scoped resource for \(url.path). This might lead to fopen failure in ADFlib if sandbox is restrictive.")
+        defer {
+            if didStartAccessing {
+                url.stopAccessingSecurityScopedResource()
+            }
         }
 
         selectedFile = url
         
-        if adfService.openADF(filePath: url.path(percentEncoded: false)) {
-            print("ContentView: ADFService successfully opened \(url.path)")
+        if adfService.openADF(filePath: url.path) {
             loadDirectoryContents()
         } else {
-            print("ContentView: ADFService failed to open \(url.path)")
-            showAlert(message: "Failed to open or mount ADF: \"\(url.lastPathComponent)\". Check console for ADFlib errors. Common issues: file not found by ADFlib (permissions/sandbox) or corrupted ADF.")
+            showAlert(message: "Failed to open or mount ADF: \"\(url.lastPathComponent)\". Check console for ADFlib errors.")
             selectedFile = nil
-        }
-        
-        if didStartAccessing {
-            url.stopAccessingSecurityScopedResource()
         }
     }
 
     func loadDirectoryContents() { currentEntries = adfService.listCurrentDirectory() }
+    
     func handleEntryTap(_ entry: AmigaEntry) {
         switch entry.type {
         case .directory:
@@ -290,45 +252,35 @@ struct ContentView: View {
         default: showAlert(message: "Cannot open item of type: \(entry.type)")
         }
     }
+    
     func viewFileContent(_ entry: AmigaEntry) {
         selectedEntryForView = entry
-        isLoadingFileContent = true // Show spinner
+        isLoadingFileContent = true
         
-        // Run file reading asynchronously with cancellation support
         loadingTask = Task {
-            do {
-                let data = try await withCheckedThrowingContinuation { continuation in
-                    let result = adfService.readFileContent(entry: entry)
-                    continuation.resume(returning: result)
-                }
-                
-                // Check if the task was cancelled
-                try Task.checkCancellation()
-                
-                DispatchQueue.main.async {
-                    isLoadingFileContent = false // Hide spinner
-                    loadingTask = nil
-                    fileContentData = data
-                    if data != nil {
-                        showingFileViewer = true
-                    } else {
-                        showAlert(message: "Could not read content for file: \(entry.name)")
-                    }
-                }
-            } catch {
-                DispatchQueue.main.async {
-                    isLoadingFileContent = false // Hide spinner
-                    loadingTask = nil
-                    if error is CancellationError {
-                        print("File loading cancelled for \(entry.name)")
-                    } else {
-                        showAlert(message: "Could not read content for file: \(entry.name)")
-                    }
-                }
+            let data = await Task.detached {
+                return await adfService.readFileContent(entry: entry)
+            }.value
+            
+            guard !Task.isCancelled else {
+                isLoadingFileContent = false
+                loadingTask = nil
+                return
+            }
+
+            fileContentData = data
+            isLoadingFileContent = false
+            loadingTask = nil
+            if data != nil {
+                showingFileViewer = true
+            } else {
+                showAlert(message: "Could not read content for file: \(entry.name)")
             }
         }
     }
+    
     func showAlert(message: String) { alertMessage = message; showingAlert = true }
+    
     func showInfoAlert(for entry: AmigaEntry) {
         var info = "Name: \(entry.name)\nType: \(entry.type)\nSize: \(entry.size) bytes"
         if let date = entry.date { info += "\nDate: \(date.formatted(date: .long, time: .standard))" }
@@ -336,19 +288,22 @@ struct ContentView: View {
         info += "\nProtection: \(formatProtectionBits(entry.protectionBits))"
         showAlert(message: info)
     }
+    
     func formatProtectionBits(_ bits: UInt32) -> String {
         let canRead = (bits & FIBF_READ_SWIFT) != 0; let canWrite = (bits & FIBF_WRITE_SWIFT) != 0
         let canExecute = (bits & FIBF_EXECUTE_SWIFT) != 0; let canDelete = (bits & FIBF_DELETE_SWIFT) != 0
         let hold = (bits & FIBF_HOLD_SWIFT) != 0; let script = (bits & FIBF_SCRIPT_SWIFT) != 0
         let pure = (bits & FIBF_PURE_SWIFT) != 0; let archive = (bits & FIBF_ARCHIVE_SWIFT) != 0
-        return "R\(canRead ? "✔" : "-") W\(canWrite ? "✔" : "-") E\(canExecute ? "✔" : "-") D\(canDelete ? "✔" : "-") [H:\(hold ? "✔" : "-"), S:\(script ? "✔" : "-"), P:\(pure ? "✔" : "-"), A:\(archive ? "✔" : "-")]"
+        return "R\(canRead ? "✔" : "-")W\(canWrite ? "✔" : "-")E\(canExecute ? "✔" : "-")D\(canDelete ? "✔" : "-") [hspa:\(hold ? "H" : "-")\(script ? "S" : "-")\(pure ? "P" : "-")\(archive ? "A" : "-")]"
     }
+    
     func iconForEntry(_ type: EntryType) -> String {
         switch type {
         case .file: return "doc.fill"; case .directory: return "folder.fill"
         case .softLinkFile, .softLinkDir: return "link"; default: return "questionmark.diamond.fill"
         }
     }
+    
     func colorForEntry(_ type: EntryType) -> Color {
         switch type {
         case .file: return .blue; case .directory: return .orange
