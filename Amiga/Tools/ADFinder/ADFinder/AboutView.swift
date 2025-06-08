@@ -5,10 +5,10 @@
 //  Created by Mario Esposito on 5/23/25.
 //
 
-import SwiftUI // Added import
+import SwiftUI
 
 struct AboutView: View {
-    @Environment(\.dismiss) var dismiss // To close the sheet
+    @Environment(\.dismiss) var dismiss
 
     // These will get the values from your app's Info.plist
     var appVersion: String {
@@ -23,8 +23,6 @@ struct AboutView: View {
 
     var body: some View {
         VStack(spacing: 15) {
-            // You can add your app icon to Assets.xcassets and use Image("YourAppIconName")
-            // For now, using a system image or the app's actual icon.
             if let nsImage = NSApp.applicationIconImage {
                 Image(nsImage: nsImage)
                     .resizable()
@@ -45,7 +43,7 @@ struct AboutView: View {
                 .font(.callout)
                 .foregroundColor(.secondary)
             
-            Text("An Amiga Disk File (ADF) Browser")
+            Text("An Amiga Disk File (ADF) Finder")
                 .font(.caption)
             
             Divider()
@@ -53,7 +51,7 @@ struct AboutView: View {
             Text("Created by Mario Esposito")
                 .font(.caption)
             
-            Text("Powered by ADFLib")
+            Text("Powered by ADFLib and lots of love from the community.")
                 .font(.caption)
                 .padding(.bottom)
 

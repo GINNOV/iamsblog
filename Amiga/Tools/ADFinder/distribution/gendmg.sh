@@ -7,8 +7,8 @@ set -e
 APP_PATH="$HOME/Downloads/ADFinder.app"
 DMG_PATH="$HOME/Downloads/ADFinder.dmg"
 README_PATH=""
-BACKGROUND_IMAGE="$HOME/Downloads/distribution/dmg-background.png"
-VOLUME_ICON="$HOME/Downloads/distribution/dmg-icon.icns"
+BACKGROUND_IMAGE="./distribution/dmg-background.png"
+VOLUME_ICON="$HOME./distribution/dmg-icon.icns"
 VOLUME_NAME="App Installer"
 WINDOW_POS_X=200
 WINDOW_POS_Y=120
@@ -33,7 +33,8 @@ usage() {
     echo "  --background <path>      Path to the background image (default: $BACKGROUND_IMAGE)"
     echo "  --volicon <path>         Path to the volume icon (default: $VOLUME_ICON)"
     echo "Example:"
-    echo "  $0 --readme ./distribution/README.md --app ./distribution/ADFinder.app --dmg ./distribution/ADFinder.dmg --background ./distribution/dmg-background.png --volicon ./distribution/dmg-icon.icns"
+    echo "cd distribution"
+    echo "  $0 --readme README.md --app ~/Downloads/ADFinder/ADFinder.app --dmg ../../releases/ADFinder.dmg --background ./dmg_assets/dmg-background.png --volicon ./dmg_assets/dmg-icon.icns"
     exit 1
 }
 
