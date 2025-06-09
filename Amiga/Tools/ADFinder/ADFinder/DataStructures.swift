@@ -7,22 +7,38 @@
 
 import Foundation
 
-// Represents a file or directory entry in the ADF
+enum SortOrder: String, CaseIterable, Identifiable {
+    case nameAscending = "Name (A-Z)"
+    case nameDescending = "Name (Z-A)"
+    case sizeAscending = "Size (Smallest)"
+    case sizeDescending = "Size (Largest)"
+    
+    var id: String { self.rawValue }
+}
+
+
 struct AmigaEntry: Identifiable, Hashable {
     let id = UUID()
-    var name: String
-    var type: EntryType
-    var size: Int32 // Corresponds to AdfEntry.size (often uint32_t, cast needed)
-    var protectionBits: UInt32 // Corresponds to AdfEntry.access (uint32_t)
-    var date: Date? // Derived from AdfEntry.days, mins, ticks
-    var comment: String? // From AdfEntry.comment
+    let name: String
+    let type: EntryType
+    let size: Int32
+    let protectionBits: UInt32
+    let date: Date?
+    let comment: String?
+    
+    static func == (lhs: AmigaEntry, rhs: AmigaEntry) -> Bool {
+        return lhs.id == rhs.id
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
 }
 
-enum EntryType: Hashable {
-    case file
-    case directory
-    case softLinkFile
-    case softLinkDir
-    case unknown
+enum EntryType: String {
+    case file = "File"
+    case directory = "Directory"
+    case softLinkFile = "Soft-Link File"
+    case softLinkDir = "Soft-Link Dir"
+    case unknown = "Unknown"
 }
-

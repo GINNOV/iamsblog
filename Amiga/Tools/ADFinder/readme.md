@@ -15,6 +15,8 @@ So I start building it. Details and pre-built app are [here](https://ginnov.gith
 11. ✅ Open ADF images by dropping the image over the files' window
 12. ✅ Show disk layout, file usage and other stats
 13. ✅ Create new folders
+14. ✅ Rename files and folders
+15. ✅ Sorting (different kinds)
 
 ## Work in Progress
 5. 👷🏻 Add files
@@ -23,6 +25,7 @@ So I start building it. Details and pre-built app are [here](https://ginnov.gith
 8. 👷🏻 Compare two ADF images
 9. 👷🏻 Auto convert audio when adding them to an image
 10. 👷🏻 Auto convert image format wehn adding them to an image
+
 
 
 ## Users requests

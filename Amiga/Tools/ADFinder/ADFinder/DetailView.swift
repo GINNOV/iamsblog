@@ -29,11 +29,39 @@ struct DetailView: View {
     @State private var isLoadingFileContent = false
     @State private var loadingTask: Task<Void, Never>?
     @State private var isDetailViewTargetedForDrop = false
+    @State private var sortOrder: SortOrder = .nameAscending
+
     
     private var selectedEntry: AmigaEntry? {
         guard let selectedEntryID = selectedEntryID else { return nil }
         return currentEntries.first { $0.id == selectedEntryID }
     }
+    
+    private var sortedEntries: [AmigaEntry] {
+        let directories = currentEntries.filter { $0.type == .directory }
+        let files = currentEntries.filter { $0.type != .directory }
+
+        let sortedDirectories: [AmigaEntry]
+        let sortedFiles: [AmigaEntry]
+
+        switch sortOrder {
+        case .nameAscending:
+            sortedDirectories = directories.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+            sortedFiles = files.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+        case .nameDescending:
+            sortedDirectories = directories.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedDescending }
+            sortedFiles = files.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedDescending }
+        case .sizeAscending:
+            sortedDirectories = directories.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+            sortedFiles = files.sorted { $0.size < $1.size }
+        case .sizeDescending:
+            sortedDirectories = directories.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+            sortedFiles = files.sorted { $0.size > $1.size }
+        }
+        
+        return sortedDirectories + sortedFiles
+    }
+
 
     // MARK: - Body
     var body: some View {
@@ -134,7 +162,7 @@ struct DetailView: View {
                 .selectionDisabled(true)
             }
 
-            ForEach(currentEntries) { entry in
+            ForEach(sortedEntries) { entry in
                 FileRowView(entry: entry)
                     .contentShape(Rectangle())
                     .onTapGesture {
@@ -158,9 +186,19 @@ struct DetailView: View {
     }
     
     private var mainToolbar: some ToolbarContent {
-        // AI_TRACK: Corrected the toolbar structure by removing the nested group.
         ToolbarItemGroup(placement: .primaryAction) {
             if selectedFile != nil {
+                Menu {
+                    Picker("Sort By", selection: $sortOrder) {
+                        ForEach(SortOrder.allCases) { order in
+                            Text(order.rawValue).tag(order)
+                        }
+                    }
+                    .pickerStyle(.inline)
+                } label: {
+                    Label("Sort", systemImage: "arrow.up.arrow.down.circle")
+                }
+                
                 Button(action: {
                     newFolderName = ""
                     showingNewFolderAlert = true
@@ -170,9 +208,7 @@ struct DetailView: View {
                 
                 Menu {
                     Button(action: {
-                        if let entry = selectedEntry {
-                            viewFileContent(entry)
-                        }
+                        if let entry = selectedEntry { viewFileContent(entry) }
                     }) {
                         Label("Hex Editor", systemImage: "number")
                     }
@@ -203,7 +239,6 @@ struct DetailView: View {
                 .disabled(selectedEntryID == nil)
             }
             
-            // The About button is now correctly placed in the same group.
             Button { showingAboutView = true } label: { Label("About ADFinder", systemImage: "info.circle") }
         }
     }
