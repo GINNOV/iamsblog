@@ -1,3 +1,4 @@
+
 //
 //  ADFinderApp.swift
 //  ADFinder
@@ -10,9 +11,18 @@ import UniformTypeIdentifiers
 
 @main
 struct ADFinderApp: App {
+    @AppStorage("rememberWindowSize") private var rememberWindowSize = false
+    @AppStorage("autoEnableTabs") private var autoEnableTabs = false
+    
+    static let adfUType = UTType("public.retro.adf")!
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
+        }
+        
+        Settings {
+            PreferencesView()
         }
     }
 }

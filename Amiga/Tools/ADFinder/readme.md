@@ -17,6 +17,7 @@ So I start building it. Details and pre-built app are [here](https://ginnov.gith
 13. ✅ Create new folders
 14. ✅ Rename files and folders
 15. ✅ Sorting (different kinds)
+16. ✅ Preferences
 
 ## Work in Progress
 5. 👷🏻 Add files
@@ -25,7 +26,8 @@ So I start building it. Details and pre-built app are [here](https://ginnov.gith
 8. 👷🏻 Compare two ADF images
 9. 👷🏻 Auto convert audio when adding them to an image
 10. 👷🏻 Auto convert image format wehn adding them to an image
-
+17. 👷🏻 Text view (to copy files)
+18.  👷🏻Download files
 
 
 ## Users requests
