@@ -20,10 +20,8 @@ struct DetailView: View {
     @State private var showingNewFolderAlert = false
     @State private var newFolderName = ""
     @State private var entryToDelete: AmigaEntry?
-    
     @State private var entryToRename: AmigaEntry?
     @State private var newEntryName: String = ""
-    
     @State private var showingAboutView = false
     @State private var showingFileViewer = false
     @State private var selectedEntryForView: AmigaEntry?
@@ -160,6 +158,7 @@ struct DetailView: View {
     }
     
     private var mainToolbar: some ToolbarContent {
+        // AI_TRACK: Corrected the toolbar structure by removing the nested group.
         ToolbarItemGroup(placement: .primaryAction) {
             if selectedFile != nil {
                 Button(action: {
@@ -170,7 +169,13 @@ struct DetailView: View {
                 }
                 
                 Menu {
-                    Button(action: {}) { Label("Hex Editor", systemImage: "number") }
+                    Button(action: {
+                        if let entry = selectedEntry {
+                            viewFileContent(entry)
+                        }
+                    }) {
+                        Label("Hex Editor", systemImage: "number")
+                    }
                     Button(action: {}) { Label("Txt Editor", systemImage: "text.quote") }
                 } label: {
                     Label("Edit", systemImage: "doc.text.magnifyingglass")
@@ -197,6 +202,9 @@ struct DetailView: View {
                 }
                 .disabled(selectedEntryID == nil)
             }
+            
+            // The About button is now correctly placed in the same group.
+            Button { showingAboutView = true } label: { Label("About ADFinder", systemImage: "info.circle") }
         }
     }
     
