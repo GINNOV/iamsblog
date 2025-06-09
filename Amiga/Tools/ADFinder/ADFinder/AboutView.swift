@@ -29,39 +29,46 @@ struct AboutView: View {
                     .scaledToFit()
                     .frame(width: 64, height: 64)
             } else {
-                Image(systemName: "magnifyingglass.circle.fill") // Fallback system image
+                Image(systemName: "magnifyingglass.circle.fill")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 60, height: 60)
                     .foregroundColor(.accentColor)
             }
-            
+
             Text(appName)
                 .font(.title2.weight(.semibold))
-            
+
             Text("Version \(appVersion) (Build \(buildNumber))")
                 .font(.callout)
                 .foregroundColor(.secondary)
-            
+
             Text("An Amiga Disk File (ADF) Finder")
                 .font(.caption)
-            
+
             Divider()
-            
+
             Text("Created by Mario Esposito")
                 .font(.caption)
-            
-            Text("Contributions: Powered by ADFLib. \nSome icons by thiings.co \n\n Lots of love from the community that finds bugs and gives suggestions.")
-                .font(.caption)
-                .padding(.bottom)
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Contributions:")
+                    .font(.caption.weight(.semibold))
+
+                Text("🔌 Powered by ADFLib.")
+                Text("🎨 Some icons by thiings.co")
+                Text("❣️ Lots of love from the community that finds bugs and gives suggestions.")
+            }
+            .font(.caption)
+            .padding(.bottom)
 
             Button("Close") {
                 dismiss()
             }
-            .keyboardShortcut(.cancelAction) // Allows Esc key to close
+            .keyboardShortcut(.cancelAction)
         }
         .padding(30)
-        .frame(minWidth: 320, idealWidth: 350, minHeight: 300, idealHeight: 350)
+        .frame(minWidth: 320, idealWidth: 350)
     }
 }
 

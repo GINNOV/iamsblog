@@ -81,7 +81,13 @@ struct DetailView: View {
             }
         }
         .navigationTitle(selectedFile?.lastPathComponent ?? "ADFinder")
-        .toolbar { mainToolbar }
+        .toolbar {
+            mainToolbar
+            
+            ToolbarItemGroup(placement: .primaryAction) {
+                 Button { showingAboutView = true } label: { Label("About ADFinder", systemImage: "info.circle") }
+            }
+        }
         .onDrop(of: [ContentView.adfUType, .fileURL], isTargeted: $isDetailViewTargetedForDrop) { providers in
             handleDrop(providers: providers)
         }
@@ -118,16 +124,12 @@ struct DetailView: View {
             }
 
             ForEach(currentEntries) { entry in
-                // AI_TRACK: This gesture logic fixes the selection vs. action conflict.
-                // It uses the selection state to differentiate a second tap from a selection tap.
                 FileRowView(entry: entry)
-                    .contentShape(Rectangle()) // Ensures the entire row area is tappable
+                    .contentShape(Rectangle())
                     .onTapGesture {
                         if selectedEntryID == entry.id {
-                            // If the user taps the already selected row, treat it as a double-click/action.
                             handleEntryTap(entry)
                         } else {
-                            // Otherwise, it's a selection tap.
                             selectedEntryID = entry.id
                         }
                     }
