@@ -20,6 +20,10 @@ struct DetailView: View {
     @State private var showingNewFolderAlert = false
     @State private var newFolderName = ""
     @State private var entryToDelete: AmigaEntry?
+    
+    @State private var entryToRename: AmigaEntry?
+    @State private var newEntryName: String = ""
+    
     @State private var showingAboutView = false
     @State private var showingFileViewer = false
     @State private var selectedEntryForView: AmigaEntry?
@@ -58,6 +62,21 @@ struct DetailView: View {
         } message: {
             Text("Please enter a name for the new folder.")
         }
+        .alert("Rename Entry", isPresented: .constant(entryToRename != nil)) {
+            TextField("New Name", text: $newEntryName)
+                .autocorrectionDisabled()
+            Button("Rename") {
+                if let entry = entryToRename {
+                    renameEntry(entry: entry, newName: newEntryName)
+                }
+                entryToRename = nil
+            }
+            Button("Cancel", role: .cancel) {
+                entryToRename = nil
+            }
+        } message: {
+            Text("Enter a new name for \"\(entryToRename?.name ?? "")\".")
+        }
         .sheet(isPresented: $showingFileViewer) {
              if let entry = selectedEntryForView, let data = fileContentData { FileHexView(fileName: entry.name, data: data) }
         }
@@ -81,13 +100,7 @@ struct DetailView: View {
             }
         }
         .navigationTitle(selectedFile?.lastPathComponent ?? "ADFinder")
-        .toolbar {
-            mainToolbar
-            
-            ToolbarItemGroup(placement: .primaryAction) {
-                 Button { showingAboutView = true } label: { Label("About ADFinder", systemImage: "info.circle") }
-            }
-        }
+        .toolbar { mainToolbar }
         .onDrop(of: [ContentView.adfUType, .fileURL], isTargeted: $isDetailViewTargetedForDrop) { providers in
             handleDrop(providers: providers)
         }
@@ -167,8 +180,15 @@ struct DetailView: View {
                 Button(action: {}) { Label("Export", systemImage: "square.and.arrow.up") }
                     .disabled(selectedEntryID == nil)
 
-                Button(action: {}) { Label("Rename", systemImage: "pencil") }
-                    .disabled(selectedEntryID == nil)
+                Button(action: {
+                    if let entry = selectedEntry {
+                        newEntryName = entry.name
+                        entryToRename = entry
+                    }
+                }) {
+                    Label("Rename", systemImage: "pencil")
+                }
+                .disabled(selectedEntryID == nil)
 
                 Button(role: .destructive, action: {
                     if let entry = selectedEntry { entryToDelete = entry }
@@ -280,6 +300,18 @@ struct DetailView: View {
     private func deleteEntry(_ entry: AmigaEntry, force: Bool) {
         if let errorMessage = adfService.deleteEntryRecursively(entry: entry, force: force) {
             showAlert(message: "Failed to delete \"\(entry.name)\": \(errorMessage)")
+        } else {
+            loadDirectoryContents()
+        }
+    }
+    
+    private func renameEntry(entry: AmigaEntry, newName: String) {
+        guard !newName.isEmpty else {
+            showAlert(message: "New name cannot be empty.")
+            return
+        }
+        if let errorMessage = adfService.renameEntry(oldName: entry.name, newName: newName) {
+            showAlert(message: "Failed to rename \"\(entry.name)\": \(errorMessage)")
         } else {
             loadDirectoryContents()
         }

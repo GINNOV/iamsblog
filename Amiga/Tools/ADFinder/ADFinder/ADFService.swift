@@ -404,8 +404,6 @@ class ADFService {
     func deleteEntryRecursively(entry: AmigaEntry, force: Bool) -> String? {
         let originalPath = self.currentPath
         let result = _deleteRecursively(entryToDelete: entry, force: force)
-        
-        // Restore the path to ensure the service state is consistent for the next operation.
         self.currentPath = originalPath
         if !navigateToInternalPath() {
             print("ADFService: CRITICAL - Failed to restore path to \(originalPath.joined(separator: "/")) after deletion operation.")
@@ -416,37 +414,28 @@ class ADFService {
     private func _deleteRecursively(entryToDelete: AmigaEntry, force: Bool) -> String? {
         guard let vol = self.adfVolume else { return "Volume not mounted." }
         
-        // Always check permissions first if not forcing.
         if !force && (entryToDelete.protectionBits & ACCMASK_D_SWIFT) != 0 {
             return "Entry '\(entryToDelete.name)' is delete-protected."
         }
         
-        // If it's a directory, we must recurse.
         if entryToDelete.type == .directory {
-            // Navigate into the child directory.
             if !navigateToDirectory(entryToDelete.name) {
                 return "Failed to navigate into directory '\(entryToDelete.name)' to empty it."
             }
             
-            // Get all children of the directory we just entered.
             let children = listCurrentDirectory()
             for child in children {
-                // Recursive call for each child.
                 if let error = _deleteRecursively(entryToDelete: child, force: force) {
-                    // If any child deletion fails, we must navigate back up before returning the error.
                     _ = goUpDirectory()
                     return error
                 }
             }
             
-            // After successfully deleting all children, navigate back up to the parent.
-            // This is the CRITICAL step that fixes the bug.
             if !goUpDirectory() {
                  return "Failed to navigate out of directory '\(entryToDelete.name)' after emptying it. Cannot complete deletion."
             }
         }
         
-        // Now at the correct parent path, delete the file or the now-empty directory.
         let parentSector = vol.pointee.curDirPtr
         let success = entryToDelete.name.withCString { cName -> Bool in
             return adfRemoveEntry(vol, parentSector, cName).rawValue == ADF_RC_OK_SWIFT
@@ -454,10 +443,34 @@ class ADFService {
         
         if success {
             print("ADFService: Successfully deleted '\(entryToDelete.name)'.")
-            return nil // Success
+            return nil
         } else {
             print("ADFService: adfRemoveEntry failed for '\(entryToDelete.name)'. Check C-Log for details.")
             return "ADFLib failed to delete '\(entryToDelete.name)'."
+        }
+    }
+
+    func renameEntry(oldName: String, newName: String) -> String? {
+        guard let vol = self.adfVolume else { return "Volume is not open." }
+        if newName.isEmpty { return "New name cannot be empty." }
+        
+        if !navigateToInternalPath() {
+            return "Failed to navigate to current path."
+        }
+        
+        let parentSector = vol.pointee.curDirPtr
+        let success = oldName.withCString { cOldName -> Bool in
+            return newName.withCString { cNewName -> Bool in
+                return adfRenameEntry(vol, parentSector, cOldName, parentSector, cNewName).rawValue == ADF_RC_OK_SWIFT
+            }
+        }
+        
+        if success {
+            print("ADFService: Renamed '\(oldName)' to '\(newName)'.")
+            return nil
+        } else {
+            print("ADFService: adfRenameEntry failed. Check C-Log for details.")
+            return "ADFLib failed to rename the entry. A file with the new name may already exist."
         }
     }
 }
