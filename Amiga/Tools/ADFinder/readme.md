@@ -11,11 +11,11 @@ So I start building it. Details and pre-built app are [here](https://ginnov.gith
 1. ✅ Load ADFs that workbench can read
 2. ✅ Show the content of files in a HEX editor
 3. ✅ Navigate folder structure back and forth
-11. ✅ Open images by dropping the image over the files' window
+4. ✅ Delete files and folder
+11. ✅ Open ADF images by dropping the image over the files' window
 12. ✅ Show disk layout, file usage and other stats
 
 ## Work in Progress
-4. 👷🏻 Delete files
 5. 👷🏻 Add files
 6. 👷🏻 Add support for Drag and Drop for new files 
 7. 👷🏻 Create an ADF from scratch

@@ -118,8 +118,19 @@ struct DetailView: View {
             }
 
             ForEach(currentEntries) { entry in
+                // AI_TRACK: This gesture logic fixes the selection vs. action conflict.
+                // It uses the selection state to differentiate a second tap from a selection tap.
                 FileRowView(entry: entry)
-                    .onTapGesture(count: 2) { handleEntryTap(entry) }
+                    .contentShape(Rectangle()) // Ensures the entire row area is tappable
+                    .onTapGesture {
+                        if selectedEntryID == entry.id {
+                            // If the user taps the already selected row, treat it as a double-click/action.
+                            handleEntryTap(entry)
+                        } else {
+                            // Otherwise, it's a selection tap.
+                            selectedEntryID = entry.id
+                        }
+                    }
                     .contextMenu {
                          Button("View Info") { showInfoAlert(for: entry) }
                          if entry.type == .file {
