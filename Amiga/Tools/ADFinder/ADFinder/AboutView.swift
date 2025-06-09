@@ -51,7 +51,7 @@ struct AboutView: View {
             Text("Created by Mario Esposito")
                 .font(.caption)
             
-            Text("Powered by ADFLib and lots of love from the community.")
+            Text("Contributions: Powered by ADFLib. \nSome icons by thiings.co \n\n Lots of love from the community that finds bugs and gives suggestions.")
                 .font(.caption)
                 .padding(.bottom)
 

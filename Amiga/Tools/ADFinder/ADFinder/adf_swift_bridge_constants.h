@@ -11,8 +11,8 @@
 #include <stdint.h>
 
 // AdfAccessMode enum cases
-static const unsigned int ACCESS_MODE_READONLY_SWIFT  = 0;
-static const unsigned int ACCESS_MODE_READWRITE_SWIFT = 1;
+static const unsigned int ACCESS_MODE_READONLY_SWIFT  = 1;
+static const unsigned int ACCESS_MODE_READWRITE_SWIFT = 0;
 
 // AdfFileMode enum cases
 static const unsigned int ADF_FILE_MODE_READ_SWIFT  = 0x01;
@@ -26,6 +26,10 @@ static const uint32_t FIBF_HOLD_SWIFT    = (1 << 7);
 static const uint32_t FIBF_SCRIPT_SWIFT  = (1 << 6);
 static const uint32_t FIBF_PURE_SWIFT    = (1 << 5);
 static const uint32_t FIBF_ARCHIVE_SWIFT = (1 << 4);
+
+// In AmigaDOS, if a protection bit is SET, the action is DISALLOWED.
+static const uint32_t ACCMASK_D_SWIFT = (1 << 0); // Delete protection
+static const uint32_t ACCMASK_W_SWIFT = (1 << 2); // Write protection
 
 static const int32_t ST_FILE_SWIFT  = -3;
 static const int32_t ST_DIR_SWIFT   =  2;
