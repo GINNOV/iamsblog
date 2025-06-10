@@ -19,6 +19,8 @@ jobs:
     needs: debug
     if: contains(github.event.head_commit.message, '#build-binary')
     runs-on: macos-latest
+    env:
+      DEBUG: false  # Set to true for detailed build logs if needed
     steps:
       - name: Checkout code
         uses: actions/checkout@v4.2.0
@@ -58,17 +60,27 @@ jobs:
           chmod +x Amiga/Tools/ADFinder/distribution/build_and_package.sh
           cd Amiga/Tools/ADFinder/distribution
           echo "▶ Starting build script..."
-          ./build_and_package.sh --project ../ADFinder.xcodeproj --scheme "ADFinder - Release" --configuration Release \
-            2> >(tee build-stderr.log >&2) \
-            > >(tee build-stdout.log)
-          echo "✅ Script completed."
-          echo "--- STDERR ---"
-          cat build-stderr.log
-          echo "--- STDOUT ---"
-          cat build-stdout.log
+          if [ "$DEBUG" = "true" ]; then
+            ./build_and_package.sh --project ../ADFinder.xcodeproj --scheme "ADFinder - Release" --configuration Release \
+              2> >(tee build-stderr.log >&2) \
+              > >(tee build-stdout.log)
+            echo "✅ Script completed."
+            echo "--- STDERR ---"
+            cat build-stderr.log
+            echo "--- STDOUT ---"
+            cat build-stdout.log
+          else
+            ./build_and_package.sh --project ../ADFinder.xcodeproj --scheme "ADFinder - Release" --configuration Release > /dev/null 2>&1
+            if [ $? -ne 0 ]; then
+              echo "::error::Build or export failed. Check logs manually if needed."
+              exit 1
+            fi
+            echo "✅ Build and export completed successfully."
+          fi
           ls -l build/ADFinder.app || echo "::error::ADFinder.app not found in build directory"
 
-      - name: Upload build logs
+      - name: Upload build logs (if DEBUG enabled)
+        if: env.DEBUG == 'true'
         uses: actions/upload-artifact@v4.4.3
         with:
           name: Build-Logs
@@ -108,6 +120,10 @@ jobs:
           echo "▶ Starting DMG creation..."
           echo "Running: ./gendmg.sh --readme dmg_assets/README.md --app build/ADFinder.app --dmg ../releases/ADFinder.dmg --background dmg_assets/dmg-background.png --volicon dmg_assets/dmg-icon.icns"
           set -x
+          if [ ! -d "build/ADFinder.app" ]; then
+            echo "::error::build/ADFinder.app not found before DMG creation"
+            exit 1
+          fi
           ./gendmg.sh --readme dmg_assets/README.md --app build/ADFinder.app --dmg ../releases/ADFinder.dmg --background dmg_assets/dmg-background.png --volicon dmg_assets/dmg-icon.icns \
             2> >(tee dmg-stderr.log >&2) \
             > >(tee dmg-stdout.log)
