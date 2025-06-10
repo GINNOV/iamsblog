@@ -27,7 +27,7 @@ struct AboutView: View {
                 Image(nsImage: nsImage)
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 64, height: 64)
+                    .frame(width: 128, height: 128)
             } else {
                 Image(systemName: "magnifyingglass.circle.fill")
                     .resizable()
@@ -43,21 +43,18 @@ struct AboutView: View {
                 .font(.callout)
                 .foregroundColor(.secondary)
 
-            Text("An Amiga Disk File (ADF) Finder")
+            Text("A Finder tool for Amiga Disk Files (ADF). Created by Mario Esposito")
                 .font(.caption)
 
             Divider()
 
-            Text("Created by Mario Esposito")
-                .font(.caption)
-
+            Text("CONTRIBUTIONS")
+                .font(.caption.weight(.semibold))
+            
             VStack(alignment: .leading, spacing: 6) {
-                Text("Contributions:")
-                    .font(.caption.weight(.semibold))
-
                 Text("🔌 Powered by ADFLib.")
                 Text("🎨 Some icons by thiings.co")
-                Text("❣️ Lots of love from the community that finds bugs and gives suggestions.")
+                Text("❣️ Lots of love from the community for bug reports and suggestions.")
             }
             .font(.caption)
             .padding(.bottom)

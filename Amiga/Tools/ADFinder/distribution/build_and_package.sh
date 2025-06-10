@@ -5,7 +5,7 @@ set -e
 
 # Project settings
 PROJECT_NAME="ADFinder"
-PROJECT_PATH="../../Amiga/Tools/ADFinder/${PROJECT_NAME}.xcodeproj" # Updated path
+PROJECT_PATH="../${PROJECT_NAME}.xcodeproj"
 SCHEME="${PROJECT_NAME}"
 CONFIGURATION="Release"
 ARCHIVE_PATH="./build/${PROJECT_NAME}.xcarchive"
@@ -21,12 +21,7 @@ MIN_SPACE_MB=1024
 # Usage function
 usage() {
     echo "Usage: $0 [--project <project_path>] [--scheme <scheme>] [--configuration <configuration>]"
-    echo "Optional:"
-    echo "  --project <project_path>  Xcode project or workspace (default: $PROJECT_PATH)"
-    echo "  --scheme <scheme>         Build scheme (default: $SCHEME)"
-    echo "  --configuration <config>  Build configuration (default: $CONFIGURATION)"
-    echo "Example:"
-    echo "  $0 --project ../../Amiga/Tools/ADFinder/${PROJECT_NAME}.xcodeproj --scheme ${PROJECT_NAME} --configuration Release"
+    echo "Example: $0 --project ../${PROJECT_NAME}.xcodeproj --scheme ${PROJECT_NAME} --configuration Release"
     exit 1
 }
 
@@ -41,44 +36,38 @@ while [[ "$#" -gt 0 ]]; do
     shift
 done
 
+# Get absolute paths
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+README_PATH="${SCRIPT_DIR}/${README_PATH}"
+BACKGROUND_IMAGE="${SCRIPT_DIR}/${BACKGROUND_IMAGE}"
+VOLUME_ICON="${SCRIPT_DIR}/${VOLUME_ICON}"
+EXPORT_OPTIONS_PLIST="${SCRIPT_DIR}/${EXPORT_OPTIONS_PLIST}"
+DMG_DIR="${SCRIPT_DIR}/../releases"
+DMG_BASE_PATH="${DMG_DIR}/${PROJECT_NAME}.dmg"
+PROJECT_PATH="${SCRIPT_DIR}/${PROJECT_PATH}"
+
 # Validate inputs
-if [ ! -e "$PROJECT_PATH" ]; then
-    echo "Error: Project not found at $PROJECT_PATH"
-    exit 1
-fi
-if [ ! -f "$README_PATH" ]; then
-    echo "Error: README file not found at $README_PATH"
-    exit 1
-fi
-if [ ! -f "$BACKGROUND_IMAGE" ]; then
-    echo "Error: Background image not found at $BACKGROUND_IMAGE"
-    exit 1
-fi
-if [ ! -f "$VOLUME_ICON" ]; then
-    echo "Error: Volume icon not found at $VOLUME_ICON"
-    exit 1
-fi
-if [ ! -f "./gendmg.sh" ]; then
-    echo "Error: gendmg.sh not found at ./gendmg.sh"
-    exit 1
-fi
-if [ ! -f "$EXPORT_OPTIONS_PLIST" ]; then
-    echo "Error: Export options plist not found at $EXPORT_OPTIONS_PLIST"
-    exit 1
-fi
+for file in "$PROJECT_PATH" "$README_PATH" "$BACKGROUND_IMAGE" "$VOLUME_ICON" "$EXPORT_OPTIONS_PLIST" "./gendmg.sh"; do
+    if [ ! -e "$file" ]; then
+        echo "Error: File not found at $file"
+        exit 1
+    fi
+done
+
+# Ensure releases directory exists
+mkdir -p "$DMG_DIR" || { echo "Error: Failed to create $DMG_DIR"; exit 1; }
 
 # Check disk space
-DMG_DIR=$(dirname "$DMG_BASE_PATH")
-AVAILABLE_SPACE=$(df -P "$DMG_DIR" | tail -1 | awk '{print $4}' | awk '{print $1 / 1024}') # MB
+AVAILABLE_SPACE=$(df -P "$DMG_DIR" | tail -1 | awk '{print $4}' | awk '{print $1 / 1024}')
 if (( $(echo "$AVAILABLE_SPACE < $MIN_SPACE_MB" | bc -l) )); then
-    echo "Error: Insufficient disk space. At least $MIN_SPACE_MB MB is required, but only ${AVAILABLE_SPACE} MB is available."
+    echo "Error: Insufficient disk space. Need $MIN_SPACE_MB MB, got ${AVAILABLE_SPACE} MB."
     exit 1
 fi
 
 # Clean build directory
 echo "Cleaning build directory..."
 rm -rf "$EXPORT_PATH"
-mkdir -p "$EXPORT_PATH" "$DMG_DIR"
+mkdir -p "$EXPORT_PATH"
 
 # Build and archive
 echo "Archiving $SCHEME..."
