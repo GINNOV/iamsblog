@@ -36,10 +36,18 @@ jobs:
       - name: Build and package ADFinder
         run: |
           chmod +x Amiga/Tools/ADFinder/distribution/build_and_package.sh Amiga/Tools/ADFinder/distribution/gendmg.sh
-          echo "Running: ./Amiga/Tools/ADFinder/distribution/build_and_package.sh --project Amiga/Tools/ADFinder/ADFinder.xcodeproj --scheme \"ADFinder - Release\" --configuration Release"
+          echo "Running: ./build_and_package.sh --project ../ADFinder.xcodeproj --scheme \"ADFinder - Release\" --configuration Release"
           ls -l Amiga/Tools/ADFinder/distribution/build/ADFinder.app Amiga/Tools/ADFinder/distribution/dmg_assets/*
           cd Amiga/Tools/ADFinder/distribution
-          ./build_and_package.sh --project ../ADFinder.xcodeproj --scheme "ADFinder - Release" --configuration Release > build.log 2>&1 || { cat build.log; exit 1; }
+          set -x  # Enable tracing
+          (./build_and_package.sh --project ../ADFinder.xcodeproj --scheme "ADFinder - Release" --configuration Release) 2>&1 | tee build.log
+          EXIT_CODE=${PIPESTATUS[0]}
+          set +x  # Disable tracing
+          if [ $EXIT_CODE -ne 0 ]; then
+            echo "Build failed with exit code $EXIT_CODE. Log contents:"
+            cat build.log
+            exit $EXIT_CODE
+          fi
           cat build.log
 
       - name: Upload DMG
