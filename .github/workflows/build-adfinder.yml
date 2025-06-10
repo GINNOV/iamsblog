@@ -63,22 +63,21 @@ jobs:
              exit 1
           fi
 
-      # Step 4: Run the all-in-one build and package script with extra debugging.
-      # This script handles both the xcodebuild process and the final DMG creation.
+      # Step 4: Make scripts non-interactive and executable, then run build.
       - name: Build .app and Create .dmg
         run: |
           set -euo pipefail
           cd Amiga/Tools/ADFinder/distribution
 
-          # Inject 'set -x' into both build scripts for maximum verbosity.
-          # This will print every command inside the scripts as they run.
-          echo "Injecting 'set -x' for deep debugging into both scripts..."
-          sed -i '' '2i\'$'\n''set -x'$'\n' build_and_package.sh
-          sed -i '' '2i\'$'\n''set -x'$'\n' gendmg.sh
+          # Make the script non-interactive by removing the 'read' command and its 'if' block.
+          # This is the key fix for running in an automated CI environment.
+          echo "Making gendmg.sh non-interactive..."
+          sed -i '' '/# Check if DMG already exists/,/fi/d' gendmg.sh
 
           chmod +x build_and_package.sh
+          chmod +x gendmg.sh
+          
           echo "▶ Starting build and package script..."
-          # Execute the script. It will now be fully verbose.
           ./build_and_package.sh --project ../ADFinder.xcodeproj --scheme "ADFinder - Release" --configuration Release
           echo "✅ Build and package script completed successfully."
 
