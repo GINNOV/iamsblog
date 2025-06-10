@@ -5,18 +5,18 @@ set -e
 
 # Project settings
 PROJECT_NAME="ADFinder"
-PROJECT_PATH="${PROJECT_NAME}.xcodeproj" # or .xcworkspace
+PROJECT_PATH="../../Amiga/Tools/ADFinder/${PROJECT_NAME}.xcodeproj" # Updated path
 SCHEME="${PROJECT_NAME}"
 CONFIGURATION="Release"
 ARCHIVE_PATH="./build/${PROJECT_NAME}.xcarchive"
 EXPORT_PATH="./build"
 APP_PATH="${EXPORT_PATH}/${PROJECT_NAME}.app"
-DMG_BASE_PATH="./releases/${PROJECT_NAME}.dmg"
-README_PATH="README.md"
+DMG_BASE_PATH="../releases/${PROJECT_NAME}.dmg"
+README_PATH="dmg_assets/README.md"
 BACKGROUND_IMAGE="dmg_assets/dmg-background.png"
 VOLUME_ICON="dmg_assets/dmg-icon.icns"
-EXPORT_OPTIONS_PLIST="exportOptions.plist"
-MIN_SPACE_MB=1024 # Match gendmg.sh requirement
+EXPORT_OPTIONS_PLIST="../exportOptions.plist"
+MIN_SPACE_MB=1024
 
 # Usage function
 usage() {
@@ -26,7 +26,7 @@ usage() {
     echo "  --scheme <scheme>         Build scheme (default: $SCHEME)"
     echo "  --configuration <config>  Build configuration (default: $CONFIGURATION)"
     echo "Example:"
-    echo "  $0 --project ${PROJECT_NAME}.xcodeproj --scheme ${PROJECT_NAME} --configuration Release"
+    echo "  $0 --project ../../Amiga/Tools/ADFinder/${PROJECT_NAME}.xcodeproj --scheme ${PROJECT_NAME} --configuration Release"
     exit 1
 }
 
@@ -58,8 +58,8 @@ if [ ! -f "$VOLUME_ICON" ]; then
     echo "Error: Volume icon not found at $VOLUME_ICON"
     exit 1
 fi
-if [ ! -f "./distribution/gendmg.sh" ]; then
-    echo "Error: gendmg.sh not found at ./distribution/gendmg.sh"
+if [ ! -f "./gendmg.sh" ]; then
+    echo "Error: gendmg.sh not found at ./gendmg.sh"
     exit 1
 fi
 if [ ! -f "$EXPORT_OPTIONS_PLIST" ]; then
@@ -110,7 +110,7 @@ fi
 
 # Create DMG
 echo "Creating DMG with gendmg.sh..."
-bash ./distribution/gendmg.sh \
+bash ./gendmg.sh \
     --readme "$README_PATH" \
     --app "$APP_PATH" \
     --dmg "$DMG_BASE_PATH" \
