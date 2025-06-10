@@ -63,11 +63,13 @@ jobs:
              exit 1
           fi
 
-      # Step 4: Run the all-in-one build and package script.
+      # Step 4: Run the all-in-one build and package script with extra debugging.
       # This script handles both the xcodebuild process and the final DMG creation.
       - name: Build .app and Create .dmg
         run: |
-          set -euo pipefail
+          # The 'set -x' command prints each command before it is executed,
+          # which will show us the exact output from the failing 'create-dmg' command.
+          set -euxo pipefail
           cd Amiga/Tools/ADFinder/distribution
           chmod +x build_and_package.sh
           echo "▶ Starting build and package script..."
