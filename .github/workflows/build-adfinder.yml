@@ -30,22 +30,36 @@ jobs:
           fetch-depth: 0
 
       # Step 2: Select the required Xcode version.
-      # This loop ensures that a version of Xcode 16 is used for the build.
+      # This logic iterates through potential Xcode 16 versions and selects the
+      # first one it finds, ensuring compatibility with the project file format.
       - name: Check and select Xcode version
         run: |
           echo "Default Xcode version:"
           xcodebuild -version
-          # Prefer Xcode 16 if available on the runner
-          if [ -d "/Applications/Xcode_16.app/Contents/Developer" ]; then
-            echo "Selecting Xcode 16..."
-            sudo xcode-select -s "/Applications/Xcode_16.app/Contents/Developer"
-          fi
+          echo "Available Xcode installations:"
+          ls -d /Applications/Xcode*.app
+          
+          # Loop through potential Xcode 16 versions and select the first one found
+          for version in 16.2 16.1 16.0 16; do
+            if [ -d "/Applications/Xcode_${version}.app" ]; then
+              echo "Found Xcode ${version}. Selecting it."
+              sudo xcode-select -s "/Applications/Xcode_${version}.app/Contents/Developer"
+              break
+            fi
+          done
+
           echo "Selected Xcode version:"
           xcodebuild -version
 
+          # Verify that the selected version is indeed Xcode 16 or newer
+          if [ "$(xcodebuild -version | awk '/Xcode/ {print $2}' | cut -d. -f1)" -lt 16 ]; then
+             echo "::error::Failed to select Xcode 16.x. The active version is still less than 16."
+             exit 1
+          fi
+
       # Step 3: Build the .app from the Xcode project.
       # The build_and_package.sh script handles the xcodebuild commands.
-      # We removed output redirection to ensure build logs/errors are visible.
+      # Build output is directed to the logs for easier debugging.
       - name: Build and export ADFinder
         run: |
           set -euo pipefail
@@ -81,13 +95,11 @@ jobs:
         uses: actions/checkout@v4
 
       # Step 2: Download the ADFinder.app artifact that was built in the previous job.
-      # It will be placed in the specified 'path'.
       - name: Download ADFinder.app artifact
         uses: actions/download-artifact@v4
         with:
           name: ADFinder-App
-          # The artifact will be downloaded to this directory, resulting in:
-          # Amiga/Tools/ADFinder/distribution/build/ADFinder.app
+          # The artifact will be downloaded into this directory structure.
           path: Amiga/Tools/ADFinder/distribution/build
 
       # Step 3: Install the 'create-dmg' utility using Homebrew.
