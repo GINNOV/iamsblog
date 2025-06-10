@@ -38,7 +38,6 @@ jobs:
         run: |
           xcodebuild -version
           xcode-select -p
-          # Try Xcode 16.2 (latest available), fall back to listing versions
           for version in 16.2 16.1 16.0; do
             if [ -d "/Applications/Xcode_${version}.app/Contents/Developer" ]; then
               sudo xcode-select -s "/Applications/Xcode_${version}.app/Contents/Developer"
@@ -107,14 +106,22 @@ jobs:
           chmod +x Amiga/Tools/ADFinder/distribution/gendmg.sh
           cd Amiga/Tools/ADFinder/distribution
           echo "▶ Starting DMG creation..."
+          echo "Running: ./gendmg.sh --readme dmg_assets/README.md --app build/ADFinder.app --dmg ../releases/ADFinder.dmg --background dmg_assets/dmg-background.png --volicon dmg_assets/dmg-icon.icns"
+          set -x
           ./gendmg.sh --readme dmg_assets/README.md --app build/ADFinder.app --dmg ../releases/ADFinder.dmg --background dmg_assets/dmg-background.png --volicon dmg_assets/dmg-icon.icns \
             2> >(tee dmg-stderr.log >&2) \
             > >(tee dmg-stdout.log)
-          echo "✅ DMG creation completed."
+          EXIT_CODE=${PIPESTATUS[0]}
+          set +x
+          echo "DMG creation exited with code $EXIT_CODE"
           echo "--- STDERR ---"
           cat dmg-stderr.log
           echo "--- STDOUT ---"
           cat dmg-stdout.log
+          if [ $EXIT_CODE -ne 0 ]; then
+            echo "::error::DMG creation failed. See logs above."
+            exit $EXIT_CODE
+          fi
           ls -l ../releases/ADFinder.dmg || echo "::error::ADFinder.dmg not found in releases directory"
 
       - name: Upload DMG logs
