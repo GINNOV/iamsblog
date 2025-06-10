@@ -40,15 +40,16 @@ jobs:
           ls -l Amiga/Tools/ADFinder/distribution/build/ADFinder.app Amiga/Tools/ADFinder/distribution/dmg_assets/*
           cd Amiga/Tools/ADFinder/distribution
           set -x
-          ./build_and_package.sh --project ../ADFinder.xcodeproj --scheme "ADFinder - Release" --configuration Release > build.log 2>&1
+          # Stream output live and save to log
+          ./build_and_package.sh --project ../ADFinder.xcodeproj --scheme "ADFinder - Release" --configuration Release 2>&1 | tee build.log
           EXIT_CODE=${PIPESTATUS[0]}
           set +x
+          echo "Build process exited with code $EXIT_CODE"
+          cat build.log
           if [ $EXIT_CODE -ne 0 ]; then
-            echo "Build or export failed with exit code $EXIT_CODE. Log contents:"
-            cat build.log
+            echo "Build or export failed. See log above."
             exit $EXIT_CODE
           fi
-          cat build.log
           ls -l build/ADFinder.app
 
       - name: Upload .app (for debugging)
