@@ -33,12 +33,12 @@ jobs:
 
       - name: Build and package ADFinder
         run: |
-          chmod +x distribution/build_and_package.sh distribution/gendmg.sh
-          ./distribution/build_and_package.sh --project Amiga/Tools/ADFinder/ADFinder.xcodeproj --scheme ADFinder --configuration Release
+          chmod +x Amiga/Tools/ADFinder/distribution/build_and_package.sh Amiga/Tools/ADFinder/distribution/gendmg.sh
+          ./Amiga/Tools/ADFinder/distribution/build_and_package.sh --project Amiga/Tools/ADFinder/ADFinder.xcodeproj --scheme ADFinder --configuration Release
 
       - name: Upload DMG
         uses: actions/upload-artifact@v4.4.3
         with:
           name: ADFinder-DMG
-          path: releases/ADFinder-*.dmg
+          path: Amiga/Tools/ADFinder/releases/ADFinder-*.dmg
           retention-days: 7
