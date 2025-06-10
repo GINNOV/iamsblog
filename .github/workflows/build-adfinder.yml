@@ -14,7 +14,7 @@ jobs:
           echo "Commit message: ${{ github.event.head_commit.message }}"
           echo "Contains #build-binary: ${{ contains(github.event.head_commit.message, '#build-binary') }}"
 
-  build:
+  build-and-export:
     needs: debug
     if: contains(github.event.head_commit.message, '#build-binary')
     runs-on: macos-latest
@@ -33,26 +33,68 @@ jobs:
         run: |
           ls -R Amiga/Tools/ADFinder/distribution
 
-      - name: Build and package ADFinder
+      - name: Build and export ADFinder
         run: |
-          chmod +x Amiga/Tools/ADFinder/distribution/build_and_package.sh Amiga/Tools/ADFinder/distribution/gendmg.sh
-          echo "Running: ./build_and_package.sh --project ../ADFinder.xcodeproj --scheme \"ADFinder - Release\" --configuration Release"
+          chmod +x Amiga/Tools/ADFinder/distribution/build_and_package.sh
+          echo "Running: cd Amiga/Tools/ADFinder/distribution && ./build_and_package.sh --project ../ADFinder.xcodeproj --scheme \"ADFinder - Release\" --configuration Release"
           ls -l Amiga/Tools/ADFinder/distribution/build/ADFinder.app Amiga/Tools/ADFinder/distribution/dmg_assets/*
           cd Amiga/Tools/ADFinder/distribution
-          set -x  # Enable tracing
-          (./build_and_package.sh --project ../ADFinder.xcodeproj --scheme "ADFinder - Release" --configuration Release) 2>&1 | tee build.log
+          set -x
+          ./build_and_package.sh --project ../ADFinder.xcodeproj --scheme "ADFinder - Release" --configuration Release > build.log 2>&1
           EXIT_CODE=${PIPESTATUS[0]}
-          set +x  # Disable tracing
+          set +x
           if [ $EXIT_CODE -ne 0 ]; then
-            echo "Build failed with exit code $EXIT_CODE. Log contents:"
+            echo "Build or export failed with exit code $EXIT_CODE. Log contents:"
             cat build.log
             exit $EXIT_CODE
           fi
           cat build.log
+          ls -l build/ADFinder.app
+
+      - name: Upload .app (for debugging)
+        uses: actions/upload-artifact@v4.4.3
+        with:
+          name: ADFinder-App
+          path: Amiga/Tools/ADFinder/distribution/build/ADFinder.app
+          retention-days: 7
+
+  create-dmg:
+    needs: build-and-export
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.2.0
+        with:
+          fetch-depth: 1
+
+      - name: Install Homebrew
+        run: |
+          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+          echo "/opt/homebrew/bin" >> $GITHUB_PATH
+
+      - name: Install create-dmg
+        run: brew install create-dmg
+
+      - name: Create DMG
+        run: |
+          chmod +x Amiga/Tools/ADFinder/distribution/gendmg.sh
+          cd Amiga/Tools/ADFinder/distribution
+          echo "Running: ./gendmg.sh --readme dmg_assets/README.md --app build/ADFinder.app --dmg ../releases/ADFinder.dmg --background dmg_assets/dmg-background.png --volicon dmg_assets/dmg-icon.icns"
+          set -x
+          ./gendmg.sh --readme dmg_assets/README.md --app build/ADFinder.app --dmg ../releases/ADFinder.dmg --background dmg_assets/dmg-background.png --volicon dmg_assets/dmg-icon.icns > dmg.log 2>&1
+          EXIT_CODE=${PIPESTATUS[0]}
+          set +x
+          if [ $EXIT_CODE -ne 0 ]; then
+            echo "DMG creation failed with exit code $EXIT_CODE. Log contents:"
+            cat dmg.log
+            exit $EXIT_CODE
+          fi
+          cat dmg.log
+          ls -l ../releases/ADFinder.dmg
 
       - name: Upload DMG
         uses: actions/upload-artifact@v4.4.3
         with:
           name: ADFinder-DMG
-          path: Amiga/Tools/ADFinder/releases/ADFinder-*.dmg
+          path: Amiga/Tools/ADFinder/releases/ADFinder*.dmg
           retention-days: 7
