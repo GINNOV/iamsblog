@@ -34,10 +34,13 @@ jobs:
         run: |
           ls -R Amiga/Tools/ADFinder/distribution
 
-      - name: Check Xcode version
+      - name: Check and select Xcode version
         run: |
           xcodebuild -version
           xcode-select -p
+          # Force Xcode 16.x (adjust version based on available runners)
+          sudo xcode-select -s /Applications/Xcode_16.0.app/Contents/Developer || \
+          { echo "::error::Failed to select Xcode 16.0. Available versions:"; ls -d /Applications/Xcode_*.app/Contents/Developer; exit 1; }
 
       - name: Build and export ADFinder
         continue-on-error: false
