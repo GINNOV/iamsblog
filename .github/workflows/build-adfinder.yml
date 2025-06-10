@@ -1,5 +1,5 @@
-# This workflow builds the ADFinder application, packages it into a .app,
-# and then creates a .dmg disk image.
+# This workflow builds the ADFinder application and packages it into a .dmg disk image
+# in a single, streamlined job.
 #
 # Trigger:
 # - Runs on a push to the 'master' branch ONLY if the commit message
@@ -14,9 +14,9 @@ on:
   workflow_dispatch:
 
 jobs:
-  # This job builds the Xcode project and creates the .app bundle.
-  # It then uploads the .app as an artifact for the next job.
-  build-and-export:
+  # This single job handles all steps: dependency installation, building,
+  # and packaging the DMG.
+  build-and-create-dmg:
     # This condition ensures the job only runs if the commit message
     # contains '#build-binary'. This check is case-sensitive.
     if: contains(github.event.head_commit.message, '#build-binary')
@@ -29,7 +29,13 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Step 2: Select the required Xcode version.
+      # Step 2: Install the 'create-dmg' utility.
+      # This is crucial because the user's build script needs this command to
+      # successfully create the disk image.
+      - name: Install create-dmg dependency
+        run: brew install create-dmg
+
+      # Step 3: Select the required Xcode version.
       # This logic iterates through potential Xcode 16 versions and selects the
       # first one it finds, ensuring compatibility with the project file format.
       - name: Check and select Xcode version
@@ -57,86 +63,24 @@ jobs:
              exit 1
           fi
 
-      # Step 3: Build the .app from the Xcode project.
-      # The build_and_package.sh script handles the xcodebuild commands.
-      # Build output is directed to the logs for easier debugging.
-      - name: Build and export ADFinder
+      # Step 4: Run the all-in-one build and package script.
+      # This script handles both the xcodebuild process and the final DMG creation.
+      - name: Build .app and Create .dmg
         run: |
           set -euo pipefail
-          # Navigate to the directory containing the build script
           cd Amiga/Tools/ADFinder/distribution
-          # Make the build script executable
           chmod +x build_and_package.sh
-          echo "▶ Starting build and export script..."
-          # Execute the script. All output will now go to the Actions log.
+          echo "▶ Starting build and package script..."
+          # Execute the script. It will build the .app and then call gendmg.sh,
+          # which can now find the 'create-dmg' command.
           ./build_and_package.sh --project ../ADFinder.xcodeproj --scheme "ADFinder - Release" --configuration Release
-          echo "✅ Build and export completed successfully."
-          echo "Verifying that ADFinder.app was created:"
-          ls -ld build/ADFinder.app
-
-      # Step 4: Upload the compiled .app as an artifact.
-      # This allows the next job ('create-dmg') to download and use it.
-      - name: Upload .app artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ADFinder-App
-          path: Amiga/Tools/ADFinder/distribution/build/ADFinder.app
-          retention-days: 7
-
-  # This job takes the .app bundle from the previous job,
-  # downloads it, and packages it into a distributable .dmg file.
-  create-dmg:
-    # This job depends on the successful completion of 'build-and-export'.
-    needs: build-and-export
-    runs-on: macos-latest
-    steps:
-      # Step 1: Check out the repository's code to get access to scripts and assets.
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      # Step 2: Download the ADFinder.app artifact that was built in the previous job.
-      - name: Download ADFinder.app artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: ADFinder-App
-          # The artifact will be downloaded into this directory structure.
-          path: Amiga/Tools/ADFinder/distribution/build
-
-      # Step 3: Install the 'create-dmg' utility using Homebrew.
-      - name: Install create-dmg
-        run: brew install create-dmg
-
-      # Step 4: Create the final DMG file using the provided script and assets.
-      - name: Create DMG
-        run: |
-          set -euo pipefail
-          # Navigate to the directory containing the DMG generation script
-          cd Amiga/Tools/ADFinder/distribution
-          # Make the script executable
-          chmod +x gendmg.sh
-          echo "▶ Starting DMG creation..."
-          # Verify that the .app bundle exists before trying to package it
-          if [ ! -d "build/ADFinder.app" ]; then
-            echo "::error::build/ADFinder.app not found after download!"
-            echo "Directory contents:"
-            ls -R
-            exit 1
-          fi
-          # Ensure the target directory for the DMG exists
-          mkdir -p ../releases
-          # Run the script to create the DMG, logging all output
-          ./gendmg.sh --app build/ADFinder.app --dmg ../releases/ADFinder.dmg \
-            --readme dmg_assets/README.md \
-            --background dmg_assets/dmg-background.png \
-            --volicon dmg_assets/dmg-icon.icns
-          echo "✅ DMG creation script finished."
-          echo "Verifying that ADFinder.dmg was created:"
-          ls -l ../releases/ADFinder.dmg
+          echo "✅ Build and package script completed successfully."
 
       # Step 5: Upload the final .dmg file as a workflow artifact.
+      # The path uses a wildcard to match the versioned DMG file name.
       - name: Upload DMG artifact
         uses: actions/upload-artifact@v4
         with:
           name: ADFinder-DMG
-          path: Amiga/Tools/ADFinder/releases/ADFinder.dmg
+          path: Amiga/Tools/ADFinder/releases/ADFinder*.dmg
           retention-days: 7
