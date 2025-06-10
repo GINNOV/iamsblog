@@ -1,4 +1,3 @@
-yaml
 name: Build ADFinder DMG
 
 on:
@@ -10,7 +9,7 @@ on:
 
 jobs:
   debug:
-    runs-on: ubuntu-latest # Cheaper runner for debug
+    runs-on: ubuntu-latest
     steps:
       - name: Debug commit message
         run: |
@@ -18,7 +17,7 @@ jobs:
           echo "Contains #build-binary: ${{ contains(github.event.head_commit.message, '#build-binary') }}"
 
   build:
-    needs: debug # Run after debug
+    needs: debug
     if: contains(github.event.head_commit.message, '#build-binary')
     runs-on: macos-latest
     steps:
