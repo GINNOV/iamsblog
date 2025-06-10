@@ -13,6 +13,7 @@ jobs:
         run: |
           echo "Commit message: ${{ github.event.head_commit.message }}"
           echo "Contains #build-binary: ${{ contains(github.event.head_commit.message, '#build-binary') }}"
+          echo "Full GitHub context: ${{ toJSON(github) }}"
 
   build-and-export:
     needs: debug
@@ -33,24 +34,35 @@ jobs:
         run: |
           ls -R Amiga/Tools/ADFinder/distribution
 
-      - name: Build and export ADFinder
+      - name: Check Xcode version
         run: |
+          xcodebuild -version
+          xcode-select -p
+
+      - name: Build and export ADFinder
+        continue-on-error: false
+        run: |
+          set -euo pipefail
           chmod +x Amiga/Tools/ADFinder/distribution/build_and_package.sh
-          echo "Running: cd Amiga/Tools/ADFinder/distribution && ./build_and_package.sh --project ../ADFinder.xcodeproj --scheme \"ADFinder - Release\" --configuration Release"
-          ls -l Amiga/Tools/ADFinder/distribution/build/ADFinder.app Amiga/Tools/ADFinder/distribution/dmg_assets/*
           cd Amiga/Tools/ADFinder/distribution
-          set -x
-          # Stream output live and save to log
-          ./build_and_package.sh --project ../ADFinder.xcodeproj --scheme "ADFinder - Release" --configuration Release 2>&1 | tee build.log
-          EXIT_CODE=${PIPESTATUS[0]}
-          set +x
-          echo "Build process exited with code $EXIT_CODE"
-          cat build.log
-          if [ $EXIT_CODE -ne 0 ]; then
-            echo "Build or export failed. See log above."
-            exit $EXIT_CODE
-          fi
-          ls -l build/ADFinder.app
+          echo "▶ Starting build script..."
+          ./build_and_package.sh --project ../ADFinder.xcodeproj --scheme "ADFinder - Release" --configuration Release \
+            2> >(tee build-stderr.log >&2) \
+            > >(tee build-stdout.log)
+          echo "✅ Script completed."
+          echo "--- STDERR ---"
+          cat build-stderr.log
+          echo "--- STDOUT ---"
+          cat build-stdout.log
+          ls -l build/ADFinder.app || echo "::error::ADFinder.app not found in build directory"
+
+      - name: Upload build logs
+        uses: actions/upload-artifact@v4.4.3
+        with:
+          name: Build-Logs
+          path: |
+            Amiga/Tools/ADFinder/distribution/build-stdout.log
+            Amiga/Tools/ADFinder/distribution/build-stderr.log
 
       - name: Upload .app (for debugging)
         uses: actions/upload-artifact@v4.4.3
@@ -78,20 +90,27 @@ jobs:
 
       - name: Create DMG
         run: |
+          set -euo pipefail
           chmod +x Amiga/Tools/ADFinder/distribution/gendmg.sh
           cd Amiga/Tools/ADFinder/distribution
-          echo "Running: ./gendmg.sh --readme dmg_assets/README.md --app build/ADFinder.app --dmg ../releases/ADFinder.dmg --background dmg_assets/dmg-background.png --volicon dmg_assets/dmg-icon.icns"
-          set -x
-          ./gendmg.sh --readme dmg_assets/README.md --app build/ADFinder.app --dmg ../releases/ADFinder.dmg --background dmg_assets/dmg-background.png --volicon dmg_assets/dmg-icon.icns > dmg.log 2>&1
-          EXIT_CODE=${PIPESTATUS[0]}
-          set +x
-          if [ $EXIT_CODE -ne 0 ]; then
-            echo "DMG creation failed with exit code $EXIT_CODE. Log contents:"
-            cat dmg.log
-            exit $EXIT_CODE
-          fi
-          cat dmg.log
-          ls -l ../releases/ADFinder.dmg
+          echo "▶ Starting DMG creation..."
+          ./gendmg.sh --readme dmg_assets/README.md --app build/ADFinder.app --dmg ../releases/ADFinder.dmg --background dmg_assets/dmg-background.png --volicon dmg_assets/dmg-icon.icns \
+            2> >(tee dmg-stderr.log >&2) \
+            > >(tee dmg-stdout.log)
+          echo "✅ DMG creation completed."
+          echo "--- STDERR ---"
+          cat dmg-stderr.log
+          echo "--- STDOUT ---"
+          cat dmg-stdout.log
+          ls -l ../releases/ADFinder.dmg || echo "::error::ADFinder.dmg not found in releases directory"
+
+      - name: Upload DMG logs
+        uses: actions/upload-artifact@v4.4.3
+        with:
+          name: DMG-Logs
+          path: |
+            Amiga/Tools/ADFinder/distribution/dmg-stdout.log
+            Amiga/Tools/ADFinder/distribution/dmg-stderr.log
 
       - name: Upload DMG
         uses: actions/upload-artifact@v4.4.3
