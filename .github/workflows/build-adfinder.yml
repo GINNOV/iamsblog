@@ -1,48 +1,49 @@
 name: Build ADFinder DMG
 
-on:
-  push:
-    branches: [master]
-  workflow_dispatch:
+  on:
+    push:
+      branches: [master]
+    workflow_dispatch:
 
-jobs:
-  debug:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Debug commit message
-        run: |
-          echo "Commit message: ${{ github.event.head_commit.message }}"
-          echo "Contains #build-binary: ${{ contains(github.event.head_commit.message, '#build-binary') }}"
+  jobs:
+    debug:
+      runs-on: ubuntu-latest
+      steps:
+        - name: Debug commit message
+          run: |
+            echo "Commit message: ${{ github.event.head_commit.message }}"
+            echo "Contains #build-binary: ${{ contains(github.event.head_commit.message, '#build-binary') }}"
 
-  build:
-    needs: debug
-    if: contains(github.event.head_commit.message, '#build-binary')
-    runs-on: macos-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4.2.0
-        with:
-          fetch-depth: 1
+    build:
+      needs: debug
+      if: contains(github.event.head_commit.message, '#build-binary')
+      runs-on: macos-latest
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v4.2.0
+          with:
+            fetch-depth: 1
 
-      - name: Install Homebrew
-        run: |
-          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-          echo "/opt/homebrew/bin" >> $GITHUB_PATH
+        - name: Install Homebrew
+          run: |
+            /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+            echo "/opt/homebrew/bin" >> $GITHUB_PATH
 
-      - name: List directory for debugging
-        run: |
-          ls -R Amiga/Tools/ADFinder/distribution
+        - name: List directory for debugging
+          run: |
+            ls -R Amiga/Tools/ADFinder/distribution
 
-      - name: Build and package ADFinder
-        run: |
-          chmod +x Amiga/Tools/ADFinder/distribution/build_and_package.sh Amiga/Tools/ADFinder/distribution/gendmg.sh
-          echo "Running: ./Amiga/Tools/ADFinder/distribution/build_and_package.sh --project Amiga/Tools/ADFinder/ADFinder.xcodeproj --scheme \"ADFinder - Release\" --configuration Release"
-          ls -l Amiga/Tools/ADFinder/distribution/build/ADFinder.app Amiga/Tools/ADFinder/distribution/dmg_assets/*
-          ./Amiga/Tools/ADFinder/distribution/build_and_package.sh --project Amiga/Tools/ADFinder/ADFinder.xcodeproj --scheme "ADFinder - Release" --configuration Release
+        - name: Build and package ADFinder
+          run: |
+            chmod +x Amiga/Tools/ADFinder/distribution/build_and_package.sh Amiga/Tools/ADFinder/distribution/gendmg.sh
+            echo "Running: ./Amiga/Tools/ADFinder/distribution/build_and_package.sh --project Amiga/Tools/ADFinder/ADFinder.xcodeproj --scheme \"ADFinder - Release\" --configuration Release"
+            ls -l Amiga/Tools/ADFinder/distribution/build/ADFinder.app Amiga/Tools/ADFinder/distribution/dmg_assets/*
+            ./Amiga/Tools/ADFinder/distribution/build_and_package.sh --project Amiga/Tools/ADFinder/ADFinder.xcodeproj --scheme "ADFinder - Release" --configuration Release > build.log 2>&1
+            cat build.log
 
-      - name: Upload DMG
-        uses: actions/upload-artifact@v4.4.3
-        with:
-          name: ADFinder-DMG
-          path: Amiga/Tools/ADFinder/releases/ADFinder-*.dmg
-          retention-days: 7
+        - name: Upload DMG
+          uses: actions/upload-artifact@v4.4.3
+          with:
+            name: ADFinder-DMG
+            path: Amiga/Tools/ADFinder/releases/ADFinder-*.dmg
+            retention-days: 7
