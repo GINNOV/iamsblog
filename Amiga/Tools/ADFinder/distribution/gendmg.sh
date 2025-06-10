@@ -120,13 +120,11 @@ if [ ! -f "$VOLUME_ICON" ]; then
     exit 1
 fi
 
-# Check if DMG already exists
+# Interactive check for existing DMG has been removed for CI/CD compatibility.
+# The script will now always overwrite an existing DMG.
 if [ -f "$DMG_PATH" ]; then
-    read -p "DMG file already exists at $DMG_PATH. Overwrite? (y/N) " answer
-    if [[ ! "$answer" =~ ^[Yy]$ ]]; then
-        echo "Aborted."
-        exit 1
-    fi
+    echo "DMG file already exists at $DMG_PATH. Overwriting."
+    rm -f "$DMG_PATH"
 fi
 
 # Check disk space
