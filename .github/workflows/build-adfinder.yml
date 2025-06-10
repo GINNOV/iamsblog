@@ -1,168 +1,130 @@
+# This workflow builds the ADFinder application, packages it into a .app,
+# and then creates a .dmg disk image.
+#
+# Trigger:
+# - Runs on a push to the 'master' branch ONLY if the commit message
+#   includes the string '#build-binary'.
+# - Can also be triggered manually from the GitHub Actions UI.
+
 name: Build ADFinder DMG
 
 on:
   push:
-    branches: [master]
+    branches: [ master ]
   workflow_dispatch:
 
 jobs:
-  debug:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Debug commit message
-        run: |
-          echo "Commit message: ${{ github.event.head_commit.message }}"
-          echo "Contains #build-binary: ${{ contains(github.event.head_commit.message, '#build-binary') }}"
-          echo "Trigger check: #build-binary found in commit message"
-
+  # This job builds the Xcode project and creates the .app bundle.
+  # It then uploads the .app as an artifact for the next job.
   build-and-export:
-    needs: debug
+    # This condition ensures the job only runs if the commit message
+    # contains '#build-binary'. This check is case-sensitive.
     if: contains(github.event.head_commit.message, '#build-binary')
     runs-on: macos-latest
-    env:
-      DEBUG: false  # Set to true for detailed build logs if needed
     steps:
+      # Step 1: Check out the repository's code.
+      # fetch-depth: 0 ensures we get the full history to access commit messages.
       - name: Checkout code
-        uses: actions/checkout@v4.2.0
+        uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          fetch-depth: 0
 
-      - name: Install Homebrew
-        run: |
-          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-          echo "/opt/homebrew/bin" >> $GITHUB_PATH
-
-      - name: List directory for debugging
-        run: |
-          ls -R Amiga/Tools/ADFinder/distribution
-
+      # Step 2: Select the required Xcode version.
+      # This loop ensures that a version of Xcode 16 is used for the build.
       - name: Check and select Xcode version
         run: |
+          echo "Default Xcode version:"
           xcodebuild -version
-          xcode-select -p
-          for version in 16.2 16.1 16.0; do
-            if [ -d "/Applications/Xcode_${version}.app/Contents/Developer" ]; then
-              sudo xcode-select -s "/Applications/Xcode_${version}.app/Contents/Developer"
-              echo "Selected Xcode ${version}"
-              break
-            fi
-          done
-          if [ "$(xcodebuild -version | grep -o 'Xcode [0-9]*\.[0-9]*' | cut -d' ' -f2 | cut -d'.' -f1)" -lt 16 ]; then
-            echo "::error::Failed to select Xcode 16.x. Available versions:"
-            ls -d /Applications/Xcode_*.app/Contents/Developer
-            exit 1
+          # Prefer Xcode 16 if available on the runner
+          if [ -d "/Applications/Xcode_16.app/Contents/Developer" ]; then
+            echo "Selecting Xcode 16..."
+            sudo xcode-select -s "/Applications/Xcode_16.app/Contents/Developer"
           fi
+          echo "Selected Xcode version:"
+          xcodebuild -version
 
+      # Step 3: Build the .app from the Xcode project.
+      # The build_and_package.sh script handles the xcodebuild commands.
+      # We removed output redirection to ensure build logs/errors are visible.
       - name: Build and export ADFinder
-        continue-on-error: false
         run: |
           set -euo pipefail
-          chmod +x Amiga/Tools/ADFinder/distribution/build_and_package.sh
+          # Navigate to the directory containing the build script
           cd Amiga/Tools/ADFinder/distribution
-          echo "▶ Starting build script..."
-          if [ "$DEBUG" = "true" ]; then
-            ./build_and_package.sh --project ../ADFinder.xcodeproj --scheme "ADFinder - Release" --configuration Release \
-              2> >(tee build-stderr.log >&2) \
-              > >(tee build-stdout.log)
-            echo "✅ Script completed."
-            echo "--- STDERR ---"
-            cat build-stderr.log
-            echo "--- STDOUT ---"
-            cat build-stdout.log
-          else
-            ./build_and_package.sh --project ../ADFinder.xcodeproj --scheme "ADFinder - Release" --configuration Release > /dev/null 2>&1
-            if [ $? -ne 0 ]; then
-              echo "::error::Build or export failed. Check logs manually if needed."
-              exit 1
-            fi
-            echo "✅ Build and export completed successfully."
-          fi
-          ls -l build/ADFinder.app || echo "::error::ADFinder.app not found in build directory"
+          # Make the build script executable
+          chmod +x build_and_package.sh
+          echo "▶ Starting build and export script..."
+          # Execute the script. All output will now go to the Actions log.
+          ./build_and_package.sh --project ../ADFinder.xcodeproj --scheme "ADFinder - Release" --configuration Release
+          echo "✅ Build and export completed successfully."
+          echo "Verifying that ADFinder.app was created:"
+          ls -ld build/ADFinder.app
 
-      - name: Upload build logs (if DEBUG enabled)
-        if: env.DEBUG == 'true'
-        uses: actions/upload-artifact@v4.4.3
-        with:
-          name: Build-Logs
-          path: |
-            Amiga/Tools/ADFinder/distribution/build-stdout.log
-            Amiga/Tools/ADFinder/distribution/build-stderr.log
-
-      - name: Upload .app (for debugging)
-        uses: actions/upload-artifact@v4.4.3
+      # Step 4: Upload the compiled .app as an artifact.
+      # This allows the next job ('create-dmg') to download and use it.
+      - name: Upload .app artifact
+        uses: actions/upload-artifact@v4
         with:
           name: ADFinder-App
           path: Amiga/Tools/ADFinder/distribution/build/ADFinder.app
           retention-days: 7
 
+  # This job takes the .app bundle from the previous job,
+  # downloads it, and packages it into a distributable .dmg file.
   create-dmg:
+    # This job depends on the successful completion of 'build-and-export'.
     needs: build-and-export
     runs-on: macos-latest
     steps:
+      # Step 1: Check out the repository's code to get access to scripts and assets.
       - name: Checkout code
-        uses: actions/checkout@v4.2.0
+        uses: actions/checkout@v4
+
+      # Step 2: Download the ADFinder.app artifact that was built in the previous job.
+      # It will be placed in the specified 'path'.
+      - name: Download ADFinder.app artifact
+        uses: actions/download-artifact@v4
         with:
-          fetch-depth: 1
+          name: ADFinder-App
+          # The artifact will be downloaded to this directory, resulting in:
+          # Amiga/Tools/ADFinder/distribution/build/ADFinder.app
+          path: Amiga/Tools/ADFinder/distribution/build
 
-      - name: Install Homebrew
-        run: |
-          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-          echo "/opt/homebrew/bin" >> $GITHUB_PATH
-
+      # Step 3: Install the 'create-dmg' utility using Homebrew.
       - name: Install create-dmg
         run: brew install create-dmg
 
+      # Step 4: Create the final DMG file using the provided script and assets.
       - name: Create DMG
         run: |
           set -euo pipefail
-          chmod +x Amiga/Tools/ADFinder/distribution/gendmg.sh
+          # Navigate to the directory containing the DMG generation script
           cd Amiga/Tools/ADFinder/distribution
+          # Make the script executable
+          chmod +x gendmg.sh
           echo "▶ Starting DMG creation..."
-          echo "Running: ./gendmg.sh --readme dmg_assets/README.md --app build/ADFinder.app --dmg ../releases/ADFinder.dmg --background dmg_assets/dmg-background.png --volicon dmg_assets/dmg-icon.icns"
-          # Ensure releases directory exists
-          mkdir -p ../releases
-          set -x
+          # Verify that the .app bundle exists before trying to package it
           if [ ! -d "build/ADFinder.app" ]; then
-            echo "::error::build/ADFinder.app not found before DMG creation"
+            echo "::error::build/ADFinder.app not found after download!"
+            echo "Directory contents:"
+            ls -R
             exit 1
           fi
-          echo "Build directory content:"
-          ls -R build
-          echo "Assets directory content:"
-          ls -R dmg_assets
-          # Run gendmg.sh with compatible exit code capture
-          ./gendmg.sh --readme dmg_assets/README.md --app build/ADFinder.app --dmg ../releases/ADFinder.dmg --background dmg_assets/dmg-background.png --volicon dmg_assets/dmg-icon.icns \
-            2> >(tee dmg-stderr.log >&2) \
-            > >(tee dmg-stdout.log)
-          EXIT_CODE=$?
-          set +x
-          echo "DMG creation exited with code $EXIT_CODE"
-          echo "--- STDERR ---"
-          cat dmg-stderr.log
-          echo "--- STDOUT ---"
-          cat dmg-stdout.log
-          # Verify DMG file
-          if [ ! -f "../releases/ADFinder.dmg" ]; then
-            echo "::error::DMG file was not created"
-            exit 1
-          fi
-          if [ $EXIT_CODE -ne 0 ]; then
-            echo "::error::DMG creation failed. See logs above."
-            exit $EXIT_CODE
-          fi
-          ls -l ../releases/ADFinder.dmg || echo "::error::ADFinder.dmg not found in releases directory"
+          # Ensure the target directory for the DMG exists
+          mkdir -p ../releases
+          # Run the script to create the DMG, logging all output
+          ./gendmg.sh --app build/ADFinder.app --dmg ../releases/ADFinder.dmg \
+            --readme dmg_assets/README.md \
+            --background dmg_assets/dmg-background.png \
+            --volicon dmg_assets/dmg-icon.icns
+          echo "✅ DMG creation script finished."
+          echo "Verifying that ADFinder.dmg was created:"
+          ls -l ../releases/ADFinder.dmg
 
-      - name: Upload DMG logs
-        uses: actions/upload-artifact@v4.4.3
-        with:
-          name: DMG-Logs
-          path: |
-            Amiga/Tools/ADFinder/distribution/dmg-stdout.log
-            Amiga/Tools/ADFinder/distribution/dmg-stderr.log
-
-      - name: Upload DMG
-        uses: actions/upload-artifact@v4.4.3
+      # Step 5: Upload the final .dmg file as a workflow artifact.
+      - name: Upload DMG artifact
+        uses: actions/upload-artifact@v4
         with:
           name: ADFinder-DMG
-          path: Amiga/Tools/ADFinder/releases/ADFinder*.dmg
+          path: Amiga/Tools/ADFinder/releases/ADFinder.dmg
           retention-days: 7
