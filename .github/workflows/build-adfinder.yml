@@ -36,7 +36,9 @@ jobs:
       - name: Build and package ADFinder
         run: |
           chmod +x Amiga/Tools/ADFinder/distribution/build_and_package.sh Amiga/Tools/ADFinder/distribution/gendmg.sh
-          ./Amiga/Tools/ADFinder/distribution/build_and_package.sh --project Amiga/Tools/ADFinder/ADFinder.xcodeproj --scheme ADFinder --configuration Release
+          echo "Running: ./Amiga/Tools/ADFinder/distribution/build_and_package.sh --project Amiga/Tools/ADFinder/ADFinder.xcodeproj --scheme \"ADFinder - Release\" --configuration Release"
+          ls -l Amiga/Tools/ADFinder/distribution/build/ADFinder.app Amiga/Tools/ADFinder/distribution/dmg_assets/*
+          ./Amiga/Tools/ADFinder/distribution/build_and_package.sh --project Amiga/Tools/ADFinder/ADFinder.xcodeproj --scheme "ADFinder - Release" --configuration Release
 
       - name: Upload DMG
         uses: actions/upload-artifact@v4.4.3

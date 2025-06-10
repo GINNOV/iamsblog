@@ -69,12 +69,12 @@ if [ ! -f "$INFO_PLIST" ]; then
 fi
 
 # Get CFBundleShortVersionString (version) and CFBundleVersion (build number)
-APP_VERSION=$(defaults read "$INFO_PLIST" CFBundleShortVersionString 2>/dev/null)
+APP_VERSION=$(/usr/libexec/PlistBuddy -c "Print CFBundleShortVersionString" "$INFO_PLIST" 2>/dev/null)
 if [ -z "$APP_VERSION" ]; then
     echo "Error: Could not retrieve CFBundleShortVersionString from $INFO_PLIST"
     exit 1
 fi
-BUILD_NUMBER=$(defaults read "$INFO_PLIST" CFBundleVersion 2>/dev/null)
+BUILD_NUMBER=$(/usr/libexec/PlistBuddy -c "Print CFBundleVersion" "$INFO_PLIST" 2>/dev/null)
 if [ -z "$BUILD_NUMBER" ]; then
     echo "Error: Could not retrieve CFBundleVersion from $INFO_PLIST"
     exit 1
