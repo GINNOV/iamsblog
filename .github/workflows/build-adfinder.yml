@@ -38,9 +38,19 @@ jobs:
         run: |
           xcodebuild -version
           xcode-select -p
-          # Force Xcode 16.x (adjust version based on available runners)
-          sudo xcode-select -s /Applications/Xcode_16.0.app/Contents/Developer || \
-          { echo "::error::Failed to select Xcode 16.0. Available versions:"; ls -d /Applications/Xcode_*.app/Contents/Developer; exit 1; }
+          # Try Xcode 16.2 (latest available), fall back to listing versions
+          for version in 16.2 16.1 16.0; do
+            if [ -d "/Applications/Xcode_${version}.app/Contents/Developer" ]; then
+              sudo xcode-select -s "/Applications/Xcode_${version}.app/Contents/Developer"
+              echo "Selected Xcode ${version}"
+              break
+            fi
+          done
+          if [ "$(xcodebuild -version | grep -o 'Xcode [0-9]*\.[0-9]*' | cut -d' ' -f2 | cut -d'.' -f1)" -lt 16 ]; then
+            echo "::error::Failed to select Xcode 16.x. Available versions:"
+            ls -d /Applications/Xcode_*.app/Contents/Developer
+            exit 1
+          fi
 
       - name: Build and export ADFinder
         continue-on-error: false
