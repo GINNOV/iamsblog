@@ -34,7 +34,7 @@ usage() {
     echo "  --background <path>      Path to the background image (default: $BACKGROUND_IMAGE)"
     echo "  --volicon <path>         Path to the volume icon (default: $VOLUME_ICON)"
     echo "Example:"
-    echo "  ./gendmg.sh --readme dmg_assets/README.md --app ~/Downloads/ADFinder/ADFinder.app --dmg ../../releases/ADFinder.dmg --background dmg_assets/dmg-background.png --volicon dmg_assets/dmg-icon.icns" # Your example
+    echo "  ./gendmg.sh --readme dmg_assets/README.md --app ~/Downloads/ADFinder/ADFinder.app --dmg ../../releases/ADFinder.dmg --background dmg_assets/dmg-background.png --volicon dmg_assets/dmg-icon.icns"
     exit 1
 }
 
@@ -181,4 +181,6 @@ if ! create-dmg \
     exit 1
 fi
 
-echo "DMG created at: $DMG_PATH"
+# Verify DMG creation
+echo "gendmg.sh: DMG created at: $DMG_PATH"
+ls -lh "$DMG_PATH"

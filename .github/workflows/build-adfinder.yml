@@ -119,16 +119,50 @@ jobs:
           cd Amiga/Tools/ADFinder/distribution
           echo "▶ Starting DMG creation..."
           echo "Running: ./gendmg.sh --readme dmg_assets/README.md --app build/ADFinder.app --dmg ../releases/ADFinder.dmg --background dmg_assets/dmg-background.png --volicon dmg_assets/dmg-icon.icns"
+          # Ensure releases directory exists
+          mkdir -p ../releases
           set -x
           if [ ! -d "build/ADFinder.app" ]; then
             echo "::error::build/ADFinder.app not found before DMG creation"
             exit 1
           fi
-          # Add internal tracing to gendmg.sh
-          sed -i '' 's/set -e/set -ex/' gendmg.sh
+          echo "Build directory content:"
+          ls -R build
+          echo "Assets directory content:"
+          ls -R dmg_assets
+          # Run gendmg.sh with compatible exit code capture
           ./gendmg.sh --readme dmg_assets/README.md --app build/ADFinder.app --dmg ../releases/ADFinder.dmg --background dmg_assets/dmg-background.png --volicon dmg_assets/dmg-icon.icns \
             2> >(tee dmg-stderr.log >&2) \
             > >(tee dmg-stdout.log)
-          EXIT_CODE=${PIPESTATUS[0]}
+          EXIT_CODE=$?
           set +x
-          # Revert gendmg.sh
+          echo "DMG creation exited with code $EXIT_CODE"
+          echo "--- STDERR ---"
+          cat dmg-stderr.log
+          echo "--- STDOUT ---"
+          cat dmg-stdout.log
+          # Verify DMG file
+          if [ ! -f "../releases/ADFinder.dmg" ]; then
+            echo "::error::DMG file was not created"
+            exit 1
+          fi
+          if [ $EXIT_CODE -ne 0 ]; then
+            echo "::error::DMG creation failed. See logs above."
+            exit $EXIT_CODE
+          fi
+          ls -l ../releases/ADFinder.dmg || echo "::error::ADFinder.dmg not found in releases directory"
+
+      - name: Upload DMG logs
+        uses: actions/upload-artifact@v4.4.3
+        with:
+          name: DMG-Logs
+          path: |
+            Amiga/Tools/ADFinder/distribution/dmg-stdout.log
+            Amiga/Tools/ADFinder/distribution/dmg-stderr.log
+
+      - name: Upload DMG
+        uses: actions/upload-artifact@v4.4.3
+        with:
+          name: ADFinder-DMG
+          path: Amiga/Tools/ADFinder/releases/ADFinder*.dmg
+          retention-days: 7
