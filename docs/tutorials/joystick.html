@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Joystick Sprite Control - Back to Amiga Dev Hub</title>
+    <!-- Paths are relative to the 'tutorials' subfolder -->
+    <link rel="stylesheet" href="../common/style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="dark-theme">
+    
+    <div id="header-placeholder"></div>
+
+    <main class="content-page">
+      <section>
+        <h2>Interactive Sprites: Joystick Control</h2>
+        <p>Moving a sprite automatically is cool, but letting the user control it is what makes a game! This tutorial builds on our animation example by adding joystick support. We'll read input from the joystick port to move our sprite around the screen and use the fire button to trigger a simple explosion effect.</p>
+
+        <h3>How the Amiga Reads Joysticks</h3>
+        <p>The Amiga reads the state of the standard joystick (connected to Port 1) through one of its custom chips, the CIA (Complex Interface Adapter). Specifically, we read from a register often labelled `JOY0DAT` at address `$DFF00A`. This register gives us a snapshot of the joystick's direction and button states.</p>
+        <p>We'll read this register during our vertical blank interrupt. This creates a responsive "game loop" where we check for input and update the sprite's position 50 times per second (on a PAL Amiga).</p>
+        
+        <img src="https://placehold.co/600x350/1d4ed8/93c5fd?text=Amiga+Joystick+Control&font=press-start-2p" alt="Illustration of an Amiga joystick controlling a sprite" class="w-full max-w-lg mx-auto my-8 rounded-lg shadow-lg border-2 border-gray-600" />
+
+        <h3>The "Explosion" Effect</h3>
+        <p>How do we make the sprite "explode"? In this example, we'll use a simple but effective trick. We will define two different sets of sprite data: one for the normal ship and another that looks like a burst or explosion. When the fire button is pressed, our interrupt code will simply point the hardware to the explosion sprite data instead of the ship data. This instantly changes the sprite's appearance on screen.</p>
+        
+        <h4>The Complete Code (joystick_sprite.asm):</h4>
+        <div class="code-block-wrapper">
+            <button class="copy-code-button"><i class="far fa-copy"></i> Copy</button>
+            <pre><code><span class="code-comment">;-----------------------------------------------------</span>
+<span class="code-comment">;  Joystick Controlled Sprite with Explosion</span>
+<span class="code-comment">;  - Moves with joystick in Port 1</span>
+<span class="code-comment">;  - "Explodes" on fire button press</span>
+<span class="code-comment">;-----------------------------------------------------</span>
+<span class="code-keyword">CUSTOM</span>          <span class="code-keyword">equ</span>     <span class="code-hex">$DFF000</span>
+<span class="code-keyword">INTENA</span>          <span class="code-keyword">equ</span>     <span class="code-hex">CUSTOM+$9A</span>
+<span class="code-keyword">INTREQ</span>          <span class="code-keyword">equ</span>     <span class="code-hex">CUSTOM+$9C</span>
+<span class="code-keyword">DMACON</span>          <span class="code-keyword">equ</span>     <span class="code-hex">CUSTOM+$96</span>
+<span class="code-keyword">SPR0PTH</span>         <span class="code-keyword">equ</span>     <span class="code-hex">CUSTOM+$120</span>
+<span class="code-keyword">SPR0POS</span>         <span class="code-keyword">equ</span>     <span class="code-hex">CUSTOM+$140</span>
+<span class="code-keyword">SPR0CTL</span>         <span class="code-keyword">equ</span>     <span class="code-hex">CUSTOM+$142</span>
+<span class="code-keyword">SPRCOLOR17</span>      <span class="code-keyword">equ</span>     <span class="code-hex">CUSTOM+$1A2</span>
+<span class="code-keyword">SPRCOLOR18</span>      <span class="code-keyword">equ</span>     <span class="code-hex">CUSTOM+$1A4</span>
+<span class="code-keyword">SPRCOLOR19</span>      <span class="code-keyword">equ</span>     <span class="code-hex">CUSTOM+$1A6</span>
+<span class="code-keyword">JOY0DAT</span>         <span class="code-keyword">equ</span>     <span class="code-hex">$DFF00A</span> <span class="code-comment">; Joystick 1 Data</span>
+<span class="code-keyword">CIAAPRA</span>         <span class="code-keyword">equ</span>     <span class="code-hex">$BFE001</span> <span class="code-comment">; CIA Port A (for fire button)</span>
+
+<span class="code-keyword">EXEC_BASE</span>       <span class="code-keyword">equ</span>     <span class="code-hex">$4</span>
+<span class="code-keyword">LVL3_INT_VECTOR</span> <span class="code-keyword">equ</span>     <span class="code-hex">$6C</span>
+
+<span class="code-keyword">start:</span>
+    lea     CUSTOM,<span class="code-register">a5</span>
+    move.l  EXEC_BASE,<span class="code-register">a6</span>
+    move.l  LVL3_INT_VECTOR(<span class="code-register">a6</span>),old_int_vector(pc)
+    move.w  #$C000,INTENA(<span class="code-register">a5</span>)
+
+<span class="code-keyword">.waitvb:</span>
+    move.w  $DFF005,d0
+    btst    #8,d0
+    beq.s   .waitvb
+
+    lea     vblank_interrupt(pc),<span class="code-register">a0</span>
+    move.l  <span class="code-register">a0</span>,LVL3_INT_VECTOR(<span class="code-register">a6</span>)
+    
+    lea     sprite_ship(pc),<span class="code-register">a0</span>
+    move.l  <span class="code-register">a0</span>,SPR0PTH(<span class="code-register">a5</span>)
+    
+    move.w  <span class="code-hex">#$0f80</span>,SPRCOLOR17(<span class="code-register">a5</span>)
+    move.w  <span class="code-hex">#$0ff0</span>,SPRCOLOR18(<span class="code-register">a5</span>)
+    move.w  <span class="code-hex">#$0fff</span>,SPRCOLOR19(<span class="code-register">a5</span>)
+
+    move.w  #$8100,DMACON(<span class="code-register">a5</span>)
+    move.w  #$C020,INTENA(<span class="code-register">a5</span>)
+
+<span class="code-keyword">forever_loop:</span>
+    btst    #6,CIAAPRA
+    bne.s   forever_loop
+    
+<span class="code-keyword">exit:</span>
+    move.w  #$C020,INTENA(<span class="code-register">a5</span>)
+    move.l  old_int_vector(pc),LVL3_INT_VECTOR(<span class="code-register">a6</span>)
+    move.w  #$7FFF,DMACON(<span class="code-register">a5</span>)
+    rts
+
+<span class="code-keyword">vblank_interrupt:</span>
+    movem.l d0-d2/a0-a1/a5,<span class="code-register">-(sp)</span>
+    lea     CUSTOM,<span class="code-register">a5</span>
+    
+    <span class="code-comment">; --- Read Joystick ---</span>
+    move.w  JOY0DAT(<span class="code-register">a5</span>),<span class="code-register">d0</span>
+    move.w  <span class="code-register">d0</span>,<span class="code-register">d1</span>
+    
+    <span class="code-comment">; Vertical Movement (Y-axis)</span>
+    btst    #0,<span class="code-register">d0</span>
+    bne.s   .no_down
+    addq.w  #1,sprite_y(pc)
+<span class="code-keyword">.no_down:</span>
+    btst    #1,<span class="code-register">d0</span>
+    bne.s   .no_up
+    subq.w  #1,sprite_y(pc)
+<span class="code-keyword">.no_up:</span>
+
+    <span class="code-comment">; Horizontal Movement (X-axis)</span>
+    lsr.w   #8,<span class="code-register">d1</span>
+    btst    #0,<span class="code-register">d1</span>
+    bne.s   .no_right
+    addq.w  #1,sprite_x(pc)
+<span class="code-keyword">.no_right:</span>
+    btst    #1,<span class="code-register">d1</span>
+    bne.s   .no_left
+    subq.w  #1,sprite_x(pc)
+<span class="code-keyword">.no_left:</span>
+
+    <span class="code-comment">; --- Check Fire Button ---</span>
+    btst    #6,CIAAPRA
+    bne.s   .no_fire
+    lea     sprite_explosion(pc),<span class="code-register">a0</span> <span class="code-comment">; Point to explosion data</span>
+    move.l  <span class="code-register">a0</span>,SPR0PTH(<span class="code-register">a5</span>)
+    bra.s   .update_pos
+<span class="code-keyword">.no_fire:</span>
+    lea     sprite_ship(pc),<span class="code-register">a0</span> <span class="code-comment">; Point back to ship data</span>
+    move.l  <span class="code-register">a0</span>,SPR0PTH(<span class="code-register">a5</span>)
+
+<span class="code-keyword">.update_pos:</span>
+    move.w  sprite_y(pc),<span class="code-register">d1</span>
+    move.w  sprite_x(pc),<span class="code-register">d2</span>
+    lsl.w   #8,<span class="code-register">d1</span>
+    add.b   <span class="code-register">d2</span>,<span class="code-register">d1</span>
+    move.w  <span class="code-register">d1</span>,SPR0POS(<span class="code-register">a5</span>)
+    
+    move.w  sprite_y(pc),<span class="code-register">d1</span>
+    add.w   #16,<span class="code-register">d1</span> <span class="code-comment">; Sprite height is 16 lines</span>
+    lsl.w   #8,<span class="code-register">d1</span>
+    add.b   <span class="code-register">d2</span>,<span class="code-register">d1</span>
+    move.w  <span class="code-register">d1</span>,SPR0CTL(<span class="code-register">a5</span>)
+
+    move.w  #$0020,INTREQ(<span class="code-register">a5</span>)
+    move.w  #$0020,INTREQ(<span class="code-register">a5</span>)
+    movem.l <span class="code-register">(sp)+</span>,d0-d2/a0-a1/a5
+    rte
+
+<span class="code-comment">; --- Data Section ---</span>
+<span class="code-keyword">old_int_vector:</span> dc.l 0
+<span class="code-keyword">sprite_x:</span>       dc.w <span class="code-hex">$88</span>
+<span class="code-keyword">sprite_y:</span>       dc.w <span class="code-hex">$64</span>
+
+<span class="code-keyword">sprite_ship:</span>
+    dc.w <span class="code-hex">$0000</span>,<span class="code-hex">$0000</span> <span class="code-comment">; First two words ignored, set by VBlank</span>
+    dc.w <span class="code-hex">$0180</span>,<span class="code-hex">$0180</span>, dc.w <span class="code-hex">$03C0</span>,<span class="code-hex">$03C0</span>
+    dc.w <span class="code-hex">$07E0</span>,<span class="code-hex">$07E0</span>, dc.w <span class="code-hex">$0FF0</span>,<span class="code-hex">$0FF0</span>
+    dc.w <span class="code-hex">$1FF8</span>,<span class="code-hex">$1FF8</span>, dc.w <span class="code-hex">$3FFC</span>,<span class="code-hex">$3FFC</span>
+    dc.w <span class="code-hex">$7FFE</span>,<span class="code-hex">$7FFE</span>, dc.w <span class="code-hex">$FFFF</span>,<span class="code-hex">$FFFF</span>
+    dc.w <span class="code-hex">$FFFF</span>,<span class="code-hex">$FFFF</span>, dc.w <span class="code-hex">$7FFE</span>,<span class="code-hex">$7FFE</span>
+    dc.w <span class="code-hex">$3FFC</span>,<span class="code-hex">$3FFC</span>, dc.w <span class="code-hex">$1FF8</span>,<span class="code-hex">$1FF8</span>
+    dc.w <span class="code-hex">$0FF0</span>,<span class="code-hex">$0FF0</span>, dc.w <span class="code-hex">$07E0</span>,<span class="code-hex">$07E0</span>
+    dc.w <span class="code-hex">$03C0</span>,<span class="code-hex">$03C0</span>, dc.w <span class="code-hex">$0180</span>,<span class="code-hex">$0180</span>
+    dc.w <span class="code-hex">$0000</span>,<span class="code-hex">$0000</span>
+
+<span class="code-keyword">sprite_explosion:</span>
+    dc.w <span class="code-hex">$0000</span>,<span class="code-hex">$0000</span> <span class="code-comment">; Ignored control words</span>
+    dc.w <span class="code-hex">$1008</span>,<span class="code-hex">$1008</span>, dc.w <span class="code-hex">$4892</span>,<span class="code-hex">$2442</span>
+    dc.w <span class="code-hex">$2442</span>,<span class="code-hex">$4892</span>, dc.w <span class="code-hex">$9004</span>,<span class="code-hex">$8221</span>
+    dc.w <span class="code-hex">$9004</span>,<span class="code-hex">$4118</span>, dc.w <span class="code-hex">$27C2</span>,<span class="code-hex">$4118</span>
+    dc.w <span class="code-hex">$13C8</span>,<span class="code-hex">$8221</span>, dc.w <span class="code-hex">$0FF0</span>,<span class="code-hex">$0FF0</span>
+    dc.w <span class="code-hex">$0FF0</span>,<span class="code-hex">$0FF0</span>, dc.w <span class="code-hex">$13C8</span>,<span class="code-hex">$8221</span>
+    dc.w <span class="code-hex">$27C2</span>,<span class="code-hex">$4118</span>, dc.w <span class="code-hex">$9004</span>,<span class="code-hex">$4118</span>
+    dc.w <span class="code-hex">$9004</span>,<span class="code-hex">$8221</span>, dc.w <span class="code-hex">$2442</span>,<span class="code-hex">$4892</span>
+    dc.w <span class="code-hex">$4892</span>,<span class="code-hex">$2442</span>, dc.w <span class="code-hex">$1008</span>,<span class="code-hex">$1008</span>
+    dc.w <span class="code-hex">$0000</span>,<span class="code-hex">$0000</span>
+</code></pre>
+        </div>
+
+        <h4>How to Compile and Run on macOS</h4>
+        <ol class="list-decimal list-inside space-y-2 pl-4">
+            <li><strong>Save the Code:</strong> Save the complete code above into a file named `joystick_sprite.asm`.</li>
+            <li><strong>Assemble:</strong> Open your Terminal, navigate to the folder where you saved the file, and run: `vasmm68k_mot -Fhunk -o joystick_sprite joystick_sprite.asm`</li>
+            <li><strong>Set up Emulator:</strong> Make sure your joystick is enabled in the emulator's input settings (usually for Port 1). Mount the folder containing your new `joystick_sprite` executable as a hard drive (e.g., `DH0:`).</li>
+            <li><strong>Run in Emulator:</strong> Boot into Workbench, open the Shell, and run your program by typing `joystick_sprite`.</li>
+            <li><strong>See the Result:</strong> You can now move the sprite with the joystick. Pressing the fire button will change it to an explosion pattern, and releasing it will change it back to the ship. Click the left mouse button to exit.</li>
+        </ol>
+      </section>
+    </main>
+
+    <div id="footer-placeholder"></div>
+    <script src="../common/js/_load-header-footer.js"></script>
+</body>
+</html>

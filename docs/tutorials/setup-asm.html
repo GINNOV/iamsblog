@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>vbcc Setup on macOS - Back to Amiga Dev Hub</title>
+    <!-- Paths are relative to the 'tutorials' subfolder -->
+    <link rel="stylesheet" href="../common/style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="dark-theme">
+    
+    <div id="header-placeholder"></div>
+
+    <main class="content-page">
+      <section>
+        <h2>Setting Up vbcc on macOS</h2>
+        <p>To properly set up vbcc on macOS for compiling Amiga code, you have a couple of primary methods: using an automated script or undertaking a manual compilation and setup process. Both approaches will provide you with the necessary tools: the vbcc compiler, the vasm assembler, and the vlink linker, all configured for the m68k Amiga target.</p>
+        
+        <h3>Automated Script Installation</h3>
+        <p>This is often the most straightforward way, as it handles many of the download, compilation, and setup steps for you. A great script is available on GitHub:</p>
+        
+        <h4>robertkist/vbcc_installer</h4>
+        <p>
+            <a href="https://github.com/robertkist/vbcc_installer" target="_blank" rel="noopener noreferrer">This script</a> automates downloading vbcc, its dependencies, the Amiga NDK, building them, and organizing them into an `sdk` folder.
+        </p>
+
+        <h4 class="mt-6">Prerequisites</h4>
+        <p>Before running the script, ensure you have the following command-line tools installed. You can install Homebrew from <a href="https://brew.sh/" target="_blank" rel="noopener noreferrer">brew.sh</a>.</p>
+        <ul class="list-disc list-inside pl-4">
+            <li>Xcode Command Line Tools: `xcode-select --install`</li>
+            <li>Make: (Included with Xcode Command Line Tools)</li>
+            <li>wget: `brew install wget`</li>
+            <li>lhasa: `brew install lhasa` (for extracting LHA archives)</li>
+        </ul>
+
+        <h4 class="mt-6">Installation Steps</h4>
+        <ol class="list-decimal list-inside space-y-2 pl-4">
+            <li>Clone the repository:
+                <div class="code-block-wrapper">
+                    <button class="copy-code-button"><i class="far fa-copy"></i> Copy</button>
+                    <pre><code>git clone https://github.com/robertkist/vbcc_installer.git</code></pre>
+                </div>
+            </li>
+            <li>Navigate into the cloned directory:
+                <div class="code-block-wrapper">
+                    <button class="copy-code-button"><i class="far fa-copy"></i> Copy</button>
+                    <pre><code>cd vbcc_installer</code></pre>
+                </div>
+            </li>
+            <li>Run `make download` to fetch all necessary source files.</li>
+            <li>Run `make setup`. The script will ask you some questions about the configuration.</li>
+            <li>The compiled tools and Amiga SDK (NDK) will be placed in an `sdk` subdirectory within the `vbcc_installer` folder.</li>
+        </ol>
+
+        <h3 class="mt-8">Post-Compilation Setup</h3>
+        <p>After the script finishes, you need to move the tools to a permanent location and configure your shell environment.</p>
+        <ol class="list-decimal list-inside space-y-2 pl-4">
+            <li>Create a directory in `/opt` and move the generated `sdk` folder into it. This keeps your system tidy.
+                <div class="code-block-wrapper">
+                    <button class="copy-code-button"><i class="far fa-copy"></i> Copy</button>
+                    <pre><code>sudo mkdir -p /opt/vbcc
+sudo mv sdk /opt/vbcc/</code></pre>
+                </div>
+            </li>
+            <li>Set the necessary environment variables in your shell's configuration file (e.g., `~/.zshrc` for Zsh or `~/.bash_profile` for Bash).
+                <div class="code-block-wrapper">
+                    <button class="copy-code-button"><i class="far fa-copy"></i> Copy</button>
+                    <pre><code><span class="code-comment"># AMIGA SECTION</span>
+export PATH=/opt/vbcc/sdk/vbcc/bin:$PATH
+export VBCC=/opt/vbcc/sdk/vbcc
+export NDK=/opt/vbcc/sdk/NDK_3.9
+<span class="code-comment"># END AMIGA SECTION</span></code></pre>
+                </div>
+                 <p class="mt-2 text-sm">Remember to source your profile (e.g., `source ~/.zshrc`) or open a new terminal window for the changes to take effect.</p>
+            </li>
+            <li>The assembler included is named `vasmm68k_mot`, but it's often easier to call it as just `vasm`. Create a symbolic link to make this possible system-wide.
+                <div class="code-block-wrapper">
+                    <button class="copy-code-button"><i class="far fa-copy"></i> Copy</button>
+                    <pre><code>sudo ln -s /opt/vbcc/sdk/vbcc/bin/vasmm68k_mot /usr/local/bin/vasm</code></pre>
+                </div>
+            </li>
+        </ol>
+
+        <h3 class="mt-8">Test Your Installation</h3>
+        <ol class="list-decimal list-inside space-y-2 pl-4">
+            <li>Create a `hello.c` file with the following content:
+                <div class="code-block-wrapper">
+                    <button class="copy-code-button"><i class="far fa-copy"></i> Copy</button>
+                    <pre><code><span class="code-comment">#include &lt;stdio.h&gt;</span>
+
+<span class="code-keyword">int</span> <span class="code-keyword">main</span>() {
+	puts(<span class="code-hex">"Hello, World from Amiga!\n"</span>);
+	<span class="code-keyword">return</span> 0;
+}</code></pre>
+                </div>
+            </li>
+            <li>Compile the file. You can test it with the full paths first to ensure everything is in the right place:
+                 <div class="code-block-wrapper">
+                    <button class="copy-code-button"><i class="far fa-copy"></i> Copy</button>
+                    <pre><code>vc -L/opt/vbcc/sdk/NDK_3.9/Include/linker_libs -I/opt/vbcc/sdk/NDK_3.9/Include/include_h +kick13 hello.c -lamiga -lauto -o hello</code></pre>
+                </div>
+            </li>
+             <li>If your environment variables are set up correctly, this shorter command will also work:
+                 <div class="code-block-wrapper">
+                    <button class="copy-code-button"><i class="far fa-copy"></i> Copy</button>
+                    <pre><code>vc -L$NDK/Include/linker_libs -I$NDK/Include/include_h +kick13 hello.c -lamiga -lauto -o hello</code></pre>
+                </div>
+                 <p class="mt-2 text-sm">You can now run the resulting `hello` executable in an Amiga emulator!</p>
+            </li>
+        </ol>
+
+      </section>
+    </main>
+
+    <div id="footer-placeholder"></div>
+    <script src="../common/js/_load-header-footer.js"></script>
+</body>
+</html>

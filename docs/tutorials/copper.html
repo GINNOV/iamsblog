@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Copper Effect Shooter</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Press Start 2P', cursive;
+            background-color: #1a1a1a;
+            color: #fff;
+            overflow: hidden;
+            touch-action: none; /* Disable default touch actions like pinch-zoom */
+        }
+        canvas {
+            display: block;
+            background: transparent;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            max-width: 800px;
+            max-height: 600px;
+            margin: auto;
+            border: 4px solid #555;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            cursor: none;
+        }
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px;
+        }
+        #score {
+            font-size: 24px;
+            color: #ffff00;
+            text-shadow: 2px 2px #ff00ff;
+        }
+        #game-over-modal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            border: 4px solid #ffff00;
+            padding: 40px;
+            text-align: center;
+            display: none;
+            z-index: 100;
+        }
+        #game-over-modal h2 {
+            font-size: 32px;
+            color: #ff0000;
+            margin-bottom: 20px;
+        }
+        #game-over-modal p {
+            font-size: 20px;
+            margin-bottom: 30px;
+        }
+        #restart-button {
+            font-family: 'Press Start 2P', cursive;
+            background-color: #ffff00;
+            color: #000;
+            padding: 15px 30px;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            box-shadow: 0 5px #ff00ff;
+            transition: all 0.1s ease;
+            pointer-events: all;
+        }
+        #restart-button:active {
+            transform: translateY(5px);
+            box-shadow: none;
+        }
+        .touch-controls {
+            position: absolute;
+            bottom: 20px;
+            width: calc(100% - 40px);
+            left: 20px;
+            display: flex;
+            justify-content: space-between;
+            z-index: 50;
+        }
+        .touch-button {
+            width: 80px;
+            height: 80px;
+            background-color: rgba(255, 255, 0, 0.4);
+            border: 2px solid #ffff00;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            color: #fff;
+            user-select: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="background-canvas"></canvas>
+        <canvas id="game-canvas"></canvas>
+        <div id="ui-layer">
+            <div id="score">SCORE: 0</div>
+        </div>
+        <div id="game-over-modal">
+            <h2>GAME OVER</h2>
+            <p id="final-score"></p>
+            <button id="restart-button">RESTART</button>
+        </div>
+        <div class="touch-controls">
+            <div id="touch-up" class="touch-button">&#9650;</div>
+            <div id="touch-shoot" class="touch-button">&#9679;</div>
+            <div id="touch-down" class="touch-button">&#9660;</div>
+        </div>
+    </div>
+
+    <script>
+        window.onload = function() {
+            // --- Canvas and Context Setup ---
+            const bgCanvas = document.getElementById('background-canvas');
+            const bgCtx = bgCanvas.getContext('2d');
+            const gameCanvas = document.getElementById('game-canvas');
+            const gameCtx = gameCanvas.getContext('2d');
+            const gameContainer = document.getElementById('game-container');
+
+            let width, height;
+
+            // --- Game State and Objects ---
+            let score = 0;
+            let gameOver = false;
+            let animationFrameId;
+
+            const player = {
+                x: 100,
+                y: 300,
+                width: 50,
+                height: 30,
+                speed: 7,
+                dy: 0, // Vertical velocity
+                color: '#ff00ff'
+            };
+
+            const projectiles = [];
+            const enemies = [];
+            const particles = [];
+            let enemySpawnTimer = 0;
+            const enemySpawnInterval = 100;
+
+            // --- Input Handling ---
+            const keys = {};
+            window.addEventListener('keydown', (e) => keys[e.code] = true);
+            window.addEventListener('keyup', (e) => keys[e.code] = false);
+
+            function handleInput() {
+                player.dy = 0;
+                if (keys['ArrowUp'] || keys['KeyW']) player.dy = -player.speed;
+                if (keys['ArrowDown'] || keys['KeyS']) player.dy = player.speed;
+                if (keys['Space']) {
+                    fireProjectile();
+                    keys['Space'] = false; // Prevent holding down space
+                }
+            }
+
+            // --- Touch Controls ---
+            const touchUp = document.getElementById('touch-up');
+            const touchDown = document.getElementById('touch-down');
+            const touchShoot = document.getElementById('touch-shoot');
+            
+            let touchingUp = false;
+            let touchingDown = false;
+
+            function handleTouch() {
+                if (touchingUp) player.dy = -player.speed;
+                if (touchingDown) player.dy = player.speed;
+            }
+            
+            touchUp.addEventListener('touchstart', (e) => { e.preventDefault(); touchingUp = true; });
+            touchUp.addEventListener('touchend', (e) => { e.preventDefault(); touchingUp = false; });
+            touchUp.addEventListener('touchcancel', (e) => { e.preventDefault(); touchingUp = false; });
+
+            touchDown.addEventListener('touchstart', (e) => { e.preventDefault(); touchingDown = true; });
+            touchDown.addEventListener('touchend', (e) => { e.preventDefault(); touchingDown = false; });
+            touchDown.addEventListener('touchcancel', (e) => { e.preventDefault(); touchingDown = false; });
+            
+            touchShoot.addEventListener('touchstart', (e) => { e.preventDefault(); fireProjectile(); });
+
+            // --- Game Logic ---
+            function fireProjectile() {
+                projectiles.push({
+                    x: player.x + player.width,
+                    y: player.y + player.height / 2,
+                    width: 15,
+                    height: 5,
+                    speed: 10,
+                    color: '#ffff00'
+                });
+            }
+
+            function spawnEnemy() {
+                enemySpawnTimer++;
+                if (enemySpawnTimer > enemySpawnInterval) {
+                    enemySpawnTimer = 0;
+                    const size = Math.random() * 40 + 20; // 20 to 60
+                    const y = Math.random() * (height - size);
+                    enemies.push({
+                        x: width,
+                        y: y,
+                        width: size,
+                        height: size,
+                        speed: Math.random() * 2 + 1, // 1 to 3
+                        color: `hsl(${Math.random() * 360}, 100%, 50%)`
+                    });
+                }
+            }
+            
+            function createExplosion(x, y, color) {
+                for (let i = 0; i < 30; i++) {
+                    particles.push({
+                        x: x,
+                        y: y,
+                        vx: (Math.random() - 0.5) * 8,
+                        vy: (Math.random() - 0.5) * 8,
+                        size: Math.random() * 4 + 1,
+                        color: color,
+                        life: 50
+                    });
+                }
+            }
+
+            function update() {
+                if (gameOver) return;
+                
+                // --- Player Movement ---
+                handleInput();
+                handleTouch();
+                player.y += player.dy;
+                if (player.y < 0) player.y = 0;
+                if (player.y > height - player.height) player.y = height - player.height;
+
+                // --- Projectiles ---
+                projectiles.forEach((p, index) => {
+                    p.x += p.speed;
+                    if (p.x > width) {
+                        projectiles.splice(index, 1);
+                    }
+                });
+
+                // --- Enemies ---
+                spawnEnemy();
+                enemies.forEach((e, eIndex) => {
+                    e.x -= e.speed;
+                    if (e.x + e.width < 0) {
+                        enemies.splice(eIndex, 1);
+                    }
+                });
+                
+                // --- Particles ---
+                particles.forEach((p, pIndex) => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.life--;
+                    if(p.life <= 0) {
+                        particles.splice(pIndex, 1);
+                    }
+                });
+
+                // --- Collision Detection ---
+                projectiles.forEach((p, pIndex) => {
+                    enemies.forEach((e, eIndex) => {
+                        if (p.x < e.x + e.width &&
+                            p.x + p.width > e.x &&
+                            p.y < e.y + e.height &&
+                            p.y + p.height > e.y) {
+                            
+                            createExplosion(e.x + e.width/2, e.y + e.height/2, e.color);
+                            projectiles.splice(pIndex, 1);
+                            enemies.splice(eIndex, 1);
+                            score += 100;
+                            document.getElementById('score').innerText = `SCORE: ${score}`;
+                        }
+                    });
+                });
+                
+                enemies.forEach((e) => {
+                    if (player.x < e.x + e.width &&
+                        player.x + player.width > e.x &&
+                        player.y < e.y + e.height &&
+                        player.y + player.height > e.y) {
+                            
+                        endGame();
+                    }
+                });
+            }
+
+            // --- Drawing ---
+            function drawCopperBackground() {
+                const time = Date.now() * 0.0005;
+                for (let y = 0; y < height; y++) {
+                    const r = Math.sin(y * 0.02 + time) * 127 + 128;
+                    const g = Math.sin(y * 0.03 + time + 2) * 127 + 128;
+                    const b = Math.sin(y * 0.04 + time + 4) * 127 + 128;
+                    bgCtx.fillStyle = `rgb(${r},${g},${b})`;
+                    bgCtx.fillRect(0, y, width, 1);
+                }
+            }
+
+            function draw() {
+                gameCtx.clearRect(0, 0, width, height);
+
+                // Draw Player
+                gameCtx.fillStyle = player.color;
+                gameCtx.beginPath();
+                gameCtx.moveTo(player.x, player.y);
+                gameCtx.lineTo(player.x, player.y + player.height);
+                gameCtx.lineTo(player.x + player.width, player.y + player.height / 2);
+                gameCtx.closePath();
+                gameCtx.fill();
+                // Cockpit
+                gameCtx.fillStyle = '#fff';
+                gameCtx.fillRect(player.x + 15, player.y + 10, 10, 10);
+
+
+                // Draw Projectiles
+                projectiles.forEach(p => {
+                    gameCtx.fillStyle = p.color;
+                    gameCtx.fillRect(p.x, p.y, p.width, p.height);
+                });
+
+                // Draw Enemies
+                enemies.forEach(e => {
+                    gameCtx.fillStyle = e.color;
+                    gameCtx.fillRect(e.x, e.y, e.width, e.height);
+                    gameCtx.strokeStyle = 'black';
+                    gameCtx.lineWidth = 2;
+                    gameCtx.strokeRect(e.x, e.y, e.width, e.height);
+                });
+                
+                // Draw Particles
+                particles.forEach(p => {
+                    gameCtx.fillStyle = p.color;
+                    gameCtx.globalAlpha = p.life / 50; // Fade out
+                    gameCtx.beginPath();
+                    gameCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    gameCtx.fill();
+                });
+                gameCtx.globalAlpha = 1.0;
+            }
+
+            // --- Game Loop ---
+            function gameLoop() {
+                drawCopperBackground();
+                update();
+                draw();
+                animationFrameId = requestAnimationFrame(gameLoop);
+            }
+
+            // --- Game Management ---
+            function endGame() {
+                gameOver = true;
+                cancelAnimationFrame(animationFrameId);
+                const modal = document.getElementById('game-over-modal');
+                document.getElementById('final-score').innerText = `Your Score: ${score}`;
+                modal.style.display = 'block';
+            }
+            
+            function restartGame() {
+                score = 0;
+                gameOver = false;
+                player.y = height / 2;
+                projectiles.length = 0;
+                enemies.length = 0;
+                particles.length = 0;
+                enemySpawnTimer = 0;
+                document.getElementById('score').innerText = `SCORE: 0`;
+                document.getElementById('game-over-modal').style.display = 'none';
+                gameLoop();
+            }
+
+            // --- Initialization ---
+            function resize() {
+                const containerRect = gameContainer.getBoundingClientRect();
+                width = containerRect.width;
+                height = containerRect.height;
+                bgCanvas.width = width;
+                bgCanvas.height = height;
+                gameCanvas.width = width;
+                gameCanvas.height = height;
+
+                player.y = height / 2 - player.height / 2;
+                
+                // Redraw static elements on resize
+                if(!animationFrameId) {
+                     drawCopperBackground();
+                     draw();
+                }
+            }
+
+            window.addEventListener('resize', resize);
+            document.getElementById('restart-button').addEventListener('click', restartGame);
+            
+            resize();
+            gameLoop();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Basic Sprite Animation - Back to Amiga Dev Hub</title>
+    <!-- Paths are relative to the 'tutorials' subfolder -->
+    <link rel="stylesheet" href="../common/style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="dark-theme">
+    
+    <div id="header-placeholder"></div>
+
+    <main class="content-page">
+      <section>
+        <h2>Basic Sprite Animation</h2>
+        <p>An introduction to using hardware sprites on the Amiga. Learn how to define sprite data, position sprites, and create simple animations. The Amiga's hardware sprites were a game-changer, allowing for fast, smooth-moving objects without needing to redraw the background (a process managed by the Blitter!).</p>
+
+        <h3>What is a Hardware Sprite?</h3>
+        <p>A hardware sprite is a separate, small graphical object that the Amiga's video hardware can display on top of the normal background screen. The Amiga has 8 hardware sprites, each 16 pixels wide and any height. They have their own color palettes and their positions can be updated independently of the main screen, making them perfect for characters, bullets, and cursors.</p>
+        
+        <img src="images/Lotus2_Intro1.gif" alt="courtesy of https://amiga.lychesis.net/specials/Animated.html" class="w-full max-w-lg mx-auto my-8 rounded-lg shadow-lg border-2 border-gray-600" />
+
+        <h3>How Animation Works: The Vertical Blank</h3>
+        <p>So how do we make a sprite move? The key to smooth animation on the Amiga is timing. We need to change the sprite's position at a consistent rate. The perfect time to do this is during the "vertical blank" period—the brief moment after the video beam has finished drawing the last line of the screen and before it jumps back to the top to start drawing the next frame.</p>
+        <p>By setting up a **Level 3 Interrupt**, we can tell the Amiga to run a small piece of our code automatically at the start of every vertical blank. This code will handle updating the sprite's horizontal position, making it move smoothly from side to side.</p>
+        
+        <h4>The Complete, Animated Code (anim_sprite.asm):</h4>
+        <div class="code-block-wrapper">
+            <button class="copy-code-button"><i class="far fa-copy"></i> Copy</button>
+            <pre><code><span class="code-comment">;-----------------------------------------------------</span>
+<span class="code-comment">; A complete, ANIMATED Hardware Sprite example</span>
+<span class="code-comment">; Takes over the system and moves a sprite using a</span>
+<span class="code-comment">; vertical blank interrupt.</span>
+<span class="code-comment">;-----------------------------------------------------</span>
+<span class="code-keyword">CUSTOM</span>          <span class="code-keyword">equ</span>     <span class="code-hex">$DFF000</span>
+<span class="code-keyword">INTENA</span>          <span class="code-keyword">equ</span>     <span class="code-hex">CUSTOM+$9A</span>  <span class="code-comment">; Interrupt Enable</span>
+<span class="code-keyword">INTREQ</span>          <span class="code-keyword">equ</span>     <span class="code-hex">CUSTOM+$9C</span>  <span class="code-comment">; Interrupt Request</span>
+<span class="code-keyword">DMACON</span>          <span class="code-keyword">equ</span>     <span class="code-hex">CUSTOM+$96</span>
+<span class="code-keyword">SPR0PTH</span>         <span class="code-keyword">equ</span>     <span class="code-hex">CUSTOM+$120</span> <span class="code-comment">; Sprite 0 pointer HIGH</span>
+<span class="code-keyword">SPR0PTL</span>         <span class="code-keyword">equ</span>     <span class="code-hex">CUSTOM+$122</span> <span class="code-comment">; Sprite 0 pointer LOW</span>
+<span class="code-keyword">SPR0POS</span>         <span class="code-keyword">equ</span>     <span class="code-hex">CUSTOM+$140</span> <span class="code-comment">; Sprite 0 Position</span>
+<span class="code-keyword">SPR0CTL</span>         <span class="code-keyword">equ</span>     <span class="code-hex">CUSTOM+$142</span> <span class="code-comment">; Sprite 0 Control</span>
+<span class="code-keyword">SPRITE0_PAL1</span>    <span class="code-keyword">equ</span>     <span class="code-hex">CUSTOM+$1A2</span> <span class="code-comment">; Sprite palette color 1</span>
+<span class="code-keyword">SPRITE0_PAL2</span>    <span class="code-keyword">equ</span>     <span class="code-hex">CUSTOM+$1A4</span> <span class="code-comment">; Sprite palette color 2</span>
+<span class="code-keyword">SPRITE0_PAL3</span>    <span class="code-keyword">equ</span>     <span class="code-hex">CUSTOM+$1A6</span> <span class="code-comment">; Sprite palette color 3</span>
+<span class="code-keyword">COLOR00</span>         <span class="code-keyword">equ</span>     <span class="code-hex">CUSTOM+$180</span> <span class="code-comment">; Background color</span>
+
+<span class="code-keyword">EXEC_BASE</span>       <span class="code-keyword">equ</span>     <span class="code-hex">$4</span>
+<span class="code-keyword">LVL3_INT_VECTOR</span> <span class="code-keyword">equ</span>     <span class="code-hex">$6C</span>
+
+<span class="code-comment">; --- Program Start ---</span>
+<span class="code-keyword">start:</span>
+    lea     CUSTOM,<span class="code-register">a5</span>
+    move.l  EXEC_BASE,<span class="code-register">a6</span>
+    
+    <span class="code-comment">; --- Save old interrupt vector and disable interrupts ---</span>
+    move.l  LVL3_INT_VECTOR(<span class="code-register">a6</span>),old_int_vector(pc)
+    move.w  #$C000,INTENA(<span class="code-register">a5</span>)   <span class="code-comment">; Disable all interrupts</span>
+
+    <span class="code-comment">; --- Wait for vertical blank to safely take over ---</span>
+<span class="code-keyword">.waitvb</span>
+    move.w  $DFF005,d0
+    btst    #8,d0
+    beq.s   .waitvb
+
+    <span class="code-comment">; --- Install our new VBlank interrupt ---</span>
+    lea     vblank_interrupt(pc),<span class="code-register">a0</span>
+    move.l  <span class="code-register">a0</span>,LVL3_INT_VECTOR(<span class="code-register">a6</span>)
+    
+    <span class="code-comment">; --- Point the hardware to our sprite data ---</span>
+    lea     sprite_data(pc),<span class="code-register">a0</span>
+    move.l  <span class="code-register">a0</span>,SPR0PTH(<span class="code-register">a5</span>) <span class="code-comment">; Pointer needs 32-bit access</span>
+    
+    <span class="code-comment">; --- Set sprite colors ---</span>
+    move.w  <span class="code-hex">#$0f80</span>,SPRITE0_PAL1(<span class="code-register">a5</span>) <span class="code-comment">; Red</span>
+    move.w  <span class="code-hex">#$0ff0</span>,SPRITE0_PAL2(<span class="code-register">a5</span>) <span class="code-comment">; Yellow</span>
+    move.w  <span class="code-hex">#$0fff</span>,SPRITE0_PAL3(<span class="code-register">a5</span>) <span class="code-comment">; White</span>
+
+    <span class="code-comment">; --- Enable DMA and VBlank Interrupt ---</span>
+    move.w  #$8100,DMACON(<span class="code-register">a5</span>)  <span class="code-comment">; Enable DMA Master and Sprites</span>
+    move.w  #$C020,INTENA(<span class="code-register">a5</span>)  <span class="code-comment">; Enable Master and VBlank Interrupt</span>
+
+<span class="code-keyword">forever_loop:</span>
+    btst    #6,$BFE001  <span class="code-comment">; Check for left mouse click</span>
+    bne.s   forever_loop
+    
+<span class="code-comment">; --- Exit gracefully ---</span>
+    move.w  #$C020,INTENA(<span class="code-register">a5</span>) <span class="code-comment">; Disable VBlank interrupt</span>
+    move.l  old_int_vector(pc),LVL3_INT_VECTOR(<span class="code-register">a6</span>) <span class="code-comment">; Restore old interrupt</span>
+    move.w  #$7FFF,DMACON(<span class="code-register">a5</span>) <span class="code-comment">; Disable all DMA</span>
+    rts
+
+<span class="code-comment">; --- Vertical Blank Interrupt Handler ---</span>
+<span class="code-keyword">vblank_interrupt:</span>
+    movem.l d0-d1/a0-a1,<span class="code-register">-(sp)</span> <span class="code-comment">; Save registers we are about to use</span>
+    lea     CUSTOM,<span class="code-register">a5</span>
+    
+    <span class="code-comment">; --- Animation logic ---</span>
+    move.w  sprite_x(pc),<span class="code-register">d0</span>
+    move.w  sprite_dir(pc),<span class="code-register">d1</span>
+    add.w   <span class="code-register">d1</span>,<span class="code-register">d0</span>
+    
+    <span class="code-comment">; Check boundaries and reverse direction</span>
+    cmp.w   #<span class="code-hex">$D0</span>,<span class="code-register">d0</span>     <span class="code-comment">; Right edge</span>
+    bge.s   .reverse
+    cmp.w   #<span class="code-hex">$40</span>,<span class="code-register">d0</span>     <span class="code-comment">; Left edge</span>
+    ble.s   .reverse
+    bra.s   .no_reverse
+<span class="code-keyword">.reverse:</span>
+    neg.w   <span class="code-register">d1</span>
+    move.w  <span class="code-register">d1</span>,sprite_dir(pc)
+<span class="code-keyword">.no_reverse:</span>
+    move.w  <span class="code-register">d0</span>,sprite_x(pc) <span class="code-comment">; Store new position</span>
+
+    <span class="code-comment">; Update sprite hardware registers</span>
+    move.w  #<span class="code-hex">$64</span>,<span class="code-register">d1</span>  <span class="code-comment">; Vertical start position = 100</span>
+    lsl.w   #8,<span class="code-register">d1</span>
+    add.b   <span class="code-register">d0</span>,<span class="code-register">d1</span>  <span class="code-comment">; Add horizontal position</span>
+    move.w  <span class="code-register">d1</span>,SPR0POS(<span class="code-register">a5</span>)
+    
+    move.w  #<span class="code-hex">$C8</span>,<span class="code-register">d1</span>  <span class="code-comment">; Vertical stop position = 200</span>
+    lsl.w   #8,<span class="code-register">d1</span>
+    add.b   <span class="code-register">d0</span>,<span class="code-register">d1</span>  <span class="code-comment">; Add horizontal position</span>
+    move.w  <span class="code-register">d1</span>,SPR0CTL(<span class="code-register">a5</span>)
+
+    <span class="code-comment">; --- Acknowledge the interrupt and restore registers ---</span>
+    move.w  #$0020,INTREQ(<span class="code-register">a5</span>) <span class="code-comment">; Acknowledge VBlank interrupt</span>
+    move.w  #$0020,INTREQ(<span class="code-register">a5</span>) <span class="code-comment">; Acknowledge again (hardware quirk)</span>
+    movem.l <span class="code-register">(sp)+</span>,d0-d1/a0-a1 <span class="code-comment">; Restore registers</span>
+    rte                   <span class="code-comment">; Return from Exception</span>
+
+<span class="code-comment">; --- Data Section ---</span>
+<span class="code-keyword">old_int_vector:</span> dc.l 0
+<span class="code-keyword">sprite_x:</span>       dc.w <span class="code-hex">$80</span>  <span class="code-comment">; Initial horizontal position</span>
+<span class="code-keyword">sprite_dir:</span>     dc.w 1    <span class="code-comment">; Initial direction (1 = right, -1 = left)</span>
+
+<span class="code-keyword">sprite_data:</span>
+    <span class="code-comment">; Control words are now set by the interrupt</span>
+    <span class="code-comment">; The first two words are ignored, but must be here</span>
+    dc.w <span class="code-hex">$0000</span>, <span class="code-hex">$0000</span>
+
+    <span class="code-comment">; Image Data (16 lines of a simple shape)</span>
+    dc.w <span class="code-hex">$0180</span>, <span class="code-hex">$0180</span>, dc.w <span class="code-hex">$03C0</span>, <span class="code-hex">$03C0</span>
+    dc.w <span class="code-hex">$07E0</span>, <span class="code-hex">$07E0</span>, dc.w <span class="code-hex">$0FF0</span>, <span class="code-hex">$0FF0</span>
+    dc.w <span class="code-hex">$1FF8</span>, <span class="code-hex">$1FF8</span>, dc.w <span class="code-hex">$3FFC</span>, <span class="code-hex">$3FFC</span>
+    dc.w <span class="code-hex">$7FFE</span>, <span class="code-hex">$7FFE</span>, dc.w <span class="code-hex">$FFFF</span>, <span class="code-hex">$FFFF</span>
+    dc.w <span class="code-hex">$FFFF</span>, <span class="code-hex">$FFFF</span>, dc.w <span class="code-hex">$7FFE</span>, <span class="code-hex">$7FFE</span>
+    dc.w <span class="code-hex">$3FFC</span>, <span class="code-hex">$3FFC</span>, dc.w <span class="code-hex">$1FF8</span>, <span class="code-hex">$1FF8</span>
+    dc.w <span class="code-hex">$0FF0</span>, <span class="code-hex">$0FF0</span>, dc.w <span class="code-hex">$07E0</span>, <span class="code-hex">$07E0</span>
+    dc.w <span class="code-hex">$03C0</span>, <span class="code-hex">$03C0</span>, dc.w <span class="code-hex">$0180</span>, <span class="code-hex">$0180</span>
+
+    <span class="code-comment">; End of sprite data</span>
+    dc.w <span class="code-hex">$0000</span>, <span class="code-hex">$0000</span>
+</code></pre>
+        </div>
+
+        <h4>How to Compile and Run on macOS</h4>
+        <ol class="list-decimal list-inside space-y-2 pl-4">
+            <li><strong>Save the Code:</strong> Save the complete code above into a file named `anim_sprite.asm`.</li>
+            <li><strong>Assemble:</strong> Open your Terminal, navigate to the folder where you saved the file, and run: `vasmm68k_mot -Fhunk -o anim_sprite anim_sprite.asm`</li>
+            <li><strong>Set up Emulator:</strong> In your emulator (vAmiga or FS-UAE), mount the folder containing your new `anim_sprite` executable as a hard drive (e.g., as `DH0:` with volume label `Work`).</li>
+            <li><strong>Run in Emulator:</strong> Boot your emulated Amiga into Workbench. Open the `Work` drive on the desktop, then open the `Shell` or `CLI`. Type `anim_sprite` and press Enter.</li>
+            <li><strong>See the Result:</strong> A multi-colored sprite should now be gliding back and forth across a black screen! You can click the left mouse button to exit cleanly back to the Workbench.</li>
+        </ol>
+
+      </section>
+    </main>
+
+    <div id="footer-placeholder"></div>
+    <script src="../common/js/_load-header-footer.js"></script>
+</body>
+</html>
