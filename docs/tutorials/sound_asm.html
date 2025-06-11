@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Interactive Sound in Assembly - Back to Amiga Dev Hub</title>
+    <link rel="stylesheet" href="../common/style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="dark-theme">
+    
+    <div id="header-placeholder"></div>
+
+    <main class="content-page">
+      <section>
+        <h2>Interactive Sound in Assembly: The Real Deal</h2>
+        <p>So far, we've made things move on screen. Now, let's make some noise! The Amiga's four 8-bit sound channels, collectively named "Paula," gave it an audio capability that was light-years ahead of its time. In the last tutorial, we used C to work with the OS, but you asked for the real deal: how to do it in pure 68k assembly. Let's dive in.</p>
+
+        <h3>The Concept: OS Libraries from Assembly</h3>
+        <p>This program will run as a proper AmigaDOS process. To do that, we need to talk to the Amiga's libraries. In assembly, this means loading the library into memory to get its "base address," and then calling its functions by jumping to specific negative offsets from that base address. We'll open a window, draw our button, and enter a loop to wait for user input (events). When we detect a mouse click inside our button's area, we'll trigger the sound and provide some visual feedback by changing the button's color.</p>
+        
+        <img src="https://placehold.co/600x350/9333ea/ddd6fe?text=Amiga+Audio+in+ASM&font=press-start-2p" alt="Illustration of an Amiga playing sound from assembly" class="w-full max-w-lg mx-auto my-8 rounded-lg shadow-lg border-2 border-gray-600" />
+
+        <h3>Preparing Your Sound Sample</h3>
+        <p>For this assembly version, we need a raw sound file. The hardware plays raw, 8-bit signed audio samples. We will embed this data directly into our executable.</p>
+        <ol class="list-decimal list-inside space-y-2 pl-4">
+            <li>Find a short sound effect (`.wav` is a good starting point).</li>
+            <li>Use a modern audio editor like <a href="https://www.audacityteam.org/" target="_blank" rel="noopener noreferrer">Audacity</a> to convert it. Open the sound and export it:
+                <ul>
+                    <li>- Set the project rate to something reasonable, like 8363 Hz or 11025 Hz.</li>
+                    <li>- Go to `File > Export > Export Audio`.</li>
+                    <li>- Choose "Other uncompressed files" as the format.</li>
+                    <li>- Under "Header", select "RAW (header-less)".</li>
+                    <li>- Under "Encoding", select "Signed 8-bit PCM".</li>
+                </ul>
+            </li>
+            <li>Save this new file as `sound.raw`. We will include it directly in our assembly code.</li>
+        </ol>
+
+        <h4>The Code (asm_sound_button.s):</h4>
+        <div class="code-block-wrapper">
+            <button class="copy-code-button"><i class="far fa-copy"></i> Copy</button>
+            <pre><code><span class="code-comment">;-----------------------------------------------------</span>
+<span class="code-comment">;  Interactive Sound Button in 68k Assembly</span>
+<span class="code-comment">;  - Opens an OS-friendly window</span>
+<span class="code-comment">;  - Draws a button</span>
+<span class="code-comment">;  - Plays an embedded sound on click</span>
+<span class="code-comment">;-----------------------------------------------------</span>
+<span class="code-keyword">    SECTION</span> code,CODE
+<span class="code-keyword">start:</span>
+<span class="code-comment">;--- Open Libraries ---</span>
+    move.l  #4,<span class="code-register">a6</span>
+    lea     IntuitionName(pc),<span class="code-register">a1</span>
+    moveq   #37,<span class="code-register">d0</span>
+    jsr     _LVOOpenLibrary(<span class="code-register">a6</span>)
+    move.l  <span class="code-register">d0</span>,IntuitionBase
+    beq.s   .fail
+
+    lea     GfxName(pc),<span class="code-register">a1</span>
+    move.l  #4,<span class="code-register">a6</span>
+    moveq   #37,<span class="code-register">d0</span>
+    jsr     _LVOOpenLibrary(<span class="code-register">a6</span>)
+    move.l  <span class="code-register">d0</span>,GfxBase
+    beq.s   .fail_intuition
+
+<span class="code-comment">;--- Open Window ---</span>
+    lea     NewWindow(pc),<span class="code-register">a0</span>
+    move.l  IntuitionBase,<span class="code-register">a6</span>
+    jsr     _LVOOpenWindow(<span class="code-register">a6</span>)
+    move.l  <span class="code-register">d0</span>,Window
+    beq.s   .fail_gfx
+
+    move.l  Window,<span class="code-register">d0</span>
+    move.l  <span class="code-register">d0</span>,<span class="code-register">a0</span>
+    move.l  116(<span class="code-register">a0</span>),<span class="code-register">a1</span> <span class="code-comment">; a1 = RastPort</span>
+    move.l  <span class="code-register">a1</span>,RastPort
+
+<span class="code-comment">;--- Draw Button ---</span>
+    bsr.s   draw_button_up
+
+<span class="code-comment">;--- Event Loop ---</span>
+<span class="code-keyword">event_loop:</span>
+    move.l  Window,<span class="code-register">d0</span>
+    move.l  108(<span class="code-register">d0</span>),<span class="code-register">d0</span> <span class="code-comment">; Get signal mask</span>
+    move.l  IntuitionBase,<span class="code-register">a6</span>
+    jsr     _LVOWait(<span class="code-register">a6</span>)
+
+    move.l  Window,<span class="code-register">a0</span>
+    move.l  104(<span class="code-register">a0</span>),<span class="code-register">a1</span> <span class="code-comment">; UserPort</span>
+    move.l  IntuitionBase,<span class="code-register">a6</span>
+    jsr     _LVOGetMsg(<span class="code-register">a6</span>)
+    move.l  <span class="code-register">d0</span>,Message
+    beq.s   event_loop      <span class="code-comment">; No message? Loop again.</span>
+
+    move.l  Message,<span class="code-register">a0</span>
+    move.w  20(<span class="code-register">a0</span>),<span class="code-register">d0</span>      <span class="code-comment">; Get message Class</span>
+    cmp.w   #$202,<span class="code-register">d0</span>        <span class="code-comment">; IDCMP_CLOSEWINDOW</span>
+    beq.s   .quit
+
+    cmp.w   #$401,<span class="code-register">d0</span>        <span class="code-comment">; IDCMP_MOUSEBUTTONS</span>
+    bne.s   .reply_msg
+
+    move.l  Message,<span class="code-register">a0</span>
+    move.w  22(<span class="code-register">a0</span>),<span class="code-register">d0</span>      <span class="code-comment">; Get message Code</span>
+    cmp.w   #$68,<span class="code-register">d0</span>         <span class="code-comment">; SELECTDOWN</span>
+    beq.s   .mouse_down
+    cmp.w   #$69,<span class="code-register">d0</span>         <span class="code-comment">; SELECTUP</span>
+    beq.s   .mouse_up
+
+<span class="code-keyword">.reply_msg:</span>
+    move.l  Message,<span class="code-register">a1</span>
+    move.l  IntuitionBase,<span class="code-register">a6</span>
+    jsr     _LVOReplyMsg(<span class="code-register">a6</span>)
+    bra.s   event_loop
+
+<span class="code-keyword">.mouse_down:</span>
+    bsr.s   draw_button_down
+    bsr.s   play_sound
+    bra.s   .reply_msg
+
+<span class="code-keyword">.mouse_up:</span>
+    bsr.s   draw_button_up
+    bra.s   .reply_msg
+
+<span class="code-keyword">.quit:</span>
+    move.l  Message,<span class="code-register">a1</span>
+    move.l  IntuitionBase,<span class="code-register">a6</span>
+    jsr     _LVOReplyMsg(<span class="code-register">a6</span>)
+
+<span class="code-comment">;--- Cleanup ---</span>
+<span class="code-keyword">.fail_window:</span>
+    move.l  Window,<span class="code-register">a0</span>
+    move.l  IntuitionBase,<span class="code-register">a6</span>
+    jsr     _LVOCloseWindow(<span class="code-register">a6</span>)
+<span class="code-keyword">.fail_gfx:</span>
+    move.l  GfxBase,<span class="code-register">a1</span>
+    move.l  #4,<span class="code-register">a6</span>
+    jsr     _LVOCloseLibrary(<span class="code-register">a6</span>)
+<span class="code-keyword">.fail_intuition:</span>
+    move.l  IntuitionBase,<span class="code-register">a1</span>
+    move.l  #4,<span class="code-register">a6</span>
+    jsr     _LVOCloseLibrary(<span class="code-register">a6</span>)
+<span class="code-keyword">.fail:</span>
+    moveq   #0,<span class="code-register">d0</span>
+    rts
+
+<span class="code-comment">;--- Subroutine to draw button (up state) ---</span>
+<span class="code-keyword">draw_button_up:</span>
+    movem.l d1-d2/a1,<span class="code-register">-(sp)</span>
+    move.l  RastPort,<span class="code-register">a1</span>
+    move.l  GfxBase,<span class="code-register">a6</span>
+    move.w  #1,<span class="code-register">d0</span>           <span class="code-comment">; Color 1</span>
+    jsr     _LVOSetAPen(<span class="code-register">a6</span>)
+    move.w  #100,<span class="code-register">d0</span>
+    move.w  #40,<span class="code-register">d1</span>
+    move.w  #220,<span class="code-register">d2</span>
+    move.w  #60,<span class="code-register">d3</span>
+    jsr     _LVORectFill(<span class="code-register">a6</span>)
+    move.w  #2,<span class="code-register">d0</span>           <span class="code-comment">; Color 2</span>
+    jsr     _LVOSetAPen(<span class="code-register">a6</span>)
+    move.w  #140,<span class="code-register">d0</span>
+    move.w  #50,<span class="code-register">d1</span>
+    jsr     _LVOMove(<span class="code-register">a6</span>)
+    lea     button_text(pc),<span class="code-register">a0</span>
+    move.w  #10,<span class="code-register">d0</span>
+    jsr     _LVOText(<span class="code-register">a6</span>)
+    movem.l <span class="code-register">(sp)+</span>,d1-d2/a1
+    rts
+
+<span class="code-comment">;--- Subroutine to draw button (down state) ---</span>
+<span class="code-keyword">draw_button_down:</span>
+    movem.l d1-d2/a1,<span class="code-register">-(sp)</span>
+    move.l  RastPort,<span class="code-register">a1</span>
+    move.l  GfxBase,<span class="code-register">a6</span>
+    move.w  #2,<span class="code-register">d0</span>           <span class="code-comment">; Color 2</span>
+    jsr     _LVOSetAPen(<span class="code-register">a6</span>)
+    move.w  #100,<span class="code-register">d0</span>
+    move.w  #40,<span class="code-register">d1</span>
+    move.w  #220,<span class="code-register">d2</span>
+    move.w  #60,<span class="code-register">d3</span>
+    jsr     _LVORectFill(<span class="code-register">a6</span>)
+    move.w  #1,<span class="code-register">d0</span>           <span class="code-comment">; Color 1</span>
+    jsr     _LVOSetAPen(<span class="code-register">a6</span>)
+    move.w  #140,<span class="code-register">d0</span>
+    move.w  #50,<span class="code-register">d1</span>
+    jsr     _LVOMove(<span class="code-register">a6</span>)
+    lea     button_text(pc),<span class="code-register">a0</span>
+    move.w  #10,<span class="code-register">d0</span>
+    jsr     _LVOText(<span class="code-register">a6</span>)
+    movem.l <span class="code-register">(sp)+</span>,d1-d2/a1
+    rts
+
+<span class="code-comment">;--- Subroutine to play sound ---</span>
+<span class="code-keyword">play_sound:</span>
+    lea     $DFF000,<span class="code-register">a5</span>
+    lea     sound_data(pc),<span class="code-register">a0</span>
+    move.l  <span class="code-register">a0</span>,$DFF0A0    <span class="code-comment">; AUD0LCH/LCL - Audio channel 0 pointer</span>
+    move.w  #sound_len,$DFF0A4 <span class="code-comment">; AUD0LEN - Length of sample in words</span>
+    move.w  #15000/8363,<span class="code-register">d0</span>  <span class="code-comment">; Period for 8363Hz playback (adjust for your sample rate)</span>
+    move.w  <span class="code-register">d0</span>,$DFF0A8    <span class="code-comment">; AUD0PER - Playback period</span>
+    move.w  #64,$DFF0A6     <span class="code-comment">; AUD0VOL - Max volume</span>
+    move.w  #%0000000000000001,DMACON(<span class="code-register">a5</span>) <span class="code-comment">; Enable audio channel 0 DMA</span>
+    rts
+
+<span class="code-comment">;--- Data section ---</span>
+<span class="code-keyword">    SECTION</span> data,DATA
+<span class="code-keyword">IntuitionName:</span> dc.b 'intuition.library',0
+<span class="code-keyword">GfxName:</span>       dc.b 'graphics.library',0
+<span class="code-keyword">button_text:</span>   dc.b 'Play Sound',0
+<span class="code-keyword">    even</span>
+<span class="code-keyword">IntuitionBase:</span> dc.l 0
+<span class="code-keyword">GfxBase:</span>       dc.l 0
+<span class="code-keyword">Window:</span>        dc.l 0
+<span class="code-keyword">RastPort:</span>      dc.l 0
+<span class="code-keyword">Message:</span>       dc.l 0
+
+<span class="code-keyword">NewWindow:</span>
+    dc.w 0,0,320,100  <span class="code-comment">; Left, Top, Width, Height</span>
+    dc.w 1,2          <span class="code-comment">; DetailPen, BlockPen</span>
+    dc.l $10001203    <span class="code-comment">; IDCMP Flags</span>
+    dc.l $0007001F    <span class="code-comment">; Flags (WFLG_DRAGBAR, etc)</span>
+    dc.l 0,0          <span class="code-comment">; FirstGadget, CheckMark</span>
+    dc.l .title,.screen,0,0,0 <span class="code-comment">; Title, Screen, BitMap, Min/Max size</span>
+    dc.w 0            <span class="code-comment">; Type (custom screen)</span>
+.title: dc.b 'Sound Player',0
+.screen: dc.l 0 <span class="code-comment">; Use default screen</span>
+
+<span class="code-keyword">    even</span>
+<span class="code-keyword">    SECTION</span> chip,BSS_C <span class="code-comment">; Sound data must be in Chip RAM</span>
+<span class="code-keyword">sound_data:</span>
+    incbin  "sound.raw" <span class="code-comment">; Include your raw sound file here</span>
+<span class="code-keyword">sound_end:</span>
+<span class="code-keyword">sound_len</span>       <span class="code-keyword">equ</span> (sound_end-sound_data)/2 <span class="code-comment">; Length in words</span>
+<span class="code-keyword">    even</span>
+
+<span class="code-comment">;--- Library function offsets ---</span>
+_LVOOpenLibrary equ -552
+_LVOCloseLibrary equ -414
+_LVOOpenWindow equ -222
+_LVOCloseWindow equ -72
+_LVOWait equ -468
+_LVOGetMsg equ -372
+_LVOReplyMsg equ -378
+_LVOSetAPen equ -330
+_LVOMove equ -294
+_LVOText equ -342
+_LVORectFill equ -318
+</code></pre>
+        </div>
+
+        <h4>How to Compile and Run</h4>
+        <ol class="list-decimal list-inside space-y-2 pl-4">
+            <li><strong>Save the Code:</strong> Save the assembly code into a file named `asm_sound_button.s`.</li>
+            <li><strong>Prepare the Sound:</strong> Convert a sound to `sound.raw` (8-bit signed mono) and place it in the same folder.</li>
+            <li><strong>Assemble:</strong> Open your Terminal and run the command: `vasm -Fhunk -o asm_sound_button asm_sound_button.s`</li>
+            <li><strong>Run in Emulator:</strong> Mount the folder containing your new executable and `sound.raw`. Boot into Workbench, open the Shell, and run `asm_sound_button`.</li>
+            <li><strong>See the Result:</strong> A window will appear with a button. Clicking it will animate the button and play your sound!</li>
+        </ol>
+      </section>
+    </main>
+
+    <div id="footer-placeholder"></div>
+    <script src="../common/js/_load-header-footer.js"></script>
+</body>
+</html>

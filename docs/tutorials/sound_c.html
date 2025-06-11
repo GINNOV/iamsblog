@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Interactive Sound Tutorial - Back to Amiga Dev Hub</title>
+    <link rel="stylesheet" href="../common/style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="dark-theme">
+    
+    <div id="header-placeholder"></div>
+
+    <main class="content-page">
+      <section>
+        <h2>Interactive Sound: The "Push My Button" Tutorial</h2>
+        <p>So far, we've made things move on screen. Now, let's make some noise! The Amiga's four 8-bit sound channels, collectively named "Paula," gave it an audio capability that was light-years ahead of its time. This tutorial will guide you through loading a sound sample, drawing a button on the screen, and playing the sound when the user clicks the button.</p>
+
+        <h3>The Concept: Events and Audio</h3>
+        <p>Unlike our previous examples that took over the whole system, this program will run as a proper AmigaDOS process. We'll open a window, draw our button, and then enter a loop to wait for user input (events). When we detect a mouse click inside our button's area, we'll trigger the sound and provide some visual feedback by changing the button's color.</p>
+        
+        <img src="https://placehold.co/600x350/9333ea/ddd6fe?text=Amiga+Audio+Fun&font=press-start-2p" alt="Illustration of an Amiga playing sound" class="w-full max-w-lg mx-auto my-8 rounded-lg shadow-lg border-2 border-gray-600" />
+
+        <h3>Preparing Your Sound Sample</h3>
+        <p>The Amiga hardware plays raw 8-bit signed audio samples. You can't just use an MP3 or WAV file directly. You'll need to convert your sound into the Amiga's native `8SVX` IFF format.</p>
+        <ol class="list-decimal list-inside space-y-2 pl-4">
+            <li>Find a sound effect you like (a short `.wav` file is perfect).</li>
+            <li>Use a modern audio editor like <a href="https://www.audacityteam.org/" target="_blank" rel="noopener noreferrer">Audacity</a> to convert it. Open your sound, change the format to "Other uncompressed files", and under "Header," select "SDS (Amiga 8SVX)". Set the encoding to "Signed 8-bit PCM".</li>
+            <li>Save this new file as `sound.8svx`.</li>
+        </ol>
+
+        <h4>The Code (button_sound.c):</h4>
+        <div class="code-block-wrapper">
+            <button class="copy-code-button"><i class="far fa-copy"></i> Copy</button>
+            <pre><code><span class="code-comment">/*
+ * button_sound.c - A simple program to demonstrate
+ * interactive sound playback on the Amiga.
+ * - Opens a window
+ * - Draws a button
+ * - Plays a sound on mouse click
+ */</span>
+
+#include &lt;proto/exec.h&gt;
+#include &lt;proto/dos.h&gt;
+#include &lt;proto/graphics.h&gt;
+#include &lt;proto/intuition.h&gt;
+#include &lt;proto/datatypes.h&gt;
+
+#include &lt;datatypes/soundclass.h&gt;
+#include &lt;stdio.h&gt;
+
+<span class="code-comment">/* Globals */</span>
+struct Library *ExecBase = NULL;
+struct Library *DOSBase = NULL;
+struct Library *GfxBase = NULL;
+struct Library *IntuitionBase = NULL;
+struct Library *DataTypesBase = NULL;
+
+struct Window *win = NULL;
+Object *sound_obj = NULL;
+
+<span class="code-comment">/* Cleanup function */</span>
+void cleanup(int code) {
+    if (sound_obj) DisposeDTObject(sound_obj);
+    if (DOSBase) CloseLibrary(DOSBase);
+    if (DataTypesBase) CloseLibrary(DataTypesBase);
+    if (win) CloseWindow(win);
+    if (IntuitionBase) CloseLibrary(IntuitionBase);
+    if (GfxBase) CloseLibrary(GfxBase);
+    exit(code);
+}
+
+<span class="code-comment">/* Draws the button in a specific state */</span>
+void draw_button(int state) {
+    SetAPen(win-&gt;RPort, (state == 1) ? 2 : 1); <span class="code-comment">// state 1 = pressed (color 2), 0 = normal (color 1)</span>
+    RectFill(win-&gt;RPort, 100, 40, 220, 60);
+    
+    SetAPen(win-&gt;RPort, (state == 1) ? 1 : 2);
+    Move(win-&gt;RPort, 140, 50);
+    Text(win-&gt;RPort, "Play Sound", 10);
+}
+
+<span class="code-keyword">int</span> main(void) {
+    ExecBase = (*(struct ExecBase **)4);
+
+    <span class="code-comment">/* Open necessary libraries */</span>
+    GfxBase = OpenLibrary("graphics.library", 37);
+    IntuitionBase = OpenLibrary("intuition.library", 37);
+    DOSBase = OpenLibrary("dos.library", 37);
+    DataTypesBase = OpenLibrary("datatypes.library", 37);
+    if (!GfxBase || !IntuitionBase || !DOSBase || !DataTypesBase) {
+        puts("Failed to open a required library.");
+        cleanup(20);
+    }
+    
+    <span class="code-comment">/* Load the sound file using DataTypes */</span>
+    sound_obj = NewDTObject("sound.8svx", DTA_SourceType, DTST_FILE, DTA_GroupID, GID_SOUND, TAG_END);
+    if (!sound_obj) {
+        puts("Could not load sound.8svx. Make sure it's in the same directory.");
+        cleanup(20);
+    }
+
+    <span class="code-comment">/* Open a simple window */</span>
+    win = OpenWindowTags(NULL,
+        WA_Width, 320, WA_Height, 100,
+        WA_Title, "Sound Player",
+        WA_IDCMP, IDCMP_CLOSEWINDOW | IDCMP_MOUSEBUTTONS,
+        WA_Activate, TRUE,
+        WA_DragBar, TRUE,
+        WA_CloseGadget, TRUE,
+        TAG_END);
+    if (!win) {
+        puts("Could not open window.");
+        cleanup(20);
+    }
+
+    draw_button(0); <span class="code-comment">// Draw initial button state</span>
+
+    <span class="code-comment">/* --- Main event loop --- */</span>
+    BOOL running = TRUE;
+    while(running) {
+        struct IntuiMessage *msg;
+        Wait(1L &lt;&lt; win-&gt;UserPort-&gt;mp_SigBit);
+        while(msg = (struct IntuiMessage *)GetMsg(win-&gt;UserPort)) {
+            if (msg-&gt;Class == IDCMP_CLOSEWINDOW) {
+                running = FALSE;
+            }
+            if (msg-&gt;Class == IDCMP_MOUSEBUTTONS) {
+                if (msg-&gt;Code == SELECTDOWN) {
+                    <span class="code-comment">// Check if click is inside our button area</span>
+                    if (msg-&gt;MouseX &gt;= 100 && msg-&gt;MouseX &lt;= 220 &&
+                        msg-&gt;MouseY &gt;= 40 && msg-&gt;MouseY &lt;= 60)
+                    {
+                        draw_button(1); <span class="code-comment">// Animate: pressed state</span>
+                        DoDTMethod(sound_obj, NULL, NULL, DTM_PLAY, NULL, SNDA_DEST_AUDION, 0, TAG_END);
+                    }
+                }
+                if (msg-&gt;Code == SELECTUP) {
+                    draw_button(0); <span class="code-comment">// Animate: normal state</span>
+                }
+            }
+            ReplyMsg((struct Message *)msg);
+        }
+    }
+
+    cleanup(0);
+    return 0;
+}
+</code></pre>
+        </div>
+
+        <h4>How to Compile and Run on macOS</h4>
+        <ol class="list-decimal list-inside space-y-2 pl-4">
+            <li><strong>Save the Code:</strong> Save the C code above into a file named `button_sound.c`.</li>
+            <li><strong>Get your Sound:</strong> Make sure you have your `sound.8svx` file in the same folder.</li>
+            <li><strong>Compile:</strong> Open your Terminal. If you've set up the vbcc environment variables from the previous tutorial, you can use this simple command:
+                 <div class="code-block-wrapper">
+                    <button class="copy-code-button"><i class="far fa-copy"></i> Copy</button>
+                    <pre><code>vc +kick13 -o button_sound button_sound.c -lauto -lamiga</code></pre>
+                </div>
+                <p class="mt-2 text-sm">This command tells vbcc to link the necessary Amiga libraries (`-lamiga` and `-lauto`) for OS functions and create an executable named `button_sound`.</p>
+            </li>
+             <li><strong>Run in Emulator:</strong> In vAmiga or FS-UAE, mount the folder containing your new `button_sound` executable and `sound.8svx`. Boot into Workbench, open the Shell, and run your program by typing `button_sound`.</li>
+             <li><strong>See the Result:</strong> A window will open with a button. Click it to hear your sound play and see the button animate!</li>
+        </ol>
+      </section>
+    </main>
+
+    <div id="footer-placeholder"></div>
+    <script src="../common/js/_load-header-footer.js"></script>
+</body>
+</html>
