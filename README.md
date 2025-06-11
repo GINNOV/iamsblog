@@ -7,5 +7,5 @@
 I create stuff for myself, and if I come across something that might be useful for someone else after a long Google search, I share it without any fancy packaging.
 
 
-🙏🏼 I hope, today, that it's you.
+🙏🏼 I hope, today, that it's you!
 ;mE
