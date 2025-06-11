@@ -32,7 +32,6 @@ jobs:
           token: ${{ secrets.GH_PAT }} # Use a PAT to allow pushing
 
       # Step 2: Install the 'create-dmg' utility.
-      # This is crucial because the build script needs this command.
       - name: Install create-dmg dependency
         run: brew install create-dmg
 
@@ -65,6 +64,8 @@ jobs:
         id: build_step # Give this step an ID to access its outputs
         run: |
           set -euo pipefail
+          
+          # Navigate into the script directory
           cd Amiga/Tools/ADFinder/distribution
           
           # Make scripts executable
@@ -74,13 +75,17 @@ jobs:
           echo "▶ Starting build and package script..."
           # Execute the main build script
           ./build_and_package.sh --project ../ADFinder.xcodeproj --scheme "ADFinder - Release" --configuration Release
+          
+          # Go back to the repository root before finding the file
+          cd ../../../..
 
-          # Find the created DMG and set it as an output variable
-          DMG_FILE=$(find ../releases -name "ADFinder*.dmg" -print -quit)
+          # Find the created DMG relative to the repo root and set it as an output variable
+          DMG_FILE=$(find Amiga/Tools/ADFinder/releases -name "ADFinder*.dmg" -print -quit)
           if [ -z "$DMG_FILE" ]; then
-            echo "::error::Could not find the created DMG file."
+            echo "::error::Could not find the created DMG file from the repo root."
             exit 1
           fi
+          echo "Found DMG at repo root relative path: $DMG_FILE"
           echo "DMG_FILE=$DMG_FILE" >> $GITHUB_OUTPUT
           
           echo "✅ Build and package script completed successfully."
@@ -93,9 +98,9 @@ jobs:
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           
-          # Add the newly created DMG file to the staging area
+          # Get the correct file path from the previous step's output
           DMG_TO_COMMIT="${{ steps.build_step.outputs.DMG_FILE }}"
-          echo "Adding $DMG_TO_COMMIT to Git."
+          echo "Adding '$DMG_TO_COMMIT' to Git."
           git add "$DMG_TO_COMMIT"
           
           # Commit the file if there are any changes
@@ -111,3 +116,4 @@ jobs:
             echo "Pushing changes to master..."
             git push origin master
           fi
+
