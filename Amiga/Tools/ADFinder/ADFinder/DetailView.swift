@@ -187,6 +187,11 @@ struct DetailView: View {
     
     private var mainToolbar: some ToolbarContent {
         ToolbarItemGroup(placement: .primaryAction) {
+            // AI_TRACK: Added "New" button.
+            Button(action: createNewAdf) {
+                Label("New", systemImage: "doc.badge.plus")
+            }
+            
             if selectedFile != nil {
                 Menu {
                     Picker("Sort By", selection: $sortOrder) {
@@ -208,7 +213,9 @@ struct DetailView: View {
                 
                 Menu {
                     Button(action: {
-                        if let entry = selectedEntry { viewFileContent(entry) }
+                        if let entry = selectedEntry {
+                            viewFileContent(entry)
+                        }
                     }) {
                         Label("Hex Editor", systemImage: "number")
                     }
@@ -298,6 +305,15 @@ struct DetailView: View {
         } else {
             showAlert(message: "Failed to open or mount ADF: \"\(url.lastPathComponent)\". Check console for ADFlib errors.")
             selectedFile = nil
+        }
+    }
+    
+    // AI_TRACK: New function to handle the creation of a blank ADF.
+    private func createNewAdf() {
+        if let newAdfUrl = adfService.createNewBlankADF(volumeName: "adfinder_vol1") {
+            self.selectedFile = newAdfUrl
+        } else {
+            showAlert(message: "Failed to create a new blank ADF image.")
         }
     }
 

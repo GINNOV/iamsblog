@@ -10,7 +10,7 @@
 
 #include "adf_types.h" // For uint32_t, int32_t, SECTNUM
 #include "adf_dir.h"   // For the full definition of struct AdfEntry
-#include "adf_env.h"
+#include "adf_env.h"   // For AdfLogFct type
 
 // For register_dump_driver_helper()
 #include "adf_dev_drivers.h"
@@ -30,6 +30,11 @@ const char* get_AdfEntry_name_ptr(const struct AdfEntry* entry);
 const char* get_AdfEntry_comment_ptr(const struct AdfEntry* entry);
 
 ADF_RETCODE register_dump_driver_helper(void);
-void setup_logging(void);
-#endif /* ADF_SWIFT_HELPERS_H */
 
+void setup_logging(void);
+
+// AI_TRACK: New helper function to create a blank ADF. This encapsulates all C-level calls.
+ADF_RETCODE create_blank_adf_c(const char* path, const char* volName);
+
+
+#endif /* ADF_SWIFT_HELPERS_H */

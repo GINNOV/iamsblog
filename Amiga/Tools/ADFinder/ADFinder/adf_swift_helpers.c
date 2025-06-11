@@ -6,19 +6,23 @@
 //
 
 #include "adf_swift_helpers.h"
-#include <stddef.h> // For NULL
-#include <stdio.h>  // For vsnprintf
-#include <stdarg.h> // For va_list, va_start, va_end
-#include <stdlib.h> // For malloc, free
+#include "adf_env.h"
+#include "adf_dev_flop.h"
+#include "adf_blk.h"
+#include "adf_err.h" // AI_TRACK: Added missing header for RC_ codes.
+#include <stddef.h>
+#include <stdio.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
 
-// Declaring the Swift function that our C shim will call.
+
 extern void swift_log_bridge(const char* msg);
 
 static void c_variadic_log_handler(const char* format, ...) {
     va_list args;
     va_start(args, format);
 
-    // Determine required size
     va_list args_copy;
     va_copy(args_copy, args);
     int len = vsnprintf(NULL, 0, format, args_copy);
@@ -28,7 +32,6 @@ static void c_variadic_log_handler(const char* format, ...) {
         char* buffer = malloc(len + 1);
         if (buffer) {
             vsnprintf(buffer, len + 1, format, args);
-            // Call the actual Swift logging function
             swift_log_bridge(buffer);
             free(buffer);
         }
@@ -37,8 +40,33 @@ static void c_variadic_log_handler(const char* format, ...) {
 }
 
 void setup_logging(void) {
-    // Pass the C shim function pointer to ADFLib
     adfEnvSetFct(c_variadic_log_handler, c_variadic_log_handler, c_variadic_log_handler, NULL);
+}
+
+// AI_TRACK: Corrected implementation based on user's working send2adf.c example.
+ADF_RETCODE create_blank_adf_c(const char* path, const char* volName) {
+    char* mutablePath = strdup(path);
+    if (!mutablePath) { return ADF_RC_MALLOC; }
+
+    struct AdfDevice *device = adfDevCreate("dump", mutablePath, 80, 2, 11);
+    free(mutablePath);
+    
+    if (!device) {
+        return ADF_RC_FOPEN;
+    }
+    
+    char* mutableVolName = strdup(volName);
+    if (!mutableVolName) {
+        adfDevClose(device);
+        return ADF_RC_MALLOC;
+    }
+
+    ADF_RETCODE rc = adfCreateFlop(device, mutableVolName, ADF_DOSFS_OFS);
+    
+    free(mutableVolName);
+    adfDevClose(device);
+    
+    return rc;
 }
 
 
@@ -57,8 +85,6 @@ const char* get_AdfEntry_comment_ptr(const struct AdfEntry* entry) {
     return NULL;
 }
 
-// Implementation for the driver registration helper
 ADF_RETCODE register_dump_driver_helper(void) {
     return adfAddDeviceDriver(&adfDeviceDriverDump);
 }
-

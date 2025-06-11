@@ -92,7 +92,7 @@ class ADFService {
             return false
         }
         
-        print("ADFService: adfDevOpenWithDriver OK. Mounting device...")
+        print("ADFService: adfDevMount OK. Mounting device...")
         if adfDevMount(self.adfDevice) != ADF_RC_OK {
             print("ADFService: adfDevMount failed. Check C-Log above.")
             adfDevClose(self.adfDevice)
@@ -312,7 +312,7 @@ class ADFService {
     }
 
     func navigateToDirectory(_ name: String) -> Bool {
-        guard let vol = self.adfVolume, !name.isEmpty, name != "." else { return false }
+        guard self.adfVolume != nil, !name.isEmpty, name != "." else { return false }
         
         if name == ".." {
             if currentPath.isEmpty { return false }
@@ -471,6 +471,34 @@ class ADFService {
         } else {
             print("ADFService: adfRenameEntry failed. Check C-Log for details.")
             return "ADFLib failed to rename the entry. A file with the new name may already exist."
+        }
+    }
+    
+    func createNewBlankADF(volumeName: String) -> URL? {
+        let tempDir = FileManager.default.temporaryDirectory
+        let fileName = "blank_\(UUID().uuidString).adf"
+        let tempURL = tempDir.appendingPathComponent(fileName)
+        let tempPath = tempURL.path
+        
+        print("ADFService: Creating new blank ADF at: \(tempPath)")
+        
+        let success = tempPath.withCString { cPath in
+            volumeName.withCString { cVolName in
+                return create_blank_adf_c(cPath, cVolName).rawValue == ADF_RC_OK_SWIFT
+            }
+        }
+
+        guard success else {
+            print("ADFService: create_blank_adf_c helper failed.")
+            return nil
+        }
+        
+        if openADF(filePath: tempPath) {
+            print("ADFService: Successfully created and opened new ADF.")
+            return tempURL
+        } else {
+            print("ADFService: Failed to open the newly created ADF.")
+            return nil
         }
     }
 }
