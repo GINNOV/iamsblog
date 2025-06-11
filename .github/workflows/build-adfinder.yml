@@ -1,12 +1,12 @@
-# This workflow builds the ADFinder application and packages it into a .dmg disk image
-# in a single, streamlined job.
+# This workflow builds the ADFinder application, packages it into a .dmg,
+# and then commits the DMG file back to the repository.
 #
 # Trigger:
 # - Runs on a push to the 'master' branch ONLY if the commit message
 #   includes the string '#build-binary'.
 # - Can also be triggered manually from the GitHub Actions UI.
 
-name: Build ADFinder DMG
+name: Build and Commit ADFinder DMG
 
 on:
   push:
@@ -15,29 +15,28 @@ on:
 
 jobs:
   # This single job handles all steps: dependency installation, building,
-  # and packaging the DMG.
-  build-and-create-dmg:
+  # packaging the DMG, and committing the result.
+  build-and-commit-dmg:
     # This condition ensures the job only runs if the commit message
     # contains '#build-binary'. This check is case-sensitive.
     if: contains(github.event.head_commit.message, '#build-binary')
     runs-on: macos-latest
     steps:
       # Step 1: Check out the repository's code.
-      # fetch-depth: 0 ensures we get the full history to access commit messages.
+      # We use a personal access token (PAT) with write permissions to be able
+      # to push the commit back to the repository.
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0 # Needed for commit history
+          token: ${{ secrets.GH_PAT }} # Use a PAT to allow pushing
 
       # Step 2: Install the 'create-dmg' utility.
-      # This is crucial because the user's build script needs this command to
-      # successfully create the disk image.
+      # This is crucial because the build script needs this command.
       - name: Install create-dmg dependency
         run: brew install create-dmg
 
       # Step 3: Select the required Xcode version.
-      # This logic iterates through potential Xcode 16 versions and selects the
-      # first one it finds, ensuring compatibility with the project file format.
       - name: Check and select Xcode version
         run: |
           echo "Default Xcode version:"
@@ -45,7 +44,6 @@ jobs:
           echo "Available Xcode installations:"
           ls -d /Applications/Xcode*.app
           
-          # Loop through potential Xcode 16 versions and select the first one found
           for version in 16.2 16.1 16.0 16; do
             if [ -d "/Applications/Xcode_${version}.app" ]; then
               echo "Found Xcode ${version}. Selecting it."
@@ -57,35 +55,59 @@ jobs:
           echo "Selected Xcode version:"
           xcodebuild -version
 
-          # Verify that the selected version is indeed Xcode 16 or newer
           if [ "$(xcodebuild -version | awk '/Xcode/ {print $2}' | cut -d. -f1)" -lt 16 ]; then
              echo "::error::Failed to select Xcode 16.x. The active version is still less than 16."
              exit 1
           fi
 
-      # Step 4: Make scripts non-interactive and executable, then run build.
+      # Step 4: Run the build and package script.
       - name: Build .app and Create .dmg
+        id: build_step # Give this step an ID to access its outputs
         run: |
           set -euo pipefail
           cd Amiga/Tools/ADFinder/distribution
-
-          # Make the script non-interactive by removing the 'read' command and its 'if' block.
-          # This is the key fix for running in an automated CI environment.
-          echo "Making gendmg.sh non-interactive..."
-          sed -i '' '/# Check if DMG already exists/,/fi/d' gendmg.sh
-
+          
+          # Make scripts executable
           chmod +x build_and_package.sh
           chmod +x gendmg.sh
           
           echo "▶ Starting build and package script..."
+          # Execute the main build script
           ./build_and_package.sh --project ../ADFinder.xcodeproj --scheme "ADFinder - Release" --configuration Release
+
+          # Find the created DMG and set it as an output variable
+          DMG_FILE=$(find ../releases -name "ADFinder*.dmg" -print -quit)
+          if [ -z "$DMG_FILE" ]; then
+            echo "::error::Could not find the created DMG file."
+            exit 1
+          fi
+          echo "DMG_FILE=$DMG_FILE" >> $GITHUB_OUTPUT
+          
           echo "✅ Build and package script completed successfully."
 
-      # Step 5: Upload the final .dmg file as a workflow artifact.
-      # The path uses a wildcard to match the versioned DMG file name.
-      - name: Upload DMG artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ADFinder-DMG
-          path: Amiga/Tools/ADFinder/releases/ADFinder*.dmg
-          retention-days: 7
+      # Step 5: Commit the generated DMG file back to the repository.
+      - name: Commit and Push DMG
+        run: |
+          set -euo pipefail
+          # Configure Git with the Actions bot user
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          
+          # Add the newly created DMG file to the staging area
+          DMG_TO_COMMIT="${{ steps.build_step.outputs.DMG_FILE }}"
+          echo "Adding $DMG_TO_COMMIT to Git."
+          git add "$DMG_TO_COMMIT"
+          
+          # Commit the file if there are any changes
+          if git diff-index --quiet HEAD; then
+            echo "No changes to commit."
+          else
+            echo "Committing the new DMG..."
+            # Extract the build number from the filename for the commit message
+            BUILD_NUMBER=$(echo "$DMG_TO_COMMIT" | sed -n 's/.*_//; s/.dmg//p')
+            git commit -m "CI: Add DMG for build ${BUILD_NUMBER}"
+            
+            # Push the commit to the master branch
+            echo "Pushing changes to master..."
+            git push origin master
+          fi
