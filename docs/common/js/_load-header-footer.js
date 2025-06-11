@@ -2,17 +2,22 @@ document.addEventListener('DOMContentLoaded', function() {
     const headerPlaceholder = document.getElementById('header-placeholder');
     const footerPlaceholder = document.getElementById('footer-placeholder');
 
-    // Determine the base path to get from the current HTML page to the root directory.
-    // This allows the script to work from any subdirectory level.
-    const pathSegments = window.location.pathname.split('/').filter(segment => segment);
-    // Remove the filename if it's there
-    if (pathSegments.length > 0 && pathSegments[pathSegments.length - 1].includes('.html')) {
-        pathSegments.pop();
-    }
-    const depth = pathSegments.length;
-    const basePath = '../'.repeat(depth) || './';
+    /**
+     * Determines the correct base path for the GitHub Pages project.
+     * It specifically looks for your repository name in the URL.
+     * Returns '/littlethings/' when on GitHub Pages, and '/' for local development.
+     */
+    const getBasePath = () => {
+        const path = window.location.pathname;
+        if (path.includes('/littlethings/')) {
+            return '/littlethings/';
+        }
+        return '/';
+    };
 
-    // --- Define paths to common resources relative to the site root ---
+    const basePath = getBasePath();
+
+    // Paths to common resources are now built dynamically and absolutely
     const headerPath = `${basePath}common/_header.html`;
     const footerPath = `${basePath}common/_footer.html`;
 
@@ -20,35 +25,41 @@ document.addEventListener('DOMContentLoaded', function() {
     if (headerPlaceholder) {
         fetch(headerPath)
             .then(response => {
-                if (!response.ok) throw new Error(`Network response was not ok for ${headerPath}`);
+                if (!response.ok) throw new Error(`Failed to load header from: ${headerPath}`);
                 return response.text();
             })
             .then(data => {
                 headerPlaceholder.innerHTML = data;
-                
-                // Now that the header is loaded, find the nav links within it and fix their paths
-                const navLinks = headerPlaceholder.querySelectorAll('nav a');
-                navLinks.forEach(link => {
+
+                // --- After loading header, fix paths of assets inside the header ---
+                const headerLogo = headerPlaceholder.querySelector('.header-logo');
+                if (headerLogo && headerLogo.getAttribute('src').startsWith('./')) {
+                    const originalSrc = headerLogo.getAttribute('src').replace('./', '');
+                    headerLogo.src = `${basePath}${originalSrc}`;
+                }
+
+                // Fix navigation link paths to be absolute
+                headerPlaceholder.querySelectorAll('nav a').forEach(link => {
                     const originalHref = link.getAttribute('href');
                     if (originalHref && !originalHref.startsWith('http') && !originalHref.startsWith('#')) {
-                        link.setAttribute('href', `${basePath}${originalHref}`);
+                        link.href = `${basePath}${originalHref}`;
+                    }
+                });
+                
+                // Set the 'active' class on the current page's navigation link
+                const currentPath = window.location.pathname;
+                headerPlaceholder.querySelectorAll('nav a').forEach(link => {
+                    const linkPath = new URL(link.href).pathname;
+                    if (currentPath === linkPath || (currentPath.endsWith('/') && linkPath.endsWith('/index.html'))) {
+                        link.classList.add('active');
                     }
                 });
 
-                // Set the active class on the correct navigation link
-                const currentPage = window.location.pathname.split('/').pop() || 'index.html';
-                headerPlaceholder.querySelector(`nav a[href$="${currentPage}"]`)?.classList.add('active');
-                if (currentPage === 'index.html' || currentPage === '') {
-                     headerPlaceholder.querySelector(`nav a[href$="index.html"]`)?.classList.add('active');
-                }
-                
                 // Activate mobile menu toggle logic
                 const menuToggle = headerPlaceholder.querySelector('.menu-toggle');
                 const sidebar = headerPlaceholder.querySelector('.sidebar ul');
                 if (menuToggle && sidebar) {
                     if (window.innerWidth < 768) sidebar.classList.add('hidden');
-                    else sidebar.classList.remove('hidden');
-
                     menuToggle.addEventListener('click', () => sidebar.classList.toggle('hidden'));
                     window.addEventListener('resize', () => {
                         if (window.innerWidth >= 768) sidebar.classList.remove('hidden');
@@ -62,7 +73,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (footerPlaceholder) {
         fetch(footerPath)
             .then(response => {
-                if (!response.ok) throw new Error(`Network response was not ok for ${footerPath}`);
+                if (!response.ok) throw new Error(`Failed to load footer from: ${footerPath}`);
                 return response.text();
             })
             .then(data => {
@@ -72,23 +83,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 const themeToggle = footerPlaceholder.querySelector('#theme-toggle');
                 if (themeToggle) {
                     const applyTheme = (theme) => {
-                        if (theme === 'dark') {
-                            document.body.classList.add('dark-theme');
-                            themeToggle.textContent = 'Light Mode';
-                        } else {
-                            document.body.classList.remove('dark-theme');
-                            themeToggle.textContent = 'Dark Mode';
-                        }
+                        document.body.classList.toggle('dark-theme', theme === 'dark');
+                        themeToggle.textContent = theme === 'dark' ? 'Light Mode' : 'Dark Mode';
                     };
-
-                    const savedTheme = localStorage.getItem('theme');
-                    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                    
-                    applyTheme(savedTheme || (prefersDark ? 'dark' : 'light'));
-
+                    const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+                    applyTheme(savedTheme);
                     themeToggle.addEventListener('click', () => {
-                        const isDarkMode = !document.body.classList.contains('dark-theme');
-                        const newTheme = isDarkMode ? 'dark' : 'light';
+                        const newTheme = document.body.classList.contains('dark-theme') ? 'light' : 'dark';
                         localStorage.setItem('theme', newTheme);
                         applyTheme(newTheme);
                     });

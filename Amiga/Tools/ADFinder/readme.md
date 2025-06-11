@@ -12,6 +12,7 @@ So I start building it. Details and pre-built app are [here](https://ginnov.gith
 2. ✅ Show the content of files in a HEX editor
 3. ✅ Navigate folder structure back and forth
 4. ✅ Delete files and folder
+7. ✅ Create an ADF from scratch
 11. ✅ Open ADF images by dropping the image over the files' window
 12. ✅ Show disk layout, file usage and other stats
 13. ✅ Create new folders
@@ -22,8 +23,7 @@ So I start building it. Details and pre-built app are [here](https://ginnov.gith
 ## Work in Progress
 5. 👷🏻 Add files
 6. 👷🏻 Add support for Drag and Drop for new files 
-7. 👷🏻 Create an ADF from scratch
-8. 👷🏻 Compare two ADF images
+8. 👷🏻 Compare two ADF images (raw or files matching?)
 9. 👷🏻 Auto convert audio when adding them to an image
 10. 👷🏻 Auto convert image format wehn adding them to an image
 17. 👷🏻 Text view (to copy files)
