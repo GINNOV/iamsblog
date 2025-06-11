@@ -31,6 +31,9 @@ struct DetailView: View {
     @State private var isDetailViewTargetedForDrop = false
     @State private var sortOrder: SortOrder = .nameAscending
 
+    @State private var showingFileExporter = false
+    @State private var adfDocumentToSave: ADFDocument?
+
     
     private var selectedEntry: AmigaEntry? {
         guard let selectedEntryID = selectedEntryID else { return nil }
@@ -114,6 +117,19 @@ struct DetailView: View {
         } message: {
             Text(alertMessage ?? "An unknown error occurred.")
         }
+        .fileExporter(
+            isPresented: $showingFileExporter,
+            document: adfDocumentToSave,
+            contentType: ContentView.adfUType
+        ) { result in
+            switch result {
+            case .success(let url):
+                print("Successfully saved ADF to \(url.path)")
+                self.selectedFile = url
+            case .failure(let error):
+                showAlert(message: "Failed to save file: \(error.localizedDescription)")
+            }
+        }
     }
     
     @ViewBuilder
@@ -157,7 +173,7 @@ struct DetailView: View {
         List(selection: $selectedEntryID) {
             if !adfService.currentPath.isEmpty {
                 Button(action: goUpDirectory) {
-                    Label(".. (Up one level)", systemImage: "arrow.up.left.circle.fill")
+                    Label(".. (back one level)", systemImage: "arrow.up.left.circle.fill")
                 }
                 .selectionDisabled(true)
             }
@@ -187,11 +203,15 @@ struct DetailView: View {
     
     private var mainToolbar: some ToolbarContent {
         ToolbarItemGroup(placement: .primaryAction) {
-            // AI_TRACK: Added "New" button.
             Button(action: createNewAdf) {
                 Label("New", systemImage: "doc.badge.plus")
             }
             
+            Button(action: saveAdf) {
+                Label("Save", systemImage: "tray.and.arrow.down.fill")
+            }
+            .disabled(selectedFile == nil)
+
             if selectedFile != nil {
                 Menu {
                     Picker("Sort By", selection: $sortOrder) {
@@ -308,12 +328,23 @@ struct DetailView: View {
         }
     }
     
-    // AI_TRACK: New function to handle the creation of a blank ADF.
     private func createNewAdf() {
         if let newAdfUrl = adfService.createNewBlankADF(volumeName: "adfinder_vol1") {
             self.selectedFile = newAdfUrl
         } else {
             showAlert(message: "Failed to create a new blank ADF image.")
+        }
+    }
+    
+    private func saveAdf() {
+        guard let url = selectedFile else { return }
+        
+        do {
+            let data = try Data(contentsOf: url, options: .mappedIfSafe)
+            adfDocumentToSave = ADFDocument(data: data)
+            showingFileExporter = true
+        } catch {
+            showAlert(message: "Could not read data from the current ADF file to save it: \(error.localizedDescription)")
         }
     }
 
