@@ -83,13 +83,14 @@ jobs:
           # Go back to the repository root before finding the file
           cd ../../../..
 
-          # Find the created DMG in the new, correct location relative to the repo root.
-          DMG_FILE=$(find Amiga/Tools/releases -name "ADFinder*.dmg" -print -quit)
+          # Find the *newest* created DMG in the correct location relative to the repo root.
+          # This prevents finding an old, pre-existing file.
+          DMG_FILE=$(find Amiga/Tools/releases -name "ADFinder*.dmg" -type f -print0 | xargs -0 ls -t | head -n1)
           if [ -z "$DMG_FILE" ]; then
             echo "::error::Could not find the created DMG file from the repo root."
             exit 1
           fi
-          echo "Found DMG at repo root relative path: $DMG_FILE"
+          echo "Found newest DMG at repo root relative path: $DMG_FILE"
           echo "DMG_FILE=$DMG_FILE" >> $GITHUB_OUTPUT
           
           echo "✅ Build and package script completed successfully."
@@ -101,16 +102,17 @@ jobs:
           # Configure Git with the Actions bot user
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+          # Discard changes made to the build script by the sed command to keep the commit clean.
+          git checkout -- Amiga/Tools/ADFinder/distribution/build_and_package.sh
           
           # Get the correct file path from the previous step's output
           DMG_TO_COMMIT="${{ steps.build_step.outputs.DMG_FILE }}"
           echo "Adding '$DMG_TO_COMMIT' to Git."
           git add "$DMG_TO_COMMIT"
           
-          # Commit the file if there are any changes
-          if git diff-index --quiet HEAD; then
-            echo "No changes to commit."
-          else
+          # Commit the file if there are any staged changes.
+          if ! git diff --staged --quiet; then
             echo "Committing the new DMG..."
             # Extract the build number from the filename for the commit message
             BUILD_NUMBER=$(echo "$DMG_TO_COMMIT" | sed -n 's/.*_//; s/.dmg//p')
@@ -119,4 +121,6 @@ jobs:
             # Push the commit to the master branch
             echo "Pushing changes to master..."
             git push origin master
+          else
+            echo "No new DMG file was created or added. Nothing to commit."
           fi
