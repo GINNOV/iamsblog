@@ -3,7 +3,7 @@
 #
 # Trigger:
 # - Runs on a push to the 'master' branch ONLY if the commit message
-#   includes the string '#build-binary'.
+#   includes the string '#build-adfinder'.
 # - Manual runs via 'workflow_dispatch' will be skipped by the job's 'if' condition.
 
 name: Build and Commit ADFinder DMG
@@ -18,8 +18,8 @@ jobs:
   # packaging the DMG, and committing the result.
   build-and-commit-dmg:
     # This condition ensures the job only runs if the push commit message
-    # contains the '#build-binary' trigger.
-    if: contains(github.event.head_commit.message, '#build-binary')
+    # contains the '#build-adfinder' trigger.
+    if: contains(github.event.head_commit.message, '#build-adfinder')
     runs-on: macos-latest
     steps:
       # Step 1: Check out the repository's code.
@@ -67,6 +67,10 @@ jobs:
           
           # Navigate into the script directory
           cd Amiga/Tools/ADFinder/distribution
+
+          # Modify the output path in the build script to use the correct parent folder.
+          echo "Updating DMG output path in build script..."
+          sed -i '' 's|DMG_BASE_PATH="../releases/|DMG_BASE_PATH="../../releases/|g' build_and_package.sh
           
           # Make scripts executable
           chmod +x build_and_package.sh
@@ -79,8 +83,8 @@ jobs:
           # Go back to the repository root before finding the file
           cd ../../../..
 
-          # Find the created DMG relative to the repo root and set it as an output variable
-          DMG_FILE=$(find Amiga/Tools/ADFinder/releases -name "ADFinder*.dmg" -print -quit)
+          # Find the created DMG in the new, correct location relative to the repo root.
+          DMG_FILE=$(find Amiga/Tools/releases -name "ADFinder*.dmg" -print -quit)
           if [ -z "$DMG_FILE" ]; then
             echo "::error::Could not find the created DMG file from the repo root."
             exit 1
