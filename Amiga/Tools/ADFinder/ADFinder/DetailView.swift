@@ -19,18 +19,28 @@ struct DetailView: View {
     @State private var showingAlert = false
     @State private var showingNewFolderAlert = false
     @State private var newFolderName = ""
-    @State private var entryToDelete: AmigaEntry?
+    
+    // State for Confirmation Dialogs
+    @State private var showingConfirmation = false
+    @State private var confirmationConfig: ConfirmationConfig?
+    
+    // State for Rename Dialog
     @State private var entryToRename: AmigaEntry?
     @State private var newEntryName: String = ""
+    
+    // State for Child Views
     @State private var showingAboutView = false
     @State private var showingFileViewer = false
     @State private var selectedEntryForView: AmigaEntry?
     @State private var fileContentData: Data?
+    
+    // Async Operation State
     @State private var isLoadingFileContent = false
     @State private var loadingTask: Task<Void, Never>?
+    
+    // Drag & Drop State
     @State private var isDetailViewTargetedForDrop = false
     @State private var sortOrder: SortOrder = .nameAscending
-
     @State private var showingFileExporter = false
     @State private var adfDocumentToSave: ADFDocument?
 
@@ -71,18 +81,24 @@ struct DetailView: View {
         ZStack {
             mainContent
         }
-        .sheet(item: $entryToDelete) { entry in
-            DeleteConfirmationView(
-                entry: entry,
-                onConfirm: { force in
-                    deleteEntry(entry, force: force)
-                    entryToDelete = nil
-                },
-                onCancel: {
-                    entryToDelete = nil
-                }
-            )
-        }
+        .sheet(item: $confirmationConfig) { config in
+             ActionConfirmationView(
+                 title: config.title,
+                 message: config.message,
+                 imageName: config.imageName,
+                 confirmButtonTitle: config.confirmButtonTitle,
+                 confirmButtonRole: .destructive,
+                 showsForceToggle: config.showsForceToggle,
+                 forceFlag: config.$forceBinding,
+                 onConfirm: {
+                     config.action(config.$forceBinding.wrappedValue)
+                     confirmationConfig = nil
+                 },
+                 onCancel: {
+                     confirmationConfig = nil
+                 }
+             )
+         }
         .alert("New Folder", isPresented: $showingNewFolderAlert) {
             TextField("Folder Name", text: $newFolderName)
                 .autocorrectionDisabled()
@@ -173,7 +189,7 @@ struct DetailView: View {
         List(selection: $selectedEntryID) {
             if !adfService.currentPath.isEmpty {
                 Button(action: goUpDirectory) {
-                    Label(".. (back one level)", systemImage: "arrow.up.left.circle.fill")
+                    Label(".. (Up one level)", systemImage: "arrow.up.left.circle.fill")
                 }
                 .selectionDisabled(true)
             }
@@ -203,12 +219,17 @@ struct DetailView: View {
     
     private var mainToolbar: some ToolbarContent {
         ToolbarItemGroup(placement: .primaryAction) {
-            Button(action: createNewAdf) {
+            Button(action: {
+                // AI_TRACK: Use the generic confirmation dialog for the "New" action.
+                presentConfirmation(
+                    config: .newADF(action: createNewAdf)
+                )
+            }) {
                 Label("New", systemImage: "doc.badge.plus")
             }
             
             Button(action: saveAdf) {
-                Label("Save", systemImage: "tray.and.arrow.down.fill")
+                Label("Save", systemImage: "square.and.arrow.down")
             }
             .disabled(selectedFile == nil)
 
@@ -259,7 +280,13 @@ struct DetailView: View {
                 .disabled(selectedEntryID == nil)
 
                 Button(role: .destructive, action: {
-                    if let entry = selectedEntry { entryToDelete = entry }
+                    if let entry = selectedEntry {
+                        presentConfirmation(
+                            config: .delete(entry: entry, action: { force in
+                                deleteEntry(entry, force: force)
+                            })
+                        )
+                    }
                 }) {
                     Label("Delete", systemImage: "trash")
                 }
@@ -426,5 +453,47 @@ struct DetailView: View {
         let hold = (bits & FIBF_HOLD_SWIFT) != 0; let script = (bits & FIBF_SCRIPT_SWIFT) != 0
         let pure = (bits & FIBF_PURE_SWIFT) != 0; let archive = (bits & FIBF_ARCHIVE_SWIFT) != 0
         return "R\(canRead ? "✔" : "-")W\(canWrite ? "✔" : "-")E\(canExecute ? "✔" : "-")D\(canDelete ? "✔" : "-") [hspa:\(hold ? "H" : "-")\(script ? "S" : "-")\(pure ? "P" : "-")\(archive ? "A" : "-")]"
+    }
+    
+    // AI_TRACK: New helper to present the generic confirmation dialog.
+    private func presentConfirmation(config: ConfirmationConfig) {
+        self.confirmationConfig = config
+        self.showingConfirmation = true
+    }
+}
+
+// AI_TRACK: New struct to hold the configuration for the confirmation dialog.
+struct ConfirmationConfig: Identifiable {
+    let id = UUID()
+    let title: String
+    let message: String
+    let imageName: String
+    let confirmButtonTitle: String
+    let showsForceToggle: Bool
+    @Binding var forceBinding: Bool
+    let action: (Bool) -> Void
+
+    static func newADF(action: @escaping () -> Void) -> ConfirmationConfig {
+        ConfirmationConfig(
+            title: "Create New ADF?",
+            message: "Creating a new ADF will close the current one. Any unsaved changes will be lost.",
+            imageName: "warning",
+            confirmButtonTitle: "Proceed",
+            showsForceToggle: false,
+            forceBinding: .constant(false),
+            action: { _ in action() }
+        )
+    }
+
+    static func delete(entry: AmigaEntry, action: @escaping (Bool) -> Void) -> ConfirmationConfig {
+        ConfirmationConfig(
+            title: "Delete \(entry.type == .directory ? "Folder" : "File")",
+            message: "Are you sure you want to permanently delete \"\(entry.name)\"? This action cannot be undone.",
+            imageName: (entry.type == .directory ? "trash_folder" : "trash_file"),
+            confirmButtonTitle: "Delete",
+            showsForceToggle: true,
+            forceBinding: .constant(false), // This will need to be a @State in the parent if it's to be used
+            action: action
+        )
     }
 }

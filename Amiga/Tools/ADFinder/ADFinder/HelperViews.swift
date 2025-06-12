@@ -7,32 +7,39 @@
 
 import SwiftUI
 
-struct DeleteConfirmationView: View {
-    let entry: AmigaEntry
-    let onConfirm: (Bool) -> Void
+// AI_TRACK: This generic confirmation view is now used for all destructive actions.
+struct ActionConfirmationView: View {
+    let title: String
+    let message: String
+    let imageName: String
+    let confirmButtonTitle: String
+    let confirmButtonRole: ButtonRole
+    var showsForceToggle: Bool = false
+    
+    @Binding var forceFlag: Bool
+    
+    let onConfirm: () -> Void
     let onCancel: () -> Void
-
-    @State private var forceDeletion = false
 
     var body: some View {
         VStack(spacing: 20) {
-            Image("Trash/\(entry.type == .directory ? "trash_folder" : "trash_file")")
+            Image(imageName)
                 .resizable()
                 .scaledToFit()
                 .frame(width: 80, height: 80)
 
-            Text("Delete \(entry.type == .directory ? "Folder" : "File")")
+            Text(title)
                 .font(.headline)
 
-            Text("Are you sure you want to permanently delete \"\(entry.name)\"? This action cannot be undone.")
+            Text(message)
                 .multilineTextAlignment(.center)
                 .foregroundColor(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
-            Toggle(isOn: $forceDeletion) {
-                Text("Override AmigaOS flags (force operation)")
+            if showsForceToggle {
+                Toggle("Override AmigaOS flags (force operation)", isOn: $forceFlag)
+                    .toggleStyle(.checkbox)
             }
-            .toggleStyle(.checkbox)
 
             HStack(spacing: 12) {
                 Button(role: .cancel, action: onCancel) {
@@ -41,8 +48,8 @@ struct DeleteConfirmationView: View {
                 }
                 .keyboardShortcut(.cancelAction)
 
-                Button(role: .destructive, action: { onConfirm(forceDeletion) }) {
-                    Text("Delete")
+                Button(role: confirmButtonRole, action: onConfirm) {
+                    Text(confirmButtonTitle)
                         .frame(maxWidth: .infinity)
                 }
                 .keyboardShortcut(.defaultAction)
