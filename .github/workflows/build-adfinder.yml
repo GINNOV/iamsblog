@@ -17,9 +17,9 @@ jobs:
   # This single job handles all steps: dependency installation, building,
   # packaging the DMG, and committing the result.
   build-and-commit-dmg:
-    # This condition ensures the job only runs if the commit message
-    # contains '#build-binary'. This check is case-sensitive.
-    if: contains(github.event.head_commit.message, '#build-binary')
+    # This condition ensures the job runs on manual trigger OR if the push
+    # commit message contains '#build-binary'. This is case-sensitive.
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '#build-binary')
     runs-on: macos-latest
     steps:
       # Step 1: Check out the repository's code.
@@ -116,4 +116,3 @@ jobs:
             echo "Pushing changes to master..."
             git push origin master
           fi
-
