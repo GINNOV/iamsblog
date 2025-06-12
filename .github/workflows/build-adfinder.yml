@@ -68,9 +68,10 @@ jobs:
           # Navigate into the script directory
           cd Amiga/Tools/ADFinder/distribution
 
-          # Modify the output path in the build script to use the correct parent folder.
-          echo "Updating DMG output path in build script..."
-          sed -i '' 's|DMG_BASE_PATH="../releases/|DMG_BASE_PATH="../../releases/|g' build_and_package.sh
+          # Modify the DMG output directory variable in the build script.
+          # This is more robust than trying to match the full path string.
+          echo "Updating DMG output directory in build script..."
+          sed -i '' 's|DMG_DIR="${SCRIPT_DIR}/../releases"|DMG_DIR="${SCRIPT_DIR}/../../releases"|' build_and_package.sh
           
           # Make scripts executable
           chmod +x build_and_package.sh
