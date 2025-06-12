@@ -4,7 +4,7 @@
 # Trigger:
 # - Runs on a push to the 'master' branch ONLY if the commit message
 #   includes the string '#build-binary'.
-# - Can also be triggered manually from the GitHub Actions UI.
+# - Manual runs via 'workflow_dispatch' will be skipped by the job's 'if' condition.
 
 name: Build and Commit ADFinder DMG
 
@@ -17,9 +17,9 @@ jobs:
   # This single job handles all steps: dependency installation, building,
   # packaging the DMG, and committing the result.
   build-and-commit-dmg:
-    # This condition ensures the job runs on manual trigger OR if the push
-    # commit message contains '#build-binary'. This is case-sensitive.
-    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '#build-binary')
+    # This condition ensures the job only runs if the push commit message
+    # contains the '#build-binary' trigger.
+    if: contains(github.event.head_commit.message, '#build-binary')
     runs-on: macos-latest
     steps:
       # Step 1: Check out the repository's code.
