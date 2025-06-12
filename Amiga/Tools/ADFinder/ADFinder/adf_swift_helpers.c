@@ -9,7 +9,7 @@
 #include "adf_env.h"
 #include "adf_dev_flop.h"
 #include "adf_blk.h"
-#include "adf_err.h" // AI_TRACK: Added missing header for RC_ codes.
+#include "adf_err.h"
 #include <stddef.h>
 #include <stdio.h>
 #include <stdarg.h>
@@ -43,7 +43,6 @@ void setup_logging(void) {
     adfEnvSetFct(c_variadic_log_handler, c_variadic_log_handler, c_variadic_log_handler, NULL);
 }
 
-// AI_TRACK: Corrected implementation based on user's working send2adf.c example.
 ADF_RETCODE create_blank_adf_c(const char* path, const char* volName) {
     char* mutablePath = strdup(path);
     if (!mutablePath) { return ADF_RC_MALLOC; }

@@ -33,7 +33,6 @@ ADF_RETCODE register_dump_driver_helper(void);
 
 void setup_logging(void);
 
-// AI_TRACK: New helper function to create a blank ADF. This encapsulates all C-level calls.
 ADF_RETCODE create_blank_adf_c(const char* path, const char* volName);
 
 
