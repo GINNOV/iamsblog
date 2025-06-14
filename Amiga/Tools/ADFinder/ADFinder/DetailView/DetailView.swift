@@ -48,13 +48,11 @@ struct DetailView: View {
             saveADF: saveAdf,
             addFile: { showingFileImporter = true },
             newFolder: {
-                // AI_REVIEW: Corrected call to the dedicated config struct.
                 inputDialogConfig = NewFolderDialogConfig.config { newName in
                     createFolder(name: newName)
                 }
             },
             editVolumeName: {
-                // AI_REVIEW: Corrected call to the dedicated config struct.
                 inputDialogConfig = RenameVolumeDialogConfig.config(currentName: adfService.volumeLabel) { newName in
                     if let errorMessage = adfService.renameVolume(newName: newName) {
                         showAlert(message: "Failed to rename volume: \(errorMessage)")
@@ -64,10 +62,10 @@ struct DetailView: View {
             viewContent: {
                 if let entry = selectedEntry { viewFileContent(entry) }
             },
-            export: {}, // Placeholder; to be implemented
+            
+            export: exportSelectedItem,
             rename: {
                 if let entry = selectedEntry {
-                    // AI_REVIEW: Corrected call to the dedicated config struct.
                     inputDialogConfig = RenameEntryDialogConfig.config(entry: entry) { newName in
                         renameEntry(entry: entry, newName: newName)
                     }
@@ -139,9 +137,8 @@ struct DetailView: View {
             handleFileExport(result: result)
         }
         .fileImporter(
-            // AI_REVIEW: Corrected UTType reference here.
             isPresented: $showingFileImporter,
-            allowedContentTypes: [UTType.data],
+            allowedContentTypes: [.data],
             allowsMultipleSelection: true
         ) { result in
             handleFileImport(result: result)
@@ -178,8 +175,7 @@ struct DetailView: View {
                 actions: detailActions
             )
         }
-        // AI_REVIEW: Corrected UTType references here.
-        .onDrop(of: [ContentView.adfUType, UTType.fileURL], isTargeted: $isDetailViewTargetedForDrop) { providers in
+        .onDrop(of: [ContentView.adfUType, .fileURL], isTargeted: $isDetailViewTargetedForDrop) { providers in
             handleDrop(providers: providers)
         }
         .overlay(

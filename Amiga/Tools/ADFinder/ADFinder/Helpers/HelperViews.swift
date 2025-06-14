@@ -7,8 +7,6 @@
 
 import SwiftUI
 
-// AI_REVIEW: This is the new generic input dialog view. It's used for any action
-// that requires text input from the user, like creating a new folder or renaming an item.
 struct InputDialogView: View {
     let config: InputDialogConfig
     
@@ -175,7 +173,6 @@ struct FileRowView: View {
     }
 }
 
-// AI_REVIEW: New view extension to present the InputDialogView as a sheet.
 extension View {
     func inputDialogSheet(
         config: Binding<InputDialogConfig?>

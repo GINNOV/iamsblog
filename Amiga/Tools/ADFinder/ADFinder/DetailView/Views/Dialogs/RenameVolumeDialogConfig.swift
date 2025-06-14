@@ -7,7 +7,6 @@
 
 import Foundation
 
-// AI_REVIEW: This struct provides a specific configuration for the "Rename Volume" input dialog.
 struct RenameVolumeDialogConfig {
     static func config(currentName: String, action: @escaping (String) -> Void) -> InputDialogConfig {
         InputDialogConfig(

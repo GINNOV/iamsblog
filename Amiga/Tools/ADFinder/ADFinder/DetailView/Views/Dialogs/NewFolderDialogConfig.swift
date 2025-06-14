@@ -7,7 +7,6 @@
 
 import Foundation
 
-// AI_REVIEW: This struct provides a specific configuration for the "New Folder" input dialog.
 struct NewFolderDialogConfig {
     static func config(action: @escaping (String) -> Void) -> InputDialogConfig {
         InputDialogConfig(

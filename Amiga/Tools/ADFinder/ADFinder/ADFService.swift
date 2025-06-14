@@ -372,19 +372,16 @@ class ADFService {
     func addFile(from url: URL) -> String? {
         guard let vol = self.adfVolume else { return "Volume not mounted." }
         
-        // Ensure we are in the correct directory within the ADF.
         if !navigateToInternalPath() {
             return "Failed to navigate to current ADF directory."
         }
         
-        // Read the contents of the local file.
         guard let data = try? Data(contentsOf: url) else {
             return "Could not read data from local file."
         }
         
         let amigaPath = url.lastPathComponent
         
-        // Convert Swift's Data to a C-style buffer (UnsafePointer<UInt8>).
         let result = data.withUnsafeBytes { (bufferPtr: UnsafeRawBufferPointer) -> ADF_RETCODE in
             let unsafePointer = bufferPtr.baseAddress?.assumingMemoryBound(to: UInt8.self)
             
@@ -395,7 +392,6 @@ class ADFService {
         
         if result.rawValue == ADF_RC_OK_SWIFT {
             print("ADFService: Successfully added '\(amigaPath)'.")
-            // Refresh disk info as the free space has changed.
             populateDiskInfo()
             return nil
         } else {
@@ -516,7 +512,6 @@ class ADFService {
     func renameVolume(newName: String) -> String? {
         guard let vol = self.adfVolume else { return "Volume not mounted." }
 
-        // Validate and truncate the new name.
         let maxLen = Int(ADF_MAX_NAME_LEN)
         var finalName = newName
         if newName.count > maxLen {
@@ -526,28 +521,23 @@ class ADFService {
             return "Volume name cannot contain ':' or '/'."
         }
 
-        // Read the current root block.
         let rootBlockSector = adfVolCalcRootBlk(vol)
         var rootBlock = AdfRootBlock()
         guard adfReadRootBlock(vol, UInt32(rootBlockSector), &rootBlock) == ADF_RC_OK else {
             return "Failed to read the volume's root block."
         }
 
-        // Update the name length and the name itself in the root block struct.
         rootBlock.nameLen = UInt8(finalName.count)
         let cName = finalName.cString(using: .utf8)!
         withUnsafeMutableBytes(of: &rootBlock.diskName) { buffer in
             buffer.baseAddress?.initializeMemory(as: UInt8.self, repeating: 0, count: buffer.count)
             
             cName.withUnsafeBytes { cNameBuffer in
-                // Ensure we don't write past the end of the C array.
                 let count = min(buffer.count - 1, cNameBuffer.count)
                 buffer.baseAddress!.copyMemory(from: cNameBuffer.baseAddress!, byteCount: count)
             }
         }
         
-        // Write the modified root block back to disk.
-        // adfWriteRootBlock will automatically recalculate the checksum.
         guard adfWriteRootBlock(vol, UInt32(rootBlockSector), &rootBlock) == ADF_RC_OK else {
             return "Failed to write the updated root block."
         }
@@ -556,10 +546,61 @@ class ADFService {
             adf_set_vol_name(vol, cFinalName)
         }
 
-        // Refresh the disk information to reflect the change in the UI.
         populateDiskInfo()
         return nil
     }
+    
+    func exportEntry(entry: AmigaEntry, toDirectory destinationURL: URL) -> String? {
+        let originalPath = self.currentPath
+        let result = _exportRecursively(entry: entry, toDirectory: destinationURL)
+        
+        self.currentPath = originalPath
+        if !navigateToInternalPath() {
+            return "Critical Error: Failed to restore ADF path after export. Please reopen the ADF."
+        }
+        
+        return result
+    }
+
+    private func _exportRecursively(entry: AmigaEntry, toDirectory destinationURL: URL) -> String? {
+        let exportPath = destinationURL.appendingPathComponent(entry.name)
+        
+        if entry.type == .file {
+            guard let fileData = readFileContent(entry: entry) else {
+                return "Could not read content of file '\(entry.name)' from ADF."
+            }
+            do {
+                try fileData.write(to: exportPath)
+            } catch {
+                return "Failed to write file '\(entry.name)' to local disk: \(error.localizedDescription)"
+            }
+        } else if entry.type == .directory {
+            do {
+                try FileManager.default.createDirectory(at: exportPath, withIntermediateDirectories: true, attributes: nil)
+            } catch {
+                return "Failed to create local directory for '\(entry.name)': \(error.localizedDescription)"
+            }
+            
+            if !navigateToDirectory(entry.name) {
+                return "Failed to navigate into ADF directory '\(entry.name)'."
+            }
+            
+            let children = listCurrentDirectory()
+            for child in children {
+                if let error = _exportRecursively(entry: child, toDirectory: exportPath) {
+                    _ = goUpDirectory() // Attempt to go back up before failing.
+                    return error
+                }
+            }
+            
+            if !goUpDirectory() {
+                return "Failed to navigate up from ADF directory '\(entry.name)'."
+            }
+        }
+        
+        return nil // Success
+    }
+
     
     func createNewBlankADF(volumeName: String) -> URL? {
         let tempDir = FileManager.default.temporaryDirectory

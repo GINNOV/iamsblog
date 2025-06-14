@@ -12,7 +12,6 @@ extension DetailView {
 
     // MARK: - Core ADF Operations
 
-    /// Reloads the contents of the current directory from the ADFService.
     func loadDirectoryContents() {
         guard selectedFile != nil else {
             currentEntries = []
@@ -22,18 +21,15 @@ extension DetailView {
         selectedEntryID = nil
     }
 
-    /// Navigates to the parent directory.
     func goUpDirectory() {
         if adfService.goUpDirectory() {
             loadDirectoryContents()
         }
     }
 
-    /// Handles a file being dropped onto the view.
     func handleDrop(providers: [NSItemProvider]) -> Bool {
         guard let provider = providers.first else { return false }
         
-        // Handle ADF file types
         if provider.hasItemConformingToTypeIdentifier(ContentView.adfUType.identifier) {
             provider.loadItem(forTypeIdentifier: ContentView.adfUType.identifier, options: nil) { (item, error) in
                 DispatchQueue.main.async {
@@ -49,7 +45,6 @@ extension DetailView {
             return true
         }
 
-        // Handle generic file URLs
         if provider.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier) {
             _ = provider.loadObject(ofClass: URL.self) { (url, error) in
                 DispatchQueue.main.async {
@@ -61,7 +56,6 @@ extension DetailView {
         return false
     }
     
-    /// Opens and processes an ADF file from a URL.
     func processDroppedURL(_ url: URL) {
         let didStartAccessing = url.startAccessingSecurityScopedResource()
         defer { if didStartAccessing { url.stopAccessingSecurityScopedResource() } }
@@ -74,7 +68,6 @@ extension DetailView {
         }
     }
     
-    /// Creates a new, blank ADF image.
     func createNewAdf() {
         if let newAdfUrl = adfService.createNewBlankADF(volumeName: "adfinder_vol1") {
             self.selectedFile = newAdfUrl
@@ -83,7 +76,6 @@ extension DetailView {
         }
     }
     
-    /// Saves the currently open ADF to a new file.
     func saveAdf() {
         guard let url = selectedFile else { return }
         
@@ -100,7 +92,6 @@ extension DetailView {
         switch result {
         case .success(let url):
             print("Successfully saved ADF to \(url.path)")
-            // If the user saves to a new file, we should probably treat that as the active file now.
             self.selectedFile = url
         case .failure(let error):
             showAlert(message: "Failed to save file: \(error.localizedDescription)")
@@ -119,7 +110,7 @@ extension DetailView {
             if !errors.isEmpty {
                 showAlert(message: errors.joined(separator: "\n"))
             }
-            loadDirectoryContents() // Refresh the view to show the new file(s)
+            loadDirectoryContents()
         case .failure(let error):
             showAlert(message: "Failed to import files: \(error.localizedDescription)")
         }
@@ -127,7 +118,6 @@ extension DetailView {
 
     // MARK: - Entry Actions
 
-    /// Handles the action when a file or folder is double-clicked.
     func handleEntryTap(_ entry: AmigaEntry) {
         switch entry.type {
         case .directory:
@@ -143,7 +133,6 @@ extension DetailView {
         }
     }
     
-    /// Reads a file's content from the ADF and prepares it for viewing.
     func viewFileContent(_ entry: AmigaEntry) {
         guard entry.type == .file else { return }
         selectedEntryForView = entry
@@ -163,7 +152,6 @@ extension DetailView {
         }
     }
     
-    /// Creates a new folder in the current directory.
     func createFolder(name: String) {
         guard !name.isEmpty else {
             showAlert(message: "Folder name cannot be empty.")
@@ -176,7 +164,6 @@ extension DetailView {
         }
     }
     
-    /// Deletes the specified file or folder.
     func deleteEntry(_ entry: AmigaEntry, force: Bool) {
         if let errorMessage = adfService.deleteEntryRecursively(entry: entry, force: force) {
             showAlert(message: "Failed to delete \"\(entry.name)\": \(errorMessage)")
@@ -185,7 +172,6 @@ extension DetailView {
         }
     }
     
-    /// Renames the specified entry.
     func renameEntry(entry: AmigaEntry, newName: String) {
         guard !newName.isEmpty else {
             showAlert(message: "New name cannot be empty.")
@@ -198,15 +184,44 @@ extension DetailView {
         }
     }
     
+    func exportSelectedItem() {
+        guard let selectedEntry = selectedEntry else {
+            showAlert(message: "No item selected to export.")
+            return
+        }
+
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = false
+        panel.canChooseDirectories = true
+        panel.allowsMultipleSelection = false
+        panel.title = "Choose destination for \"\(selectedEntry.name)\""
+        panel.message = "The selected item will be exported into the folder you choose."
+        panel.prompt = "Export Here"
+
+        panel.begin { response in
+            if response == .OK, let destinationURL = panel.url {
+                DispatchQueue.global(qos: .userInitiated).async {
+                    let errorMessage = self.adfService.exportEntry(entry: selectedEntry, toDirectory: destinationURL)
+                    
+                    DispatchQueue.main.async {
+                        if let errorMessage = errorMessage {
+                            self.showAlert(message: "Export failed: \(errorMessage)")
+                        } else {
+                            self.showAlert(message: "'\(selectedEntry.name)' was successfully exported.")
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
     // MARK: - Alert & Dialog Presentation
     
-    /// A generic helper to show an alert with a message.
     func showAlert(message: String) {
         self.alertMessage = message
         self.showingAlert = true
     }
     
-    /// Shows a detailed info alert for a specific entry.
     func showInfoAlert(for entry: AmigaEntry) {
         var info = "Name: \(entry.name)\nType: \(entry.type.rawValue)\nSize: \(entry.size) bytes"
         if let date = entry.date {
@@ -219,9 +234,8 @@ extension DetailView {
         showAlert(message: info)
     }
     
-    /// Presents the generic confirmation dialog with a specific configuration.
     func presentConfirmation(config: ConfirmationConfig) {
-        self.forceFlag = false // Reset state before showing dialog
+        self.forceFlag = false
         self.confirmationConfig = config
     }
 }

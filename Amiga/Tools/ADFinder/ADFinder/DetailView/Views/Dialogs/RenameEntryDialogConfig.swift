@@ -7,7 +7,6 @@
 
 import Foundation
 
-// AI_REVIEW: This struct provides a specific configuration for the "Rename Entry" input dialog.
 struct RenameEntryDialogConfig {
     static func config(entry: AmigaEntry, action: @escaping (String) -> Void) -> InputDialogConfig {
         InputDialogConfig(

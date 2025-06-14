@@ -7,9 +7,6 @@
 
 import Foundation
 
-// AI_REVIEW: This file is intended to hold extensions for the AmigaEntry model.
-// For example, you could add computed properties or methods to AmigaEntry here
-// to keep the model logic separate from the view logic.
 //
 // Example:
 // extension AmigaEntry {
