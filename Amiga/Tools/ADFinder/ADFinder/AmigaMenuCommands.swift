@@ -32,6 +32,8 @@ struct AmigaMenuCommands: Commands {
                     .disabled(!isFileOpen)
                 Button("New Folder...", action: actions.newFolder)
                     .disabled(!isFileOpen)
+                Button("Edit Volume Name...", action: actions.editVolumeName)
+                    .disabled(!isFileOpen)
                 
                 Divider()
                 

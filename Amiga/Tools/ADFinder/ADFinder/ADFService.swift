@@ -513,6 +513,54 @@ class ADFService {
         }
     }
     
+    func renameVolume(newName: String) -> String? {
+        guard let vol = self.adfVolume else { return "Volume not mounted." }
+
+        // Validate and truncate the new name.
+        let maxLen = Int(ADF_MAX_NAME_LEN)
+        var finalName = newName
+        if newName.count > maxLen {
+            finalName = String(newName.prefix(maxLen))
+        }
+        if finalName.contains(":") || finalName.contains("/") {
+            return "Volume name cannot contain ':' or '/'."
+        }
+
+        // Read the current root block.
+        let rootBlockSector = adfVolCalcRootBlk(vol)
+        var rootBlock = AdfRootBlock()
+        guard adfReadRootBlock(vol, UInt32(rootBlockSector), &rootBlock) == ADF_RC_OK else {
+            return "Failed to read the volume's root block."
+        }
+
+        // Update the name length and the name itself in the root block struct.
+        rootBlock.nameLen = UInt8(finalName.count)
+        let cName = finalName.cString(using: .utf8)!
+        withUnsafeMutableBytes(of: &rootBlock.diskName) { buffer in
+            buffer.baseAddress?.initializeMemory(as: UInt8.self, repeating: 0, count: buffer.count)
+            
+            cName.withUnsafeBytes { cNameBuffer in
+                // Ensure we don't write past the end of the C array.
+                let count = min(buffer.count - 1, cNameBuffer.count)
+                buffer.baseAddress!.copyMemory(from: cNameBuffer.baseAddress!, byteCount: count)
+            }
+        }
+        
+        // Write the modified root block back to disk.
+        // adfWriteRootBlock will automatically recalculate the checksum.
+        guard adfWriteRootBlock(vol, UInt32(rootBlockSector), &rootBlock) == ADF_RC_OK else {
+            return "Failed to write the updated root block."
+        }
+
+        finalName.withCString { cFinalName in
+            adf_set_vol_name(vol, cFinalName)
+        }
+
+        // Refresh the disk information to reflect the change in the UI.
+        populateDiskInfo()
+        return nil
+    }
+    
     func createNewBlankADF(volumeName: String) -> URL? {
         let tempDir = FileManager.default.temporaryDirectory
         let fileName = "blank_\(UUID().uuidString).adf"

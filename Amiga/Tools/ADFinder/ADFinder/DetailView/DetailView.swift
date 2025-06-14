@@ -34,6 +34,10 @@ struct DetailView: View {
     @State var sortOrder: SortOrder = .nameAscending
     @State var showingFileExporter = false
     @State var adfDocumentToSave: ADFDocument?
+    
+    // AI_REVIEW: State for the new rename volume dialog.
+    @State var showingRenameVolumeAlert = false
+    @State var newVolumeName = ""
 
     // A computed property to easily get the full AmigaEntry for the selected ID.
     var selectedEntry: AmigaEntry? {
@@ -51,6 +55,11 @@ struct DetailView: View {
             newFolder: {
                 newFolderName = ""
                 showingNewFolderAlert = true
+            },
+
+            editVolumeName: {
+                newVolumeName = adfService.volumeLabel
+                showingRenameVolumeAlert = true
             },
             viewContent: {
                 if let entry = selectedEntry { viewFileContent(entry) }
@@ -109,6 +118,16 @@ struct DetailView: View {
             isPresented: $showingNewFolderAlert,
             newFolderName: $newFolderName,
             createAction: { createFolder(name: newFolderName) }
+        )
+
+        .renameVolumeDialog(
+            isPresented: $showingRenameVolumeAlert,
+            newVolumeName: $newVolumeName,
+            renameAction: {
+                if let errorMessage = adfService.renameVolume(newName: newVolumeName) {
+                    showAlert(message: "Failed to rename volume: \(errorMessage)")
+                }
+            }
         )
         .renameDialog(
             entryToRename: $entryToRename,

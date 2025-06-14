@@ -44,6 +44,16 @@ void setup_logging(void) {
     adfEnvSetFct(c_variadic_log_handler, c_variadic_log_handler, c_variadic_log_handler, NULL);
 }
 
+void adf_set_vol_name(struct AdfVolume* vol, const char* newName) {
+    if (vol == NULL) {
+        return;
+    }
+    if (vol->volName != NULL) {
+        free(vol->volName);
+    }
+    vol->volName = strdup(newName);
+}
+
 ADF_RETCODE create_blank_adf_c(const char* path, const char* volName) {
     char* mutablePath = strdup(path);
     if (!mutablePath) { return ADF_RC_MALLOC; }
