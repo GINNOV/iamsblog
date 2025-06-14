@@ -11,6 +11,7 @@
 #include "adf_types.h" // For uint32_t, int32_t, SECTNUM
 #include "adf_dir.h"   // For the full definition of struct AdfEntry
 #include "adf_env.h"   // For AdfLogFct type
+#include "adf_vol.h"   // For struct AdfVolume
 
 // For register_dump_driver_helper()
 #include "adf_dev_drivers.h"
@@ -34,6 +35,12 @@ ADF_RETCODE register_dump_driver_helper(void);
 void setup_logging(void);
 
 ADF_RETCODE create_blank_adf_c(const char* path, const char* volName);
+ADF_RETCODE add_file_to_adf_c(
+    struct AdfVolume* vol,
+    const char* amigaPath,
+    const uint8_t* buffer,
+    uint32_t bufferSize
+);
 
 
 #endif /* ADF_SWIFT_HELPERS_H */

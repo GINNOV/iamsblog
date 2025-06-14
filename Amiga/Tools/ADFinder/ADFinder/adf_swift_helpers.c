@@ -10,6 +10,7 @@
 #include "adf_dev_flop.h"
 #include "adf_blk.h"
 #include "adf_err.h"
+#include "adf_file.h"
 #include <stddef.h>
 #include <stdio.h>
 #include <stdarg.h>
@@ -66,6 +67,38 @@ ADF_RETCODE create_blank_adf_c(const char* path, const char* volName) {
     adfDevClose(device);
     
     return rc;
+}
+
+ADF_RETCODE add_file_to_adf_c(
+    struct AdfVolume* vol,
+    const char* amigaPath,
+    const uint8_t* buffer,
+    uint32_t bufferSize
+) {
+    if (!vol || !amigaPath || !buffer) {
+        return ADF_RC_NULLPTR;
+    }
+
+    // Open the file in write mode. This will create it if it doesn't exist,
+    // or overwrite it if it does.
+    struct AdfFile* file = adfFileOpen(vol, amigaPath, ADF_FILE_MODE_WRITE);
+    if (!file) {
+        // adfFileOpen prints its own errors to the log (e.g., disk full)
+        return ADF_RC_ERROR; // Generic error code
+    }
+    
+    // Write the buffer to the file.
+    uint32_t bytesWritten = adfFileWrite(file, bufferSize, buffer);
+    
+    // Always close the file to flush changes.
+    adfFileClose(file);
+    
+    if (bytesWritten != bufferSize) {
+        // This usually indicates a "disk full" error during the write.
+        return ADF_RC_VOLFULL;
+    }
+    
+    return ADF_RC_OK;
 }
 
 

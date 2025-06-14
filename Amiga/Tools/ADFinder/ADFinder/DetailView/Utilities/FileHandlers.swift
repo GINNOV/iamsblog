@@ -8,9 +8,6 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
-// AI_REVIEW: This extension on DetailView consolidates all methods related to
-// file operations, ADF interactions, and alert presentations. This cleans up the
-// main DetailView file, separating responsibilities.
 extension DetailView {
 
     // MARK: - Core ADF Operations
@@ -96,6 +93,35 @@ extension DetailView {
             showingFileExporter = true
         } catch {
             showAlert(message: "Could not read data from the current ADF file to save it: \(error.localizedDescription)")
+        }
+    }
+    
+    func handleFileExport(result: Result<URL, Error>) {
+        switch result {
+        case .success(let url):
+            print("Successfully saved ADF to \(url.path)")
+            // If the user saves to a new file, we should probably treat that as the active file now.
+            self.selectedFile = url
+        case .failure(let error):
+            showAlert(message: "Failed to save file: \(error.localizedDescription)")
+        }
+    }
+
+    func handleFileImport(result: Result<[URL], Error>) {
+        switch result {
+        case .success(let urls):
+            var errors: [String] = []
+            for url in urls {
+                if let errorMessage = adfService.addFile(from: url) {
+                    errors.append("Could not add \(url.lastPathComponent): \(errorMessage)")
+                }
+            }
+            if !errors.isEmpty {
+                showAlert(message: errors.joined(separator: "\n"))
+            }
+            loadDirectoryContents() // Refresh the view to show the new file(s)
+        case .failure(let error):
+            showAlert(message: "Failed to import files: \(error.localizedDescription)")
         }
     }
 

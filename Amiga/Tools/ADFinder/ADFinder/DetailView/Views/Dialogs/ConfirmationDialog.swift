@@ -7,8 +7,6 @@
 
 import SwiftUI
 
-// AI_REVIEW: This struct was moved from DetailView.swift to its own file.
-// It holds all the necessary information to configure and display the generic confirmation dialog.
 // The problematic @Binding property has been removed.
 struct ConfirmationConfig: Identifiable {
     let id = UUID()

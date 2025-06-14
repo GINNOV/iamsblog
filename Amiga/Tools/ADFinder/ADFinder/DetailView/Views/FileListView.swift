@@ -7,8 +7,6 @@
 
 import SwiftUI
 
-// AI_REVIEW: This view has been extracted from DetailView to solely manage the
-// presentation of the file and folder list. It receives data and actions from the parent DetailView.
 struct FileListView: View {
     @Binding var selectedEntryID: AmigaEntry.ID?
     let sortedEntries: [AmigaEntry]

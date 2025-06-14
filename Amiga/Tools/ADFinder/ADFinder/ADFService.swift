@@ -369,6 +369,41 @@ class ADFService {
         return fileData
     }
     
+    func addFile(from url: URL) -> String? {
+        guard let vol = self.adfVolume else { return "Volume not mounted." }
+        
+        // Ensure we are in the correct directory within the ADF.
+        if !navigateToInternalPath() {
+            return "Failed to navigate to current ADF directory."
+        }
+        
+        // Read the contents of the local file.
+        guard let data = try? Data(contentsOf: url) else {
+            return "Could not read data from local file."
+        }
+        
+        let amigaPath = url.lastPathComponent
+        
+        // Convert Swift's Data to a C-style buffer (UnsafePointer<UInt8>).
+        let result = data.withUnsafeBytes { (bufferPtr: UnsafeRawBufferPointer) -> ADF_RETCODE in
+            let unsafePointer = bufferPtr.baseAddress?.assumingMemoryBound(to: UInt8.self)
+            
+            return amigaPath.withCString { cAmigaPath in
+                return add_file_to_adf_c(vol, cAmigaPath, unsafePointer, UInt32(data.count))
+            }
+        }
+        
+        if result.rawValue == ADF_RC_OK_SWIFT {
+            print("ADFService: Successfully added '\(amigaPath)'.")
+            // Refresh disk info as the free space has changed.
+            populateDiskInfo()
+            return nil
+        } else {
+            print("ADFService: add_file_to_adf_c failed for '\(amigaPath)'. Check C-Log for details.")
+            return "ADFlib failed to write the file. The disk may be full."
+        }
+    }
+
     func createDirectory(name: String, force: Bool) -> String? {
         guard let vol = self.adfVolume else {
             return "Cannot create directory, volume is nil."
@@ -394,6 +429,7 @@ class ADFService {
         }
         
         if success {
+            populateDiskInfo()
             return nil
         } else {
             print("ADFService: adfCreateDir failed. Check C-Log for details.")
@@ -407,6 +443,9 @@ class ADFService {
         self.currentPath = originalPath
         if !navigateToInternalPath() {
             print("ADFService: CRITICAL - Failed to restore path to \(originalPath.joined(separator: "/")) after deletion operation.")
+        }
+        if result == nil {
+            populateDiskInfo()
         }
         return result
     }

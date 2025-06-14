@@ -7,7 +7,6 @@
 
 import SwiftUI
 
-// AI_REVIEW: This ToolbarContent struct encapsulates the entire toolbar logic for the DetailView.
 // This makes the main view's body much cleaner and separates the concern of toolbar construction.
 struct DetailToolbar: ToolbarContent {
     
@@ -20,6 +19,7 @@ struct DetailToolbar: ToolbarContent {
     struct Actions {
         let newADF: () -> Void
         let saveADF: () -> Void
+        let addFile: () -> Void
         let newFolder: () -> Void
         let viewContent: () -> Void
         let export: () -> Void
@@ -47,6 +47,18 @@ struct DetailToolbar: ToolbarContent {
 
             // This section of the toolbar is only shown when an ADF file is open.
             if selectedFile != nil {
+                
+                Button(action: actions.addFile) {
+                    Label("Add File", systemImage: "plus")
+                }
+                .help("Add file(s) to the current directory")
+
+                // New Folder Button
+                Button(action: actions.newFolder) {
+                    Label("New Folder", systemImage: "folder.badge.plus")
+                }
+                .help("Create a New Folder")
+                
                 // Sort Menu
                 Menu {
                     Picker("Sort By", selection: $sortOrder) {
@@ -60,12 +72,6 @@ struct DetailToolbar: ToolbarContent {
                 }
                 .help("Change Sort Order")
                 
-                // New Folder Button
-                Button(action: actions.newFolder) {
-                    Label("New Folder", systemImage: "folder.badge.plus")
-                }
-                .help("Create a New Folder")
-                
                 // Edit Menu (Hex/Text)
                 Menu {
                     Button(action: actions.viewContent) {
@@ -74,7 +80,7 @@ struct DetailToolbar: ToolbarContent {
                     .disabled(selectedEntry?.type != .file)
                     
                     Button(action: {}) { Label("Txt Editor", systemImage: "text.quote") }
-                    .disabled(true) // AI_REVIEW: Text editor not yet implemented
+                    .disabled(true)
                 } label: {
                     Label("View As", systemImage: "doc.text.magnifyingglass")
                 }

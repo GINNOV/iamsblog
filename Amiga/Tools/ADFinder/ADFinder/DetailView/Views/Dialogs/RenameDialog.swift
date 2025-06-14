@@ -7,8 +7,7 @@
 
 import SwiftUI
 
-// AI_REVIEW: This modifier encapsulates the "Rename Entry" alert logic.
-// It uses a binding to an optional AmigaEntry to control its presentation.
+
 extension View {
     func renameDialog(
         entryToRename: Binding<AmigaEntry?>,

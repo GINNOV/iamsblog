@@ -7,9 +7,6 @@
 
 import Foundation
 
-// AI_REVIEW: This file is intended for helper functions that format data for display.
-// This function was moved from DetailView to be a global utility.
-
 /// Takes the protection bits from an Amiga file and formats them into a human-readable string.
 /// - Parameter bits: The 32-bit integer representing the protection flags.
 /// - Returns: A formatted string like "R✔W-E-D- [hspa:--P-]"

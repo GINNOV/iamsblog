@@ -7,8 +7,6 @@
 
 import SwiftUI
 
-// AI_REVIEW: This custom view modifier encapsulates the presentation of the
-// generic confirmation sheet. This version is corrected to properly manage state and dismissal.
 extension View {
     func confirmationSheet(
         config: Binding<ConfirmationConfig?>,

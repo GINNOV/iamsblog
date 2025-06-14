@@ -20,9 +20,9 @@ So I start building it. Details and pre-built app are [here](https://ginnov.gith
 10.	✅ Sorting (different kinds)
 11.	✅ Preferences
 12.	✅ Create blank image
+13. ✅ Add files to image
 
 ## Work in Progress
-18.	👷🏻 Add files to image
 19.	👷🏻 Add files via Drag and Drop
 20.	👷🏻 Compare two ADF images (raw or files matching?)
 21.	👷🏻 Auto convert audio when adding them to an image

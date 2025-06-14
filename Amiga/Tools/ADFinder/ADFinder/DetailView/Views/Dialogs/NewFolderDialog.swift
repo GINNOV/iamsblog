@@ -7,7 +7,6 @@
 
 import SwiftUI
 
-// AI_REVIEW: This modifier encapsulates the "New Folder" alert logic.
 extension View {
     func newFolderDialog(
         isPresented: Binding<Bool>,

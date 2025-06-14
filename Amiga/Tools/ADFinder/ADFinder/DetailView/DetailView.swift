@@ -8,9 +8,6 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
-// AI_REVIEW: This is the main container view after refactoring.
-// It is responsible for holding the state of the detail view and composing the UI
-// from smaller, more specialized child views and modifiers.
 struct DetailView: View {
     @Bindable var adfService: ADFService
     @Binding var selectedFile: URL?
@@ -44,6 +41,7 @@ struct DetailView: View {
     @State var showingFileViewer = false
     @State var selectedEntryForView: AmigaEntry?
     @State var fileContentData: Data?
+    @State private var showingFileImporter = false
 
     // State for managing long-running background tasks.
     @State var isLoadingFileContent = false
@@ -55,7 +53,6 @@ struct DetailView: View {
     // State for file list sorting.
     @State var sortOrder: SortOrder = .nameAscending
 
-    // AI_REVIEW: These were made internal (by removing `private`) to be accessible by the extension in FileHandlers.swift
     @State var showingFileExporter = false
     @State var adfDocumentToSave: ADFDocument?
 
@@ -100,8 +97,6 @@ struct DetailView: View {
         ZStack {
             mainContent
         }
-        // AI_REVIEW: Dialogs and sheets are applied as modifiers here.
-        // The logic for them is now in separate files within the `Dialogs` directory.
         .newFolderDialog(
             isPresented: $showingNewFolderAlert,
             newFolderName: $newFolderName,
@@ -135,13 +130,14 @@ struct DetailView: View {
             document: adfDocumentToSave,
             contentType: ContentView.adfUType
         ) { result in
-            switch result {
-            case .success(let url):
-                print("Successfully saved ADF to \(url.path)")
-                self.selectedFile = url
-            case .failure(let error):
-                showAlert(message: "Failed to save file: \(error.localizedDescription)")
-            }
+            handleFileExport(result: result)
+        }
+        .fileImporter(
+            isPresented: $showingFileImporter,
+            allowedContentTypes: [.data],
+            allowsMultipleSelection: true
+        ) { result in
+            handleFileImport(result: result)
         }
     }
 
@@ -151,7 +147,6 @@ struct DetailView: View {
             if selectedFile == nil {
                 WelcomeView()
             } else {
-                // The file list is now in its own dedicated view.
                 FileListView(
                     selectedEntryID: $selectedEntryID,
                     sortedEntries: sortedEntries,
@@ -166,7 +161,6 @@ struct DetailView: View {
         }
         .navigationTitle(selectedFile?.lastPathComponent ?? "ADFinder")
         .toolbar {
-            // The toolbar content is now in its own dedicated struct.
             DetailToolbar(
                 selectedFile: $selectedFile,
                 sortOrder: $sortOrder,
@@ -176,6 +170,7 @@ struct DetailView: View {
                         presentConfirmation(config: .newADF(action: createNewAdf))
                     },
                     saveADF: saveAdf,
+                    addFile: { showingFileImporter = true },
                     newFolder: {
                         newFolderName = ""
                         showingNewFolderAlert = true
@@ -184,7 +179,7 @@ struct DetailView: View {
                         if let entry = selectedEntry { viewFileContent(entry) }
                     },
                     export: {
-                        // AI_REVIEW: Export action to be implemented.
+
                     },
                     rename: {
                         if let entry = selectedEntry {
