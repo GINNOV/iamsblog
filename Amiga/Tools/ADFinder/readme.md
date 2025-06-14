@@ -28,11 +28,11 @@ So I start building it. Details and pre-built app are [here](https://ginnov.gith
 21.	👷🏻 Auto convert audio when adding them to an image
 22.	👷🏻 Auto convert image format when adding them to an image
 23.	👷🏻 Text view (to copy files)
-24.	👷🏻 Download files
+24.	👷🏻 Download files	
 
 
 ## Users requests
-* Change volume's name [[warpdesign](https://github.com/warpdesign)]
+* ✅ Change volume's name [[warpdesign](https://github.com/warpdesign)]
 
 
 # What it looks like?
