@@ -20,11 +20,14 @@ You can delete, rename and export files. It will honor the Amiga file bits setti
 
 ## Plugins
 As more plugins are added you can perform addition process over a selected item. The first one is a HEX EDITOR.
+![](./images/hexeditor.png)
 ![](./images/utilties.png)
+![](./images/context_menu.png)
 
 ## Other Features
 You can perform most tasks via the toolbar but some options are located in the Amiga menu. Like changing volume name.
 ![](./images/menu.png)
+![](./images/file_info.png)
 
 # More to come
 I work on this project when I carve time, however, I hace seen such a solid interest behind it that has been motivating me to find more time to keep the project growing. So, thank you!
