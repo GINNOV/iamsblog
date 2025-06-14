@@ -222,16 +222,10 @@ extension DetailView {
         self.showingAlert = true
     }
     
+    // AI_REVIEW: This function has been updated to use the new InfoDialogConfig
+    // and present the custom sheet instead of a standard alert.
     func showInfoAlert(for entry: AmigaEntry) {
-        var info = "Name: \(entry.name)\nType: \(entry.type.rawValue)\nSize: \(entry.size) bytes"
-        if let date = entry.date {
-            info += "\nDate: \(date.formatted(date: .long, time: .standard))"
-        }
-        if let comment = entry.comment, !comment.isEmpty {
-            info += "\nComment: \(comment)"
-        }
-        info += "\nProtection: \(formatProtectionBits(entry.protectionBits))"
-        showAlert(message: info)
+        self.infoDialogConfig = InfoDialogConfig(entry: entry)
     }
     
     func presentConfirmation(config: ConfirmationConfig) {

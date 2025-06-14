@@ -20,6 +20,7 @@ struct DetailView: View {
     
     @State var confirmationConfig: ConfirmationConfig?
     @State var inputDialogConfig: InputDialogConfig?
+    @State var infoDialogConfig: InfoDialogConfig? // AI_REVIEW: New state for the info dialog.
     
     @State var forceFlag: Bool = false
     @State var showingAboutView = false
@@ -59,10 +60,15 @@ struct DetailView: View {
                     }
                 }
             },
+            // AI_REVIEW: This wires up the Get Info action.
+            getInfo: {
+                if let entry = selectedEntry {
+                    infoDialogConfig = InfoDialogConfig(entry: entry)
+                }
+            },
             viewContent: {
                 if let entry = selectedEntry { viewFileContent(entry) }
             },
-            
             export: exportSelectedItem,
             rename: {
                 if let entry = selectedEntry {
@@ -116,6 +122,7 @@ struct DetailView: View {
         }
         .confirmationSheet(config: $confirmationConfig, forceFlag: $forceFlag)
         .inputDialogSheet(config: $inputDialogConfig)
+        .infoDialogSheet(config: $infoDialogConfig) // AI_REVIEW: Add the sheet modifier here.
         .sheet(isPresented: $showingFileViewer) {
             if let entry = selectedEntryForView, let data = fileContentData {
                 FileHexView(fileName: entry.name, data: data)
@@ -160,7 +167,7 @@ struct DetailView: View {
                     currentPath: adfService.currentPath,
                     goUpDirectory: goUpDirectory,
                     handleEntryTap: handleEntryTap,
-                    showInfoAlert: showInfoAlert,
+                    showInfoAlert: { entry in infoDialogConfig = InfoDialogConfig(entry: entry) }, // AI_REVIEW: Updated context menu action.
                     viewFileContent: viewFileContent
                 )
                 .refreshable { loadDirectoryContents() }

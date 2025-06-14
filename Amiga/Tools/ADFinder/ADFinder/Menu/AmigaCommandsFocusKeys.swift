@@ -7,12 +7,15 @@
 
 import SwiftUI
 
+// AI_REVIEW: These keys define the custom values that our DetailView will
+// provide to the application's focused scene. Commands can then read these
+// values to update their state (e.g., enabling/disabling menu items).
 
 private struct AmigaActionsKey: FocusedValueKey {
     typealias Value = DetailToolbar.Actions
 }
 
-private struct IsFileOpenKey:   FocusedValueKey {
+private struct IsFileOpenKey: FocusedValueKey {
     typealias Value = Bool
 }
 

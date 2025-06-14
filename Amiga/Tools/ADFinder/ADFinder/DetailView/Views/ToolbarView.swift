@@ -22,6 +22,7 @@ struct DetailToolbar: ToolbarContent {
         let addFile: () -> Void
         let newFolder: () -> Void
         let editVolumeName: () -> Void
+        let getInfo: () -> Void
         let viewContent: () -> Void
         let export: () -> Void
         let rename: () -> Void

@@ -7,6 +7,9 @@
 
 import SwiftUI
 
+// AI_REVIEW: This Commands struct defines the "Amiga" application menu.
+// It now uses @FocusedValue to get the actions and context from the focused DetailView
+// to enable or disable its menu items appropriately.
 struct AmigaMenuCommands: Commands {
     
     @FocusedValue(\.amigaActions) private var actions: DetailToolbar.Actions?
@@ -32,12 +35,17 @@ struct AmigaMenuCommands: Commands {
                     .disabled(!isFileOpen)
                 Button("New Folder...", action: actions.newFolder)
                     .disabled(!isFileOpen)
+                
                 Button("Edit Volume Name...", action: actions.editVolumeName)
                     .disabled(!isFileOpen)
                 
                 Divider()
                 
                 // MARK: - Selected Item Operations
+                Button("Get Info", action: actions.getInfo)
+                    .disabled(!isEntrySelected)
+                    .keyboardShortcut("i", modifiers: .command)
+
                 Button("View Content", action: actions.viewContent)
                     .disabled(!isEntrySelected)
                 Button("Export Item...", action: actions.export)

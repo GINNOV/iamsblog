@@ -7,6 +7,8 @@
 
 import SwiftUI
 
+// AI_REVIEW: This is the new generic input dialog view. It's used for any action
+// that requires text input from the user, like creating a new folder or renaming an item.
 struct InputDialogView: View {
     let config: InputDialogConfig
     
@@ -71,6 +73,8 @@ struct InputDialogView: View {
     }
 }
 
+
+// AI_TRACK: This generic confirmation view is now used for all destructive actions.
 struct ActionConfirmationView: View {
     let title: String
     let message: String
@@ -173,12 +177,124 @@ struct FileRowView: View {
     }
 }
 
+// AI_REVIEW: This is the new, sleeker view for displaying protection bits.
+struct ProtectionBitsView: View {
+    let bits: UInt32
+
+    private struct BitInfo {
+        let label: String
+        let flag: UInt32
+        let isProtectionBit: Bool // True if a SET bit means protection is ON (action is disallowed)
+    }
+
+    private let standardFlags: [BitInfo] = [
+        .init(label: "D", flag: ACCMASK_D_SWIFT, isProtectionBit: true),
+        .init(label: "W", flag: ACCMASK_W_SWIFT, isProtectionBit: true),
+    ]
+    
+    private let specialFlags: [BitInfo] = [
+        .init(label: "H", flag: FIBF_HOLD_SWIFT, isProtectionBit: false),
+        .init(label: "S", flag: FIBF_SCRIPT_SWIFT, isProtectionBit: false),
+        .init(label: "P", flag: FIBF_PURE_SWIFT, isProtectionBit: false),
+        .init(label: "A", flag: FIBF_ARCHIVE_SWIFT, isProtectionBit: false)
+    ]
+
+    var body: some View {
+        HStack(spacing: 16) {
+            VStack(alignment: .leading) {
+                Text("Permissions")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                HStack {
+                    // Placeholders for R and E which are not in the 'access' field
+                    ProtectionBitView(label: "R", isSet: false, isProtection: false, isNA: true)
+                    ProtectionBitView(label: "E", isSet: false, isProtection: false, isNA: true)
+                    // The actual protection flags
+                    ForEach(standardFlags, id: \.label) { flagInfo in
+                        ProtectionBitView(label: flagInfo.label, isSet: (bits & flagInfo.flag) != 0, isProtection: flagInfo.isProtectionBit)
+                    }
+                }
+            }
+            
+            VStack(alignment: .leading) {
+                Text("Attributes")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                HStack {
+                    ForEach(specialFlags, id: \.label) { flagInfo in
+                        ProtectionBitView(label: flagInfo.label, isSet: (bits & flagInfo.flag) != 0, isProtection: flagInfo.isProtectionBit)
+                    }
+                }
+            }
+        }
+    }
+}
+
+private struct ProtectionBitView: View {
+    let label: String
+    let isSet: Bool
+    let isProtection: Bool
+    var isNA: Bool = false
+
+    private var statusColor: Color {
+        if isNA { return .gray.opacity(0.3) }
+        if isProtection {
+            // For protection bits, set (protected) is red, unset (allowed) is green.
+            return isSet ? .red.opacity(0.8) : .green.opacity(0.8)
+        } else {
+            // For attribute bits, set (active) is blue, unset is gray.
+            return isSet ? .blue.opacity(0.8) : .gray.opacity(0.3)
+        }
+    }
+    
+    private var statusText: String {
+        if isNA { return label }
+        return isSet ? label : "-"
+    }
+
+    var body: some View {
+        Text(statusText)
+            .font(.system(.caption, design: .monospaced).bold())
+            .foregroundColor(.white)
+            .frame(width: 22, height: 22)
+            .background(statusColor)
+            .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 4, style: .continuous)
+                    .stroke(Color.black.opacity(0.1), lineWidth: 1)
+            )
+            .help(getHelpText())
+    }
+    
+    private func getHelpText() -> String {
+        if isNA { return "\(label): Read/Execute (not stored in this flag set)" }
+        switch label {
+        case "D": return isSet ? "Delete Protected" : "Deletable"
+        case "W": return isSet ? "Write Protected" : "Writable"
+        case "H": return isSet ? "Hold (Load into RAM on boot)" : "Not Hold"
+        case "S": return isSet ? "Script (Executable Script)" : "Not a Script"
+        case "P": return isSet ? "Pure (Re-entrant/Sharable)" : "Not Pure"
+        case "A": return isSet ? "Archive (Modified since last backup)" : "Archive bit cleared"
+        default: return ""
+        }
+    }
+}
+
+
 extension View {
     func inputDialogSheet(
         config: Binding<InputDialogConfig?>
     ) -> some View {
         self.sheet(item: config) { item in
             InputDialogView(config: item)
+        }
+    }
+    
+    func infoDialogSheet(
+        config: Binding<InfoDialogConfig?>
+    ) -> some View {
+        self.sheet(item: config) { item in
+            InfoDialogView(config: item)
         }
     }
 }
