@@ -36,11 +36,13 @@ struct DetailToolbar: ToolbarContent {
             Button(action: actions.newADF) {
                 Label("New", systemImage: "doc.badge.plus")
             }
+            .help("Create New Blank ADF")
             
             // Save ADF Button
             Button(action: actions.saveADF) {
                 Label("Save", systemImage: "square.and.arrow.down")
             }
+            .help("Save ADF As...")
             .disabled(selectedFile == nil)
 
             // This section of the toolbar is only shown when an ADF file is open.
@@ -56,11 +58,13 @@ struct DetailToolbar: ToolbarContent {
                 } label: {
                     Label("Sort", systemImage: "arrow.up.arrow.down.circle")
                 }
+                .help("Change Sort Order")
                 
                 // New Folder Button
                 Button(action: actions.newFolder) {
                     Label("New Folder", systemImage: "folder.badge.plus")
                 }
+                .help("Create a New Folder")
                 
                 // Edit Menu (Hex/Text)
                 Menu {
@@ -74,24 +78,28 @@ struct DetailToolbar: ToolbarContent {
                 } label: {
                     Label("View As", systemImage: "doc.text.magnifyingglass")
                 }
+                .help("View File Content")
                 .disabled(selectedEntry?.type != .file)
 
                 // Export Button
                 Button(action: actions.export) {
                     Label("Export", systemImage: "square.and.arrow.up")
                 }
+                .help("Export Selected Item to Desktop")
                 .disabled(selectedEntry == nil)
 
                 // Rename Button
                 Button(action: actions.rename) {
                     Label("Rename", systemImage: "pencil")
                 }
+                .help("Rename Selected Item")
                 .disabled(selectedEntry == nil)
 
                 // Delete Button
                 Button(role: .destructive, action: actions.delete) {
                     Label("Delete", systemImage: "trash")
                 }
+                .help("Delete Selected Item")
                 .disabled(selectedEntry == nil)
             }
             
@@ -99,6 +107,7 @@ struct DetailToolbar: ToolbarContent {
             Button(action: actions.about) {
                 Label("About ADFinder", systemImage: "info.circle")
             }
+            .help("About This App")
         }
     }
 }
