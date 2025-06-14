@@ -13,54 +13,64 @@ struct DetailView: View {
     @Binding var selectedFile: URL?
 
     // MARK: - State Variables
-    
-    // The source of truth for the current directory's contents.
     @State var currentEntries: [AmigaEntry] = []
-    
-    // The ID of the currently selected file or folder in the list.
     @State var selectedEntryID: AmigaEntry.ID?
-    
-    // State for displaying alerts to the user.
     @State var alertMessage: String?
     @State var showingAlert = false
-
-    // State for the "New Folder" dialog.
     @State var showingNewFolderAlert = false
     @State var newFolderName = ""
-
-    // State for the generic confirmation dialog.
     @State var confirmationConfig: ConfirmationConfig?
     @State var forceFlag: Bool = false
-
-    // State for the "Rename" dialog.
     @State var entryToRename: AmigaEntry?
     @State var newEntryName: String = ""
-
-    // State for showing child views like the About screen or Hex Viewer.
     @State var showingAboutView = false
     @State var showingFileViewer = false
     @State var selectedEntryForView: AmigaEntry?
     @State var fileContentData: Data?
     @State private var showingFileImporter = false
-
-    // State for managing long-running background tasks.
     @State var isLoadingFileContent = false
     @State var loadingTask: Task<Void, Never>?
-
-    // State for drag & drop operations.
     @State private var isDetailViewTargetedForDrop = false
-    
-    // State for file list sorting.
     @State var sortOrder: SortOrder = .nameAscending
-
     @State var showingFileExporter = false
     @State var adfDocumentToSave: ADFDocument?
 
     // A computed property to easily get the full AmigaEntry for the selected ID.
     var selectedEntry: AmigaEntry? {
         guard let selectedEntryID = selectedEntryID else { return nil }
-        // We search the unsorted list for the entry.
         return currentEntries.first { $0.id == selectedEntryID }
+    }
+    
+    private var detailActions: DetailToolbar.Actions {
+        .init(
+            newADF: {
+                presentConfirmation(config: .newADF(action: createNewAdf))
+            },
+            saveADF: saveAdf,
+            addFile: { showingFileImporter = true },
+            newFolder: {
+                newFolderName = ""
+                showingNewFolderAlert = true
+            },
+            viewContent: {
+                if let entry = selectedEntry { viewFileContent(entry) }
+            },
+            export: {}, // Placeholder; to be implemented
+            rename: {
+                if let entry = selectedEntry {
+                    newEntryName = entry.name
+                    entryToRename = entry
+                }
+            },
+            delete: {
+                if let entry = selectedEntry {
+                    presentConfirmation(config: .delete(entry: entry, action: { force in
+                        deleteEntry(entry, force: force)
+                    }))
+                }
+            },
+            about: { showingAboutView = true }
+        )
     }
     
     // Sorts the current entries based on the user's selection.
@@ -80,11 +90,9 @@ struct DetailView: View {
             sortedDirectories = directories.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedDescending }
             sortedFiles = files.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedDescending }
         case .sizeAscending:
-            // Size doesn't apply to directories, so we just sort them by name.
             sortedDirectories = directories.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
             sortedFiles = files.sorted { $0.size < $1.size }
         case .sizeDescending:
-            // Size doesn't apply to directories, so we just sort them by name.
             sortedDirectories = directories.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
             sortedFiles = files.sorted { $0.size > $1.size }
         }
@@ -113,9 +121,9 @@ struct DetailView: View {
         )
         .confirmationSheet(config: $confirmationConfig, forceFlag: $forceFlag)
         .sheet(isPresented: $showingFileViewer) {
-             if let entry = selectedEntryForView, let data = fileContentData {
-                 FileHexView(fileName: entry.name, data: data)
-             }
+            if let entry = selectedEntryForView, let data = fileContentData {
+                FileHexView(fileName: entry.name, data: data)
+            }
         }
         .sheet(isPresented: $showingAboutView) {
             AboutView()
@@ -139,6 +147,10 @@ struct DetailView: View {
         ) { result in
             handleFileImport(result: result)
         }
+
+        .focusedSceneValue(\.amigaActions, detailActions)
+        .focusedSceneValue(\.isFileOpen, selectedFile != nil)
+        .focusedSceneValue(\.isEntrySelected, selectedEntry != nil)
     }
 
     @ViewBuilder
@@ -165,37 +177,7 @@ struct DetailView: View {
                 selectedFile: $selectedFile,
                 sortOrder: $sortOrder,
                 selectedEntry: selectedEntry,
-                actions: .init(
-                    newADF: {
-                        presentConfirmation(config: .newADF(action: createNewAdf))
-                    },
-                    saveADF: saveAdf,
-                    addFile: { showingFileImporter = true },
-                    newFolder: {
-                        newFolderName = ""
-                        showingNewFolderAlert = true
-                    },
-                    viewContent: {
-                        if let entry = selectedEntry { viewFileContent(entry) }
-                    },
-                    export: {
-
-                    },
-                    rename: {
-                        if let entry = selectedEntry {
-                            newEntryName = entry.name
-                            entryToRename = entry
-                        }
-                    },
-                    delete: {
-                        if let entry = selectedEntry {
-                            presentConfirmation(config: .delete(entry: entry, action: { force in
-                                deleteEntry(entry, force: force)
-                            }))
-                        }
-                    },
-                    about: { showingAboutView = true }
-                )
+                actions: detailActions
             )
         }
         .onDrop(of: [ContentView.adfUType, .fileURL], isTargeted: $isDetailViewTargetedForDrop) { providers in
@@ -208,19 +190,19 @@ struct DetailView: View {
         )
         .overlay {
             if isLoadingFileContent {
-                 LoadingSpinnerView(isLoading: $isLoadingFileContent, onCancel: {
+                LoadingSpinnerView(isLoading: $isLoadingFileContent, onCancel: {
                     loadingTask?.cancel()
                     isLoadingFileContent = false
                     loadingTask = nil
-                 })
+                })
             }
         }
         .onChange(of: selectedFile) { _, newValue in
-             if let newFile = newValue {
-                 processDroppedURL(newFile)
-             } else {
-                 currentEntries = []
-             }
+            if let newFile = newValue {
+                processDroppedURL(newFile)
+            } else {
+                currentEntries = []
+            }
         }
     }
 }

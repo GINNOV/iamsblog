@@ -73,5 +73,8 @@ struct SidebarView: View {
                 print("Failed to select file: \(error.localizedDescription)")
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .openAdfFile)) { _ in
+            showingFileImporter = true
+        }
     }
 }

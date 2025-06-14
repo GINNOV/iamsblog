@@ -1,4 +1,3 @@
-
 //
 //  ADFinderApp.swift
 //  ADFinder
@@ -19,6 +18,16 @@ struct ADFinderApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+        }
+        .commands {
+            AmigaMenuCommands()
+            
+            CommandGroup(replacing: .importExport) {
+                Button("Open ADF...") {
+                    NotificationCenter.default.post(name: .openAdfFile, object: nil)
+                }
+                .keyboardShortcut("o", modifiers: .command)
+            }
         }
         
         Settings {
