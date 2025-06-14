@@ -9,6 +9,7 @@
 #define ADF_SWIFT_BRIDGE_CONSTANTS_H
 
 #include <stdint.h>
+#include "adf_blk.h" // For ADF_DOSFS_* constants
 
 // AdfAccessMode enum cases
 static const unsigned int ACCESS_MODE_READONLY_SWIFT  = 1;
@@ -37,5 +38,8 @@ static const int32_t ST_LFILE_SWIFT = -4;
 static const int32_t ST_LDIR_SWIFT  =  4;
 
 static const int32_t ADF_RC_OK_SWIFT = 0;
+
+static const uint8_t FS_TYPE_OFS_SWIFT = ADF_DOSFS_OFS;
+static const uint8_t FS_TYPE_FFS_SWIFT = ADF_DOSFS_FFS;
 
 #endif /* ADF_SWIFT_BRIDGE_CONSTANTS_H */

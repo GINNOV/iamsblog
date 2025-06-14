@@ -33,9 +33,12 @@ const char* get_AdfEntry_comment_ptr(const struct AdfEntry* entry);
 ADF_RETCODE register_dump_driver_helper(void);
 
 void setup_logging(void);
+
 void adf_set_vol_name(struct AdfVolume* vol, const char* newName);
 
-ADF_RETCODE create_blank_adf_c(const char* path, const char* volName);
+// accepts a filesystem type parameter (OFS or FFS).
+ADF_RETCODE create_blank_adf_c(const char* path, const char* volName, uint8_t fsType);
+
 ADF_RETCODE add_file_to_adf_c(
     struct AdfVolume* vol,
     const char* amigaPath,

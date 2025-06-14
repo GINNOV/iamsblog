@@ -54,7 +54,7 @@ void adf_set_vol_name(struct AdfVolume* vol, const char* newName) {
     vol->volName = strdup(newName);
 }
 
-ADF_RETCODE create_blank_adf_c(const char* path, const char* volName) {
+ADF_RETCODE create_blank_adf_c(const char* path, const char* volName, uint8_t fsType) {
     char* mutablePath = strdup(path);
     if (!mutablePath) { return ADF_RC_MALLOC; }
 
@@ -71,7 +71,7 @@ ADF_RETCODE create_blank_adf_c(const char* path, const char* volName) {
         return ADF_RC_MALLOC;
     }
 
-    ADF_RETCODE rc = adfCreateFlop(device, mutableVolName, ADF_DOSFS_OFS);
+    ADF_RETCODE rc = adfCreateFlop(device, mutableVolName, fsType);
     
     free(mutableVolName);
     adfDevClose(device);
@@ -89,22 +89,16 @@ ADF_RETCODE add_file_to_adf_c(
         return ADF_RC_NULLPTR;
     }
 
-    // Open the file in write mode. This will create it if it doesn't exist,
-    // or overwrite it if it does.
     struct AdfFile* file = adfFileOpen(vol, amigaPath, ADF_FILE_MODE_WRITE);
     if (!file) {
-        // adfFileOpen prints its own errors to the log (e.g., disk full)
-        return ADF_RC_ERROR; // Generic error code
+        return ADF_RC_ERROR;
     }
     
-    // Write the buffer to the file.
     uint32_t bytesWritten = adfFileWrite(file, bufferSize, buffer);
     
-    // Always close the file to flush changes.
     adfFileClose(file);
     
     if (bytesWritten != bufferSize) {
-        // This usually indicates a "disk full" error during the write.
         return ADF_RC_VOLFULL;
     }
     

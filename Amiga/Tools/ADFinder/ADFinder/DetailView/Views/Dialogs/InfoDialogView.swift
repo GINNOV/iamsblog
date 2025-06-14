@@ -7,8 +7,6 @@
 
 import SwiftUI
 
-// AI_REVIEW: This is the new dedicated view for displaying file/folder information.
-// It is designed to match the style of the other custom dialogs in the app.
 struct InfoDialogView: View {
     let config: InfoDialogConfig
     @Environment(\.dismiss) var dismiss
@@ -37,8 +35,6 @@ struct InfoDialogView: View {
                     InfoRow(label: "Comment:", value: comment)
                 }
                 
-                // AI_REVIEW: The plain text row for protection has been replaced
-                // with the new, much sleeker ProtectionBitsView component.
                 HStack(alignment: .top) {
                     Text("Protection:")
                         .font(.system(.body, design: .monospaced))

@@ -7,9 +7,6 @@
 
 import SwiftUI
 
-// AI_REVIEW: This Commands struct defines the "Amiga" application menu.
-// It now uses @FocusedValue to get the actions and context from the focused DetailView
-// to enable or disable its menu items appropriately.
 struct AmigaMenuCommands: Commands {
     
     @FocusedValue(\.amigaActions) private var actions: DetailToolbar.Actions?
@@ -25,8 +22,11 @@ struct AmigaMenuCommands: Commands {
 
                 // MARK: - File Operations
                 Button("New Blank ADF...", action: actions.newADF)
+                
+                // AI_REVIEW: Added the standard Command-S keyboard shortcut for saving.
                 Button("Save ADF As...", action: actions.saveADF)
                     .disabled(!isFileOpen)
+                    .keyboardShortcut("s", modifiers: .command)
                 
                 Divider()
 

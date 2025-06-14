@@ -588,7 +588,7 @@ class ADFService {
             let children = listCurrentDirectory()
             for child in children {
                 if let error = _exportRecursively(entry: child, toDirectory: exportPath) {
-                    _ = goUpDirectory() // Attempt to go back up before failing.
+                    _ = goUpDirectory()
                     return error
                 }
             }
@@ -598,21 +598,20 @@ class ADFService {
             }
         }
         
-        return nil // Success
+        return nil
     }
 
-    
-    func createNewBlankADF(volumeName: String) -> URL? {
+    func createNewBlankADF(volumeName: String, fsType: UInt8) -> URL? {
         let tempDir = FileManager.default.temporaryDirectory
         let fileName = "blank_\(UUID().uuidString).adf"
         let tempURL = tempDir.appendingPathComponent(fileName)
         let tempPath = tempURL.path
         
-        print("ADFService: Creating new blank ADF at: \(tempPath)")
+        print("ADFService: Creating new blank ADF at: \(tempPath) with FS Type: \(fsType)")
         
         let success = tempPath.withCString { cPath in
             volumeName.withCString { cVolName in
-                return create_blank_adf_c(cPath, cVolName).rawValue == ADF_RC_OK_SWIFT
+                return create_blank_adf_c(cPath, cVolName, fsType).rawValue == ADF_RC_OK_SWIFT
             }
         }
 

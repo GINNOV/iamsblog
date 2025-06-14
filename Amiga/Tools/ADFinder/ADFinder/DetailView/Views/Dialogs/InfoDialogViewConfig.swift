@@ -7,7 +7,6 @@
 
 import Foundation
 
-// AI_REVIEW: This struct provides the configuration for the "Get Info" dialog.
 struct InfoDialogConfig: Identifiable {
     let id = UUID()
     let entry: AmigaEntry

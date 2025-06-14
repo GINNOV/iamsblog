@@ -68,8 +68,8 @@ extension DetailView {
         }
     }
     
-    func createNewAdf() {
-        if let newAdfUrl = adfService.createNewBlankADF(volumeName: "adfinder_vol1") {
+    func createNewAdf(volumeName: String, fsType: UInt8) {
+        if let newAdfUrl = adfService.createNewBlankADF(volumeName: volumeName, fsType: fsType) {
             self.selectedFile = newAdfUrl
         } else {
             showAlert(message: "Failed to create a new blank ADF image.")
@@ -81,7 +81,8 @@ extension DetailView {
         
         do {
             let data = try Data(contentsOf: url, options: .mappedIfSafe)
-            adfDocumentToSave = ADFDocument(data: data)
+
+            adfDocumentToSave = ADFDocument(data: data, volumeName: adfService.volumeLabel)
             showingFileExporter = true
         } catch {
             showAlert(message: "Could not read data from the current ADF file to save it: \(error.localizedDescription)")
@@ -222,8 +223,6 @@ extension DetailView {
         self.showingAlert = true
     }
     
-    // AI_REVIEW: This function has been updated to use the new InfoDialogConfig
-    // and present the custom sheet instead of a standard alert.
     func showInfoAlert(for entry: AmigaEntry) {
         self.infoDialogConfig = InfoDialogConfig(entry: entry)
     }

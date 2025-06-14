@@ -20,7 +20,8 @@ struct DetailView: View {
     
     @State var confirmationConfig: ConfirmationConfig?
     @State var inputDialogConfig: InputDialogConfig?
-    @State var infoDialogConfig: InfoDialogConfig? // AI_REVIEW: New state for the info dialog.
+    @State var infoDialogConfig: InfoDialogConfig?
+    @State var newAdfConfig: NewADFDialogConfig?
     
     @State var forceFlag: Bool = false
     @State var showingAboutView = false
@@ -35,7 +36,6 @@ struct DetailView: View {
     @State var showingFileExporter = false
     @State var adfDocumentToSave: ADFDocument?
 
-    // A computed property to easily get the full AmigaEntry for the selected ID.
     var selectedEntry: AmigaEntry? {
         guard let selectedEntryID = selectedEntryID else { return nil }
         return currentEntries.first { $0.id == selectedEntryID }
@@ -44,7 +44,9 @@ struct DetailView: View {
     private var detailActions: DetailToolbar.Actions {
         .init(
             newADF: {
-                presentConfirmation(config: .newADF(action: createNewAdf))
+                newAdfConfig = NewADFDialogConfig(action: { volumeName, fsType in
+                    createNewAdf(volumeName: volumeName, fsType: fsType)
+                })
             },
             saveADF: saveAdf,
             addFile: { showingFileImporter = true },
@@ -60,7 +62,6 @@ struct DetailView: View {
                     }
                 }
             },
-            // AI_REVIEW: This wires up the Get Info action.
             getInfo: {
                 if let entry = selectedEntry {
                     infoDialogConfig = InfoDialogConfig(entry: entry)
@@ -88,8 +89,6 @@ struct DetailView: View {
         )
     }
     
-    // Sorts the current entries based on the user's selection.
-    // Directories are always sorted to the top.
     var sortedEntries: [AmigaEntry] {
         let directories = currentEntries.filter { $0.type == .directory }
         let files = currentEntries.filter { $0.type != .directory }
@@ -122,7 +121,8 @@ struct DetailView: View {
         }
         .confirmationSheet(config: $confirmationConfig, forceFlag: $forceFlag)
         .inputDialogSheet(config: $inputDialogConfig)
-        .infoDialogSheet(config: $infoDialogConfig) // AI_REVIEW: Add the sheet modifier here.
+        .infoDialogSheet(config: $infoDialogConfig)
+        .newAdfDialogSheet(config: $newAdfConfig)
         .sheet(isPresented: $showingFileViewer) {
             if let entry = selectedEntryForView, let data = fileContentData {
                 FileHexView(fileName: entry.name, data: data)
@@ -136,16 +136,18 @@ struct DetailView: View {
         } message: {
             Text(alertMessage ?? "An unknown error occurred.")
         }
+
         .fileExporter(
             isPresented: $showingFileExporter,
             document: adfDocumentToSave,
-            contentType: ContentView.adfUType
+            contentType: ContentView.adfUType,
+            defaultFilename: adfDocumentToSave?.defaultFileName
         ) { result in
             handleFileExport(result: result)
         }
         .fileImporter(
             isPresented: $showingFileImporter,
-            allowedContentTypes: [.data],
+            allowedContentTypes: [UTType.data],
             allowsMultipleSelection: true
         ) { result in
             handleFileImport(result: result)
@@ -167,7 +169,7 @@ struct DetailView: View {
                     currentPath: adfService.currentPath,
                     goUpDirectory: goUpDirectory,
                     handleEntryTap: handleEntryTap,
-                    showInfoAlert: { entry in infoDialogConfig = InfoDialogConfig(entry: entry) }, // AI_REVIEW: Updated context menu action.
+                    showInfoAlert: { entry in infoDialogConfig = InfoDialogConfig(entry: entry) },
                     viewFileContent: viewFileContent
                 )
                 .refreshable { loadDirectoryContents() }
@@ -182,7 +184,7 @@ struct DetailView: View {
                 actions: detailActions
             )
         }
-        .onDrop(of: [ContentView.adfUType, .fileURL], isTargeted: $isDetailViewTargetedForDrop) { providers in
+        .onDrop(of: [ContentView.adfUType, UTType.fileURL], isTargeted: $isDetailViewTargetedForDrop) { providers in
             handleDrop(providers: providers)
         }
         .overlay(

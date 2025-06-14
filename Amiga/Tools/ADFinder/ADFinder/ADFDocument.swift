@@ -9,26 +9,34 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct ADFDocument: FileDocument {
-    // This defines the types of files our document can handle.
     static var readableContentTypes: [UTType] { [ContentView.adfUType] }
     
-    // The raw data of the ADF file.
     var data: Data
-    
-    // Initialize a blank document.
-    init(data: Data = Data()) {
+    var volumeName: String?
+    var defaultFileName: String? {
+        guard let volumeName = volumeName, !volumeName.isEmpty else {
+            return "Untitled.adf"
+        }
+        // Sanitize the name to make it a valid filename.
+        let invalidChars = CharacterSet(charactersIn: ":/\\?%*|\"<>")
+        let cleanName = volumeName.components(separatedBy: invalidChars).joined(separator: "_")
+        return "\(cleanName).adf"
+    }
+
+    init(data: Data = Data(), volumeName: String? = nil) {
         self.data = data
+        self.volumeName = volumeName
     }
     
-    // Initialize from a file on disk.
     init(configuration: ReadConfiguration) throws {
         guard let data = configuration.file.regularFileContents else {
             throw CocoaError(.fileReadCorruptFile)
         }
         self.data = data
+        // When reading, we don't know the volume name yet, so it remains nil.
+        self.volumeName = nil
     }
     
-    // Create a FileWrapper to save the document to disk.
     func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
         return FileWrapper(regularFileWithContents: data)
     }

@@ -7,8 +7,6 @@
 
 import SwiftUI
 
-// AI_REVIEW: This is the new generic input dialog view. It's used for any action
-// that requires text input from the user, like creating a new folder or renaming an item.
 struct InputDialogView: View {
     let config: InputDialogConfig
     
@@ -177,14 +175,13 @@ struct FileRowView: View {
     }
 }
 
-// AI_REVIEW: This is the new, sleeker view for displaying protection bits.
 struct ProtectionBitsView: View {
     let bits: UInt32
 
     private struct BitInfo {
         let label: String
         let flag: UInt32
-        let isProtectionBit: Bool // True if a SET bit means protection is ON (action is disallowed)
+        let isProtectionBit: Bool
     }
 
     private let standardFlags: [BitInfo] = [
@@ -206,10 +203,8 @@ struct ProtectionBitsView: View {
                     .font(.caption2)
                     .foregroundColor(.secondary)
                 HStack {
-                    // Placeholders for R and E which are not in the 'access' field
                     ProtectionBitView(label: "R", isSet: false, isProtection: false, isNA: true)
                     ProtectionBitView(label: "E", isSet: false, isProtection: false, isNA: true)
-                    // The actual protection flags
                     ForEach(standardFlags, id: \.label) { flagInfo in
                         ProtectionBitView(label: flagInfo.label, isSet: (bits & flagInfo.flag) != 0, isProtection: flagInfo.isProtectionBit)
                     }
@@ -239,10 +234,8 @@ private struct ProtectionBitView: View {
     private var statusColor: Color {
         if isNA { return .gray.opacity(0.3) }
         if isProtection {
-            // For protection bits, set (protected) is red, unset (allowed) is green.
             return isSet ? .red.opacity(0.8) : .green.opacity(0.8)
         } else {
-            // For attribute bits, set (active) is blue, unset is gray.
             return isSet ? .blue.opacity(0.8) : .gray.opacity(0.3)
         }
     }
@@ -280,7 +273,6 @@ private struct ProtectionBitView: View {
     }
 }
 
-
 extension View {
     func inputDialogSheet(
         config: Binding<InputDialogConfig?>
@@ -295,6 +287,14 @@ extension View {
     ) -> some View {
         self.sheet(item: config) { item in
             InfoDialogView(config: item)
+        }
+    }
+    
+    func newAdfDialogSheet(
+        config: Binding<NewADFDialogConfig?>
+    ) -> some View {
+        self.sheet(item: config) { item in
+            NewADFDialogView(config: item)
         }
     }
 }
