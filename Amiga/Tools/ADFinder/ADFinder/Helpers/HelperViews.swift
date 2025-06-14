@@ -7,7 +7,6 @@
 
 import SwiftUI
 
-// AI_TRACK: This generic confirmation view is now used for all destructive actions.
 struct ActionConfirmationView: View {
     let title: String
     let message: String
