@@ -7,6 +7,72 @@
 
 import SwiftUI
 
+// AI_REVIEW: This is the new generic input dialog view. It's used for any action
+// that requires text input from the user, like creating a new folder or renaming an item.
+struct InputDialogView: View {
+    let config: InputDialogConfig
+    
+    @State private var inputText: String
+    @Environment(\.dismiss) var dismiss
+
+    init(config: InputDialogConfig) {
+        self.config = config
+        _inputText = State(initialValue: config.initialText)
+    }
+
+    var body: some View {
+        VStack(spacing: 20) {
+            // The image can now be an asset or an SF Symbol
+            if config.imageName.hasSuffix(".SFSymbol") {
+                Image(systemName: String(config.imageName.dropLast(".SFSymbol".count)))
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 50, height: 50)
+                    .foregroundColor(.accentColor)
+                    .symbolRenderingMode(.hierarchical)
+            } else {
+                Image(config.imageName)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 80, height: 80)
+            }
+
+            Text(config.title)
+                .font(.headline)
+
+            Text(config.message)
+                .multilineTextAlignment(.center)
+                .foregroundColor(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+            
+            TextField(config.prompt, text: $inputText)
+                .textFieldStyle(.roundedBorder)
+                .autocorrectionDisabled()
+
+            HStack(spacing: 12) {
+                Button(role: .cancel, action: { dismiss() }) {
+                    Text("Cancel")
+                        .frame(maxWidth: .infinity)
+                }
+                .keyboardShortcut(.cancelAction)
+
+                Button(action: {
+                    config.action(inputText)
+                    dismiss()
+                }) {
+                    Text(config.confirmButtonTitle)
+                        .frame(maxWidth: .infinity)
+                }
+                .keyboardShortcut(.defaultAction)
+                // The confirm button is disabled if the text field is empty.
+                .disabled(inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+            }
+        }
+        .padding(30)
+        .frame(width: 380)
+    }
+}
+
 struct ActionConfirmationView: View {
     let title: String
     let message: String
@@ -105,6 +171,17 @@ struct FileRowView: View {
         switch type {
         case .file: return .blue; case .directory: return .orange
         case .softLinkFile, .softLinkDir: return .purple; default: return .gray
+        }
+    }
+}
+
+// AI_REVIEW: New view extension to present the InputDialogView as a sheet.
+extension View {
+    func inputDialogSheet(
+        config: Binding<InputDialogConfig?>
+    ) -> some View {
+        self.sheet(item: config) { item in
+            InputDialogView(config: item)
         }
     }
 }

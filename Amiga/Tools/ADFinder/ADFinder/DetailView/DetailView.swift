@@ -17,12 +17,11 @@ struct DetailView: View {
     @State var selectedEntryID: AmigaEntry.ID?
     @State var alertMessage: String?
     @State var showingAlert = false
-    @State var showingNewFolderAlert = false
-    @State var newFolderName = ""
+    
     @State var confirmationConfig: ConfirmationConfig?
+    @State var inputDialogConfig: InputDialogConfig?
+    
     @State var forceFlag: Bool = false
-    @State var entryToRename: AmigaEntry?
-    @State var newEntryName: String = ""
     @State var showingAboutView = false
     @State var showingFileViewer = false
     @State var selectedEntryForView: AmigaEntry?
@@ -34,10 +33,6 @@ struct DetailView: View {
     @State var sortOrder: SortOrder = .nameAscending
     @State var showingFileExporter = false
     @State var adfDocumentToSave: ADFDocument?
-    
-    // AI_REVIEW: State for the new rename volume dialog.
-    @State var showingRenameVolumeAlert = false
-    @State var newVolumeName = ""
 
     // A computed property to easily get the full AmigaEntry for the selected ID.
     var selectedEntry: AmigaEntry? {
@@ -53,13 +48,18 @@ struct DetailView: View {
             saveADF: saveAdf,
             addFile: { showingFileImporter = true },
             newFolder: {
-                newFolderName = ""
-                showingNewFolderAlert = true
+                // AI_REVIEW: Corrected call to the dedicated config struct.
+                inputDialogConfig = NewFolderDialogConfig.config { newName in
+                    createFolder(name: newName)
+                }
             },
-
             editVolumeName: {
-                newVolumeName = adfService.volumeLabel
-                showingRenameVolumeAlert = true
+                // AI_REVIEW: Corrected call to the dedicated config struct.
+                inputDialogConfig = RenameVolumeDialogConfig.config(currentName: adfService.volumeLabel) { newName in
+                    if let errorMessage = adfService.renameVolume(newName: newName) {
+                        showAlert(message: "Failed to rename volume: \(errorMessage)")
+                    }
+                }
             },
             viewContent: {
                 if let entry = selectedEntry { viewFileContent(entry) }
@@ -67,8 +67,10 @@ struct DetailView: View {
             export: {}, // Placeholder; to be implemented
             rename: {
                 if let entry = selectedEntry {
-                    newEntryName = entry.name
-                    entryToRename = entry
+                    // AI_REVIEW: Corrected call to the dedicated config struct.
+                    inputDialogConfig = RenameEntryDialogConfig.config(entry: entry) { newName in
+                        renameEntry(entry: entry, newName: newName)
+                    }
                 }
             },
             delete: {
@@ -114,31 +116,8 @@ struct DetailView: View {
         ZStack {
             mainContent
         }
-        .newFolderDialog(
-            isPresented: $showingNewFolderAlert,
-            newFolderName: $newFolderName,
-            createAction: { createFolder(name: newFolderName) }
-        )
-
-        .renameVolumeDialog(
-            isPresented: $showingRenameVolumeAlert,
-            newVolumeName: $newVolumeName,
-            renameAction: {
-                if let errorMessage = adfService.renameVolume(newName: newVolumeName) {
-                    showAlert(message: "Failed to rename volume: \(errorMessage)")
-                }
-            }
-        )
-        .renameDialog(
-            entryToRename: $entryToRename,
-            newEntryName: $newEntryName,
-            renameAction: {
-                if let entry = entryToRename {
-                    renameEntry(entry: entry, newName: newEntryName)
-                }
-            }
-        )
         .confirmationSheet(config: $confirmationConfig, forceFlag: $forceFlag)
+        .inputDialogSheet(config: $inputDialogConfig)
         .sheet(isPresented: $showingFileViewer) {
             if let entry = selectedEntryForView, let data = fileContentData {
                 FileHexView(fileName: entry.name, data: data)
@@ -160,13 +139,13 @@ struct DetailView: View {
             handleFileExport(result: result)
         }
         .fileImporter(
+            // AI_REVIEW: Corrected UTType reference here.
             isPresented: $showingFileImporter,
-            allowedContentTypes: [.data],
+            allowedContentTypes: [UTType.data],
             allowsMultipleSelection: true
         ) { result in
             handleFileImport(result: result)
         }
-
         .focusedSceneValue(\.amigaActions, detailActions)
         .focusedSceneValue(\.isFileOpen, selectedFile != nil)
         .focusedSceneValue(\.isEntrySelected, selectedEntry != nil)
@@ -199,7 +178,8 @@ struct DetailView: View {
                 actions: detailActions
             )
         }
-        .onDrop(of: [ContentView.adfUType, .fileURL], isTargeted: $isDetailViewTargetedForDrop) { providers in
+        // AI_REVIEW: Corrected UTType references here.
+        .onDrop(of: [ContentView.adfUType, UTType.fileURL], isTargeted: $isDetailViewTargetedForDrop) { providers in
             handleDrop(providers: providers)
         }
         .overlay(
