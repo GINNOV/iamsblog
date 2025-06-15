@@ -13,11 +13,14 @@ struct ADFinderApp: App {
     @AppStorage("rememberWindowSize") private var rememberWindowSize = false
     @AppStorage("autoEnableTabs") private var autoEnableTabs = false
     
+    @State private var recentFilesService = RecentFilesService()
+
     static let adfUType = UTType("public.retro.adf")!
     
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            // AI_REVIEW: The service is injected into the view hierarchy here.
+            ContentView(recentFilesService: recentFilesService)
         }
         .commands {
             AmigaMenuCommands()
@@ -27,6 +30,26 @@ struct ADFinderApp: App {
                     NotificationCenter.default.post(name: .openAdfFile, object: nil)
                 }
                 .keyboardShortcut("o", modifiers: .command)
+            }
+            
+            CommandGroup(after: .importExport) {
+                Menu("Open Recent") {
+                    // Dynamically create a menu item for each recent file.
+                    ForEach(recentFilesService.recentFiles, id: \.self) { url in
+                        Button(url.lastPathComponent) {
+                            // Post a notification with the URL to open.
+                            NotificationCenter.default.post(name: .openSpecificAdfFile, object: url)
+                        }
+                    }
+                    
+                    // Add the "Clear Menu" item if the list is not empty.
+                    if !recentFilesService.recentFiles.isEmpty {
+                        Divider()
+                        Button("Clear Menu") {
+                            recentFilesService.clearRecents()
+                        }
+                    }
+                }
             }
         }
         

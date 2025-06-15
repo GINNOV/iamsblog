@@ -1,4 +1,4 @@
-# A Finder for Amiga Files
+# A Finder for Amiga Disks
 
 Just like you manage files in macOS Finder, it would be so useful to do the same with ADF disks, well... now you can.
 

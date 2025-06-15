@@ -10,29 +10,25 @@ import UniformTypeIdentifiers
 
 struct DetailView: View {
     @Bindable var adfService: ADFService
+    @Bindable var recentFilesService: RecentFilesService
     @Binding var selectedFile: URL?
 
-    // MARK: - State Variables
     @State var currentEntries: [AmigaEntry] = []
     @State var selectedEntryID: AmigaEntry.ID?
     @State var alertMessage: String?
     @State var showingAlert = false
-    
     @State var confirmationConfig: ConfirmationConfig?
     @State var inputDialogConfig: InputDialogConfig?
     @State var infoDialogConfig: InfoDialogConfig?
     @State var newAdfConfig: NewADFDialogConfig?
-    
     @State var forceFlag: Bool = false
     @State var showingAboutView = false
     @State var showingFileViewer = false
     @State var selectedEntryForView: AmigaEntry?
     @State var fileContentData: Data?
-    
     @State var showingTextViewer = false
     @State var selectedEntryForTextEdit: AmigaEntry?
     @State var textFileContent: String = ""
-
     @State private var showingFileImporter = false
     @State var isLoadingFileContent = false
     @State var loadingTask: Task<Void, Never>?
@@ -40,7 +36,7 @@ struct DetailView: View {
     @State var sortOrder: SortOrder = .nameAscending
     @State var showingFileExporter = false
     @State var adfDocumentToSave: ADFDocument?
-
+    
     var selectedEntry: AmigaEntry? {
         guard let selectedEntryID = selectedEntryID else { return nil }
         return currentEntries.first { $0.id == selectedEntryID }
@@ -122,7 +118,6 @@ struct DetailView: View {
         return sortedDirectories + sortedFiles
     }
 
-    // MARK: - Body
     var body: some View {
         ZStack {
             mainContent
@@ -161,7 +156,7 @@ struct DetailView: View {
         }
         .fileImporter(
             isPresented: $showingFileImporter,
-            allowedContentTypes: [.data],
+            allowedContentTypes: [UTType.data],
             allowsMultipleSelection: true
         ) { result in
             handleFileImport(result: result)
@@ -216,9 +211,11 @@ struct DetailView: View {
                 })
             }
         }
+        // call to add a recent file
         .onChange(of: selectedFile) { _, newValue in
             if let newFile = newValue {
                 processDroppedURL(newFile)
+                recentFilesService.addRecentFile(newFile)
             } else {
                 currentEntries = []
             }

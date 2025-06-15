@@ -10,6 +10,7 @@ import UniformTypeIdentifiers
 
 struct SidebarView: View {
     @Bindable var adfService: ADFService
+    @Bindable var recentFilesService: RecentFilesService
     @Binding var selectedFile: URL?
     
     @State private var showingFileImporter = false
@@ -21,15 +22,15 @@ struct SidebarView: View {
     var body: some View {
         VStack(alignment: .leading) {
             HStack {
-                   Image("disk_maker")
-                       .resizable()
-                       .scaledToFit()
-                       .frame(width: 128, height: 128)
-                   
-                   Text("ADF.inder")
-                       .font(.largeTitle)
-               }
-               .padding(.bottom)
+                Image("disk_maker")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 128, height: 128)
+                
+                Text("ADF.inder")
+                    .font(.largeTitle)
+            }
+            .padding(.bottom)
             
             Button {
                 showingFileImporter = true
@@ -39,16 +40,16 @@ struct SidebarView: View {
             .padding(.bottom)
 
             if selectedFile != nil {
-                 Text("Disk file:")
+                Text("Disk file:")
                     .font(.headline)
-                 Text(selectedFile?.lastPathComponent ?? "N/A")
+                Text(selectedFile?.lastPathComponent ?? "N/A")
                     .font(.caption)
                     .lineLimit(1)
                     .truncationMode(.middle)
                     .padding(.bottom, 5)
-                 Text("VOLUME:")
+                Text("VOLUME:")
                     .font(.headline)
-                 Text(currentPathString)
+                Text(currentPathString)
                     .font(.caption)
                     .lineLimit(1)
                     .truncationMode(.middle)
