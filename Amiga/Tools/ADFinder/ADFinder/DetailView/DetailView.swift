@@ -28,6 +28,11 @@ struct DetailView: View {
     @State var showingFileViewer = false
     @State var selectedEntryForView: AmigaEntry?
     @State var fileContentData: Data?
+    
+    @State var showingTextViewer = false
+    @State var selectedEntryForTextEdit: AmigaEntry?
+    @State var textFileContent: String = ""
+
     @State private var showingFileImporter = false
     @State var isLoadingFileContent = false
     @State var loadingTask: Task<Void, Never>?
@@ -69,6 +74,9 @@ struct DetailView: View {
             },
             viewContent: {
                 if let entry = selectedEntry { viewFileContent(entry) }
+            },
+            viewAsText: {
+                if let entry = selectedEntry { viewTextContent(entry) }
             },
             export: exportSelectedItem,
             rename: {
@@ -128,6 +136,13 @@ struct DetailView: View {
                 FileHexView(fileName: entry.name, data: data)
             }
         }
+        .sheet(isPresented: $showingTextViewer) {
+            if let entry = selectedEntryForTextEdit {
+                FileTextView(fileName: entry.name, textContent: $textFileContent) {
+                    saveTextContent()
+                }
+            }
+        }
         .sheet(isPresented: $showingAboutView) {
             AboutView()
         }
@@ -136,7 +151,6 @@ struct DetailView: View {
         } message: {
             Text(alertMessage ?? "An unknown error occurred.")
         }
-
         .fileExporter(
             isPresented: $showingFileExporter,
             document: adfDocumentToSave,
@@ -147,7 +161,7 @@ struct DetailView: View {
         }
         .fileImporter(
             isPresented: $showingFileImporter,
-            allowedContentTypes: [UTType.data],
+            allowedContentTypes: [.data],
             allowsMultipleSelection: true
         ) { result in
             handleFileImport(result: result)
@@ -170,7 +184,8 @@ struct DetailView: View {
                     goUpDirectory: goUpDirectory,
                     handleEntryTap: handleEntryTap,
                     showInfoAlert: { entry in infoDialogConfig = InfoDialogConfig(entry: entry) },
-                    viewFileContent: viewFileContent
+                    viewFileContent: viewFileContent,
+                    viewAsText: viewTextContent
                 )
                 .refreshable { loadDirectoryContents() }
             }

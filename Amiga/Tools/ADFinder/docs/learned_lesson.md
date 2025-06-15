@@ -6,6 +6,9 @@ Just like you manage files in macOS Finder, it would be so useful to do the same
 You can open an ADF with just drag and drop or using the classical options (menu/botton)
 ![](./images/open_adf.png)
 
+## New Images
+![](./images/new_adf.png)
+
 ## Multi Disks Opening
 You can open multiple disk at the same time via tabs or multiple windows.
 ![](./images/multi_tab.png)
@@ -23,6 +26,7 @@ As more plugins are added you can perform addition process over a selected item.
 ![](./images/hexeditor.png)
 ![](./images/utilties.png)
 ![](./images/context_menu.png)
+![](./images/text_editor.png)
 
 ## Other Features
 You can perform most tasks via the toolbar but some options are located in the Amiga menu. Like changing volume name.

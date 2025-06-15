@@ -17,6 +17,7 @@ struct FileListView: View {
     let handleEntryTap: (AmigaEntry) -> Void
     let showInfoAlert: (AmigaEntry) -> Void
     let viewFileContent: (AmigaEntry) -> Void
+    let viewAsText: (AmigaEntry) -> Void
 
     var body: some View {
         // The List that shows the directory contents.
@@ -42,9 +43,10 @@ struct FileListView: View {
                     }
                     .contextMenu {
                          // The context menu for each item.
-                        Button("View Info") { showInfoAlert(entry) }
+                        Button("Get Info") { showInfoAlert(entry) }
                          if entry.type == .file {
-                             Button("View Content (Hex)") { viewFileContent(entry) }
+                             Button("View as Hex") { viewFileContent(entry) }
+                             Button("Edit as Text") { viewAsText(entry) }
                          }
                     }
                     .tag(entry.id)

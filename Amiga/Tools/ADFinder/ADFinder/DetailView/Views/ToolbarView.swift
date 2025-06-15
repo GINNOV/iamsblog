@@ -24,6 +24,7 @@ struct DetailToolbar: ToolbarContent {
         let editVolumeName: () -> Void
         let getInfo: () -> Void
         let viewContent: () -> Void
+        let viewAsText: () -> Void
         let export: () -> Void
         let rename: () -> Void
         let delete: () -> Void
@@ -77,16 +78,18 @@ struct DetailToolbar: ToolbarContent {
                 // Edit Menu (Hex/Text)
                 Menu {
                     Button(action: actions.viewContent) {
-                        Label("Hex Editor", systemImage: "number")
+                        Label("Hex Viewer", systemImage: "number")
                     }
                     .disabled(selectedEntry?.type != .file)
                     
-                    Button(action: {}) { Label("Txt Editor", systemImage: "text.quote") }
-                    .disabled(true)
+                    Button(action: actions.viewAsText) {
+                        Label("Text Editor", systemImage: "text.quote")
+                    }
+                    .disabled(selectedEntry?.type != .file)
                 } label: {
                     Label("View As", systemImage: "doc.text.magnifyingglass")
                 }
-                .help("View File Content")
+                .help("Plug-ins")
                 .disabled(selectedEntry?.type != .file)
 
                 // Export Button

@@ -369,6 +369,46 @@ class ADFService {
         return fileData
     }
     
+    func writeTextFile(entry: AmigaEntry, content: String) -> String? {
+        guard let vol = self.adfVolume, entry.type == .file else { return "Invalid entry or volume." }
+        if !navigateToInternalPath() {
+            return getADFLibError(context: "navigateToInternalPath for \(entry.name) before writeTextFile")
+        }
+
+        // Pre-process the string to replace common macOS "smart" punctuation with plain ASCII.
+        var processedContent = content
+            .replacingOccurrences(of: "“", with: "\"")
+            .replacingOccurrences(of: "”", with: "\"")
+            .replacingOccurrences(of: "‘", with: "'")
+            .replacingOccurrences(of: "’", with: "'")
+            .replacingOccurrences(of: "…", with: "...")
+            .replacingOccurrences(of: "—", with: "--")
+        
+        // Normalize line endings to LF (\n), which is standard for AmigaDOS.
+        processedContent = processedContent.replacingOccurrences(of: "\r\n", with: "\n")
+        
+        guard let data = processedContent.data(using: .isoLatin1) else {
+            return "Failed to encode string to Amiga-compatible format."
+        }
+        
+        let result = data.withUnsafeBytes { (bufferPtr: UnsafeRawBufferPointer) -> ADF_RETCODE in
+            let unsafePointer = bufferPtr.baseAddress?.assumingMemoryBound(to: UInt8.self)
+            
+            return entry.name.withCString { cAmigaPath in
+                return add_file_to_adf_c(vol, cAmigaPath, unsafePointer, UInt32(data.count))
+            }
+        }
+        
+        if result.rawValue == ADF_RC_OK_SWIFT {
+            print("ADFService: Successfully wrote to '\(entry.name)'.")
+            populateDiskInfo() // Refresh disk info, as size may have changed.
+            return nil
+        } else {
+            print("ADFService: add_file_to_adf_c failed for '\(entry.name)'. Check C-Log for details.")
+            return "ADFlib failed to write the file. The disk may be full."
+        }
+    }
+    
     func addFile(from url: URL) -> String? {
         guard let vol = self.adfVolume else { return "Volume not mounted." }
         

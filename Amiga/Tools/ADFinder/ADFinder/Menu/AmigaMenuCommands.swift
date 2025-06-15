@@ -15,15 +15,12 @@ struct AmigaMenuCommands: Commands {
     
     var body: some Commands {
         CommandMenu("Amiga") {
-            // Only show the menu items if the actions are available from a focused view.
             if let actions = actions {
                 let isFileOpen = self.isFileOpen ?? false
                 let isEntrySelected = self.isEntrySelected ?? false
 
                 // MARK: - File Operations
                 Button("New Blank ADF...", action: actions.newADF)
-                
-                // AI_REVIEW: Added the standard Command-S keyboard shortcut for saving.
                 Button("Save ADF As...", action: actions.saveADF)
                     .disabled(!isFileOpen)
                     .keyboardShortcut("s", modifiers: .command)
@@ -46,8 +43,12 @@ struct AmigaMenuCommands: Commands {
                     .disabled(!isEntrySelected)
                     .keyboardShortcut("i", modifiers: .command)
 
-                Button("View Content", action: actions.viewContent)
+                Button("View as Hex", action: actions.viewContent)
                     .disabled(!isEntrySelected)
+                
+                Button("View as Text", action: actions.viewAsText)
+                    .disabled(!isEntrySelected)
+
                 Button("Export Item...", action: actions.export)
                     .disabled(!isEntrySelected)
 
@@ -57,7 +58,6 @@ struct AmigaMenuCommands: Commands {
                     .disabled(!isEntrySelected)
                 Button("Delete Item", action: actions.delete)
                     .disabled(!isEntrySelected)
-                    // Also adding a standard keyboard shortcut for delete.
                     .keyboardShortcut(.delete, modifiers: [])
             }
         }

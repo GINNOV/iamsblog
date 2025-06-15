@@ -81,7 +81,6 @@ extension DetailView {
         
         do {
             let data = try Data(contentsOf: url, options: .mappedIfSafe)
-
             adfDocumentToSave = ADFDocument(data: data, volumeName: adfService.volumeLabel)
             showingFileExporter = true
         } catch {
@@ -150,6 +149,44 @@ extension DetailView {
                     self.showAlert(message: "Could not read content for file: \(entry.name)")
                 }
             }
+        }
+    }
+    
+    func viewTextContent(_ entry: AmigaEntry) {
+        guard entry.type == .file else { return }
+        
+        selectedEntryForTextEdit = entry
+        isLoadingFileContent = true
+        
+        loadingTask = Task {
+            guard let data = adfService.readFileContent(entry: entry) else {
+                await MainActor.run {
+                    showAlert(message: "Could not read data for \(entry.name).")
+                    isLoadingFileContent = false
+                }
+                return
+            }
+            
+            // Attempt to decode as Amiga's standard text encoding.
+            let string = String(data: data, encoding: .isoLatin1) ?? ""
+            
+            await MainActor.run {
+                guard !Task.isCancelled else { return }
+                self.textFileContent = string
+                self.isLoadingFileContent = false
+                self.showingTextViewer = true
+            }
+        }
+    }
+    
+    func saveTextContent() {
+        guard let entry = selectedEntryForTextEdit else { return }
+        
+        if let errorMessage = adfService.writeTextFile(entry: entry, content: textFileContent) {
+            showAlert(message: "Failed to save file: \(errorMessage)")
+        } else {
+            // Success, refresh the directory to show updated size
+            loadDirectoryContents()
         }
     }
     
