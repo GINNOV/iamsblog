@@ -409,18 +409,42 @@ class ADFService {
         }
     }
     
-    func addFile(from url: URL) -> String? {
+        func addFile(from url: URL) -> String? {
         guard let vol = self.adfVolume else { return "Volume not mounted." }
         
         if !navigateToInternalPath() {
             return "Failed to navigate to current ADF directory."
         }
         
-        guard let data = try? Data(contentsOf: url) else {
-            return "Could not read data from local file."
-        }
-        
         let amigaPath = url.lastPathComponent
+        
+                if let existingEntry = self.listCurrentDirectory().first(where: { $0.name.lowercased() == amigaPath.lowercased() }) {
+            // Prevent overwriting a directory with a file.
+            if existingEntry.type == .directory {
+                return "An entry named '\(amigaPath)' already exists and it is a directory. Cannot overwrite."
+            }
+            
+                        print("ADFService: File '\(amigaPath)' exists. Deleting it before overwrite.")
+            if let deleteError = self.deleteEntryRecursively(entry: existingEntry, force: true) {
+                return "Failed to delete existing file to overwrite: \(deleteError)"
+            }
+        }
+
+        let didStartAccessing = url.startAccessingSecurityScopedResource()
+        defer {
+            if didStartAccessing {
+                url.stopAccessingSecurityScopedResource()
+            }
+        }
+
+        let data: Data
+        do {
+            data = try Data(contentsOf: url)
+        } catch {
+            let errorMessage = "Could not read data from local file. Reason: \(error.localizedDescription)"
+            print("ADFService Error: \(errorMessage)")
+            return errorMessage
+        }
         
         let result = data.withUnsafeBytes { (bufferPtr: UnsafeRawBufferPointer) -> ADF_RETCODE in
             let unsafePointer = bufferPtr.baseAddress?.assumingMemoryBound(to: UInt8.self)
@@ -666,6 +690,28 @@ class ADFService {
         } else {
             print("ADFService: Failed to open the newly created ADF.")
             return nil
+        }
+    }
+    
+    func setProtectionBits(for entry: AmigaEntry, newBits: UInt32) -> String? {
+        guard let vol = self.adfVolume else { return "Volume is not open." }
+
+        if !navigateToInternalPath() {
+            return "Failed to navigate to the entry's directory."
+        }
+        
+        let parentSector = vol.pointee.curDirPtr
+        let result = entry.name.withCString { cName in
+            // The C function expects a signed Int32 for the access bits.
+            return adfSetEntryAccess(vol, parentSector, cName, Int32(bitPattern: newBits))
+        }
+        
+        if result.rawValue == ADF_RC_OK_SWIFT {
+            print("ADFService: Successfully set protection bits for '\(entry.name)'.")
+            return nil
+        } else {
+            print("ADFService: adfSetEntryAccess failed for '\(entry.name)'. Check C-Log.")
+            return "ADFLib failed to set permissions for the entry."
         }
     }
 }

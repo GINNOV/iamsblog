@@ -42,6 +42,10 @@ struct AmigaMenuCommands: Commands {
                 Button("Get Info", action: actions.getInfo)
                     .disabled(!isEntrySelected)
                     .keyboardShortcut("i", modifiers: .command)
+                
+                Button("Set Permissions...", action: actions.setPermissions)
+                    .disabled(!isEntrySelected)
+                    .keyboardShortcut("p", modifiers: [.command, .shift])
 
                 Button("View as Hex", action: actions.viewContent)
                     .disabled(!isEntrySelected)

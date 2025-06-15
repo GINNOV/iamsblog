@@ -9,7 +9,7 @@
 #define ADF_SWIFT_BRIDGE_CONSTANTS_H
 
 #include <stdint.h>
-#include "adf_blk.h" // For ADF_DOSFS_* constants
+#include "adf_blk.h" // For ADF_DOSFS_* and protection constants
 
 // AdfAccessMode enum cases
 static const unsigned int ACCESS_MODE_READONLY_SWIFT  = 1;
@@ -19,18 +19,20 @@ static const unsigned int ACCESS_MODE_READWRITE_SWIFT = 0;
 static const unsigned int ADF_FILE_MODE_READ_SWIFT  = 0x01;
 static const unsigned int ADF_FILE_MODE_WRITE_SWIFT = 0x02;
 
-static const uint32_t FIBF_READ_SWIFT    = (1 << 15);
-static const uint32_t FIBF_WRITE_SWIFT   = (1 << 14);
-static const uint32_t FIBF_EXECUTE_SWIFT = (1 << 13);
-static const uint32_t FIBF_DELETE_SWIFT  = (1 << 12);
 static const uint32_t FIBF_HOLD_SWIFT    = (1 << 7);
 static const uint32_t FIBF_SCRIPT_SWIFT  = (1 << 6);
 static const uint32_t FIBF_PURE_SWIFT    = (1 << 5);
 static const uint32_t FIBF_ARCHIVE_SWIFT = (1 << 4);
 
-// In AmigaDOS, if a protection bit is SET, the action is DISALLOWED.
-static const uint32_t ACCMASK_D_SWIFT = (1 << 0); // Delete protection
+// AI_REVIEW: The R, W, E, D flags are *protection* bits (set = disallowed).
+// These are the correct constants to use. #END_REVIEW
+static const uint32_t ACCMASK_R_SWIFT = (1 << 3); // Read protection
 static const uint32_t ACCMASK_W_SWIFT = (1 << 2); // Write protection
+static const uint32_t ACCMASK_E_SWIFT = (1 << 1); // Execute protection
+static const uint32_t ACCMASK_D_SWIFT = (1 << 0); // Delete protection
+
+// AI_REVIEW: Removed incorrect FIBF_ constants for READ, WRITE, EXECUTE, DELETE
+// as they are not used by ADFLib and were a source of confusion.
 
 static const int32_t ST_FILE_SWIFT  = -3;
 static const int32_t ST_DIR_SWIFT   =  2;

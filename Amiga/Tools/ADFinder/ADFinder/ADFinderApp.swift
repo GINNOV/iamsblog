@@ -19,7 +19,6 @@ struct ADFinderApp: App {
     
     var body: some Scene {
         WindowGroup {
-            // AI_REVIEW: The service is injected into the view hierarchy here.
             ContentView(recentFilesService: recentFilesService)
         }
         .commands {

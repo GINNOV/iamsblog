@@ -21,6 +21,7 @@ struct DetailView: View {
     @State var inputDialogConfig: InputDialogConfig?
     @State var infoDialogConfig: InfoDialogConfig?
     @State var newAdfConfig: NewADFDialogConfig?
+    @State var setPermissionsConfig: SetPermissionsDialogConfig?
     @State var forceFlag: Bool = false
     @State var showingAboutView = false
     @State var showingFileViewer = false
@@ -66,6 +67,21 @@ struct DetailView: View {
             getInfo: {
                 if let entry = selectedEntry {
                     infoDialogConfig = InfoDialogConfig(entry: entry)
+                }
+            },
+            setPermissions: {
+                if let entry = selectedEntry {
+                    setPermissionsConfig = SetPermissionsDialogConfig(
+                        entryName: entry.name,
+                        initialBits: entry.protectionBits,
+                        action: { newBits in
+                            if let errorMsg = adfService.setProtectionBits(for: entry, newBits: newBits) {
+                                showAlert(message: "Failed to set permissions: \(errorMsg)")
+                            }
+                            // Refresh directory to reflect potential changes if needed
+                            loadDirectoryContents()
+                        }
+                    )
                 }
             },
             viewContent: {
@@ -126,6 +142,7 @@ struct DetailView: View {
         .inputDialogSheet(config: $inputDialogConfig)
         .infoDialogSheet(config: $infoDialogConfig)
         .newAdfDialogSheet(config: $newAdfConfig)
+        .setPermissionsDialogSheet(config: $setPermissionsConfig)
         .sheet(isPresented: $showingFileViewer) {
             if let entry = selectedEntryForView, let data = fileContentData {
                 FileHexView(fileName: entry.name, data: data)

@@ -181,19 +181,20 @@ struct ProtectionBitsView: View {
     private struct BitInfo {
         let label: String
         let flag: UInt32
-        let isProtectionBit: Bool
     }
 
-    private let standardFlags: [BitInfo] = [
-        .init(label: "D", flag: ACCMASK_D_SWIFT, isProtectionBit: true),
-        .init(label: "W", flag: ACCMASK_W_SWIFT, isProtectionBit: true),
+        private let permissionFlags: [BitInfo] = [
+        .init(label: "r", flag: ACCMASK_R_SWIFT),
+        .init(label: "w", flag: ACCMASK_W_SWIFT),
+        .init(label: "e", flag: ACCMASK_E_SWIFT),
+        .init(label: "d", flag: ACCMASK_D_SWIFT)
     ]
     
-    private let specialFlags: [BitInfo] = [
-        .init(label: "H", flag: FIBF_HOLD_SWIFT, isProtectionBit: false),
-        .init(label: "S", flag: FIBF_SCRIPT_SWIFT, isProtectionBit: false),
-        .init(label: "P", flag: FIBF_PURE_SWIFT, isProtectionBit: false),
-        .init(label: "A", flag: FIBF_ARCHIVE_SWIFT, isProtectionBit: false)
+    private let attributeFlags: [BitInfo] = [
+        .init(label: "h", flag: FIBF_HOLD_SWIFT),
+        .init(label: "s", flag: FIBF_SCRIPT_SWIFT),
+        .init(label: "p", flag: FIBF_PURE_SWIFT),
+        .init(label: "a", flag: FIBF_ARCHIVE_SWIFT)
     ]
 
     var body: some View {
@@ -203,10 +204,14 @@ struct ProtectionBitsView: View {
                     .font(.caption2)
                     .foregroundColor(.secondary)
                 HStack {
-                    ProtectionBitView(label: "R", isSet: false, isProtection: false, isNA: true)
-                    ProtectionBitView(label: "E", isSet: false, isProtection: false, isNA: true)
-                    ForEach(standardFlags, id: \.label) { flagInfo in
-                        ProtectionBitView(label: flagInfo.label, isSet: (bits & flagInfo.flag) != 0, isProtection: flagInfo.isProtectionBit)
+                    // AI_REVIEW: Loop over all permission flags and apply the INVERTED logic.
+                    // A permission is active if its corresponding protection bit is NOT set. #END_REVIEW
+                    ForEach(permissionFlags, id: \.label) { flagInfo in
+                        ProtectionBitView(
+                            label: flagInfo.label,
+                            isSet: (bits & flagInfo.flag) == 0, // Inverted logic
+                            isProtection: true
+                        )
                     }
                 }
             }
@@ -216,8 +221,12 @@ struct ProtectionBitsView: View {
                     .font(.caption2)
                     .foregroundColor(.secondary)
                 HStack {
-                    ForEach(specialFlags, id: \.label) { flagInfo in
-                        ProtectionBitView(label: flagInfo.label, isSet: (bits & flagInfo.flag) != 0, isProtection: flagInfo.isProtectionBit)
+                                        ForEach(attributeFlags, id: \.label) { flagInfo in
+                        ProtectionBitView(
+                            label: flagInfo.label,
+                            isSet: (bits & flagInfo.flag) != 0, // Direct logic
+                            isProtection: false
+                        )
                     }
                 }
             }
@@ -229,24 +238,23 @@ private struct ProtectionBitView: View {
     let label: String
     let isSet: Bool
     let isProtection: Bool
-    var isNA: Bool = false
 
     private var statusColor: Color {
-        if isNA { return .gray.opacity(0.3) }
-        if isProtection {
-            return isSet ? .red.opacity(0.8) : .green.opacity(0.8)
+        // AI_REVIEW: Simplified color logic. Active permissions are green, active attributes are blue.
+        // Inactive flags are a faded gray. #END_REVIEW
+        if isSet {
+            return isProtection ? .green.opacity(0.8) : .blue.opacity(0.8)
         } else {
-            return isSet ? .blue.opacity(0.8) : .gray.opacity(0.3)
+            return .gray.opacity(0.3)
         }
     }
     
     private var statusText: String {
-        if isNA { return label }
         return isSet ? label : "-"
     }
 
     var body: some View {
-        Text(statusText)
+        Text(statusText.uppercased())
             .font(.system(.caption, design: .monospaced).bold())
             .foregroundColor(.white)
             .frame(width: 22, height: 22)
@@ -259,19 +267,21 @@ private struct ProtectionBitView: View {
             .help(getHelpText())
     }
     
-    private func getHelpText() -> String {
-        if isNA { return "\(label): Read/Execute (not stored in this flag set)" }
-        switch label {
-        case "D": return isSet ? "Delete Protected" : "Deletable"
-        case "W": return isSet ? "Write Protected" : "Writable"
-        case "H": return isSet ? "Hold (Load into RAM on boot)" : "Not Hold"
-        case "S": return isSet ? "Script (Executable Script)" : "Not a Script"
-        case "P": return isSet ? "Pure (Re-entrant/Sharable)" : "Not Pure"
-        case "A": return isSet ? "Archive (Modified since last backup)" : "Archive bit cleared"
+        private func getHelpText() -> String {
+        switch label.lowercased() {
+        case "d": return isSet ? "Deletable" : "Delete Protected"
+        case "e": return isSet ? "Executable" : "Execute Protected"
+        case "w": return isSet ? "Writable" : "Write Protected"
+        case "r": return isSet ? "Readable" : "Read Protected"
+        case "a": return isSet ? "Archive (Needs backup)" : "Archive bit cleared"
+        case "p": return isSet ? "Pure (Re-entrant/Sharable)" : "Not Pure"
+        case "s": return isSet ? "Script (Executable Script)" : "Not a Script"
+        case "h": return isSet ? "Hold (Load into RAM on boot)" : "Not Hold"
         default: return ""
         }
     }
 }
+
 
 extension View {
     func inputDialogSheet(
@@ -295,6 +305,14 @@ extension View {
     ) -> some View {
         self.sheet(item: config) { item in
             NewADFDialogView(config: item)
+        }
+    }
+    
+        func setPermissionsDialogSheet(
+        config: Binding<SetPermissionsDialogConfig?>
+    ) -> some View {
+        self.sheet(item: config) { item in
+            SetPermissionsDialogView(config: item)
         }
     }
 }
