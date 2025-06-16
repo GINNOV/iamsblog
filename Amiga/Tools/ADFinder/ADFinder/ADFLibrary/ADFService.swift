@@ -13,7 +13,6 @@ func swift_log_bridge(msg: UnsafePointer<CChar>?) {
     guard let msg = msg else { return }
     let logMessage = String(cString: msg)
     
-    // : The C bridge now uses the shared logging function. #END_REVIEW
     Task {
         await LogStore.shared.add(message: "[ADFLib C-Log]: \(logMessage)")
     }
@@ -64,12 +63,29 @@ class ADFService {
         }
     }
     
-    // : This new centralized logging function ensures that all messages go to
-    // both the Xcode console (via print) and the in-app console (via LogStore). #END_REVIEW
     private func log(_ message: String) {
         print(message)
         Task {
             await LogStore.shared.add(message: message + "\n")
+        }
+    }
+    
+    // : This new function encapsulates the logic to completely reset and
+    // re-initialize the ADFLib C library, ensuring a clean state after an error. #END_REVIEW
+    private func reinitializeAdfLib() {
+        log("ADFService: Re-initializing ADFLib due to previous error...")
+        adfLibCleanUp()
+        if adfLibInit() == ADF_RC_OK {
+            adflibInitialized = true
+            log("ADFService: ADFLib Re-initialized OK.")
+            setup_logging()
+            adfEnvSetProperty(ADF_PR_IGNORE_CHECKSUM_ERRORS, 1)
+            if register_dump_driver_helper() != ADF_RC_OK {
+                log("ADFService: Warning - Failed to re-add dump device driver.")
+            }
+        } else {
+            adflibInitialized = false
+            log("ADFService: CRITICAL - Failed to re-initialize ADFLib.")
         }
     }
 
@@ -107,6 +123,7 @@ class ADFService {
 
         if self.adfDevice == nil {
             log("ADFService.openADF: <- adfDevOpenWithDriver FAILED. Returned nil.")
+            reinitializeAdfLib() // : Call the reset function on failure.
             return false
         }
         log("ADFService.openADF: <- adfDevOpenWithDriver SUCCESS.")
@@ -117,6 +134,7 @@ class ADFService {
             log("ADFService.openADF: <- adfDevMount FAILED. Return code: \(devMountResult)")
             adfDevClose(self.adfDevice)
             self.adfDevice = nil
+            reinitializeAdfLib() // : Call the reset function on failure.
             return false
         }
         log("ADFService.openADF: <- adfDevMount SUCCESS.")
@@ -128,6 +146,7 @@ class ADFService {
             adfDevUnMount(self.adfDevice)
             adfDevClose(self.adfDevice)
             self.adfDevice = nil
+            reinitializeAdfLib() // : Call the reset function on failure.
             return false
         }
         log("ADFService.openADF: <- adfVolMount SUCCESS.")
@@ -681,7 +700,7 @@ class ADFService {
             }
             
             if !goUpDirectory() {
-                 return "Failed to navigate up from ADF directory '\(entry.name)' after emptying it. Cannot complete deletion."
+                 return "Failed to navigate out of directory '\(entry.name)' after emptying it. Cannot complete deletion."
             }
         }
         
@@ -733,7 +752,7 @@ class ADFService {
             log("ADFService: Successfully set protection bits for '\(entry.name)'.")
             return nil
         } else {
-            log("ADFService: adfSetEntryAccess failed for '\(entry.name)'. Check C-Log.")
+            log("ADFService: adfSetEntryAccess failed for '\(entry.name)'. Check C-Log for details.")
             return "ADFLib failed to set permissions for the entry."
         }
     }
