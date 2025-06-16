@@ -11,6 +11,42 @@ import UniformTypeIdentifiers
 extension DetailView {
 
     // MARK: - Core ADF Operations
+    
+    // : New handler to process moving an entry to its parent directory. #END_REVIEW
+    func handleMoveToParent(sourceEntryID: AmigaEntry.ID) {
+        guard let sourceEntry = currentEntries.first(where: { $0.id == sourceEntryID }) else {
+            showAlert(message: "Could not find the source item to move.")
+            return
+        }
+
+        if let errorMessage = adfService.moveEntryToParent(entryNameToMove: sourceEntry.name) {
+            showAlert(message: "Failed to move item up: \(errorMessage)")
+        } else {
+            loadDirectoryContents()
+        }
+    }
+    
+    // : New handler to process the drag-and-drop move operation. #END_REVIEW
+    func handleMove(sourceEntryID: AmigaEntry.ID, destinationEntry: AmigaEntry) {
+        // Find the source entry from the ID.
+        guard let sourceEntry = currentEntries.first(where: { $0.id == sourceEntryID }) else {
+            showAlert(message: "Could not find the source item to move.")
+            return
+        }
+
+        // Prevent illogical moves: dropping an item onto itself or onto a file.
+        if sourceEntry.id == destinationEntry.id || destinationEntry.type != .directory {
+            return
+        }
+        
+        // Call the ADFService to perform the actual move.
+        if let errorMessage = adfService.moveEntry(entryNameToMove: sourceEntry.name, toDestinationDirName: destinationEntry.name) {
+            showAlert(message: "Failed to move item: \(errorMessage)")
+        } else {
+            // If the move is successful, reload the directory contents to reflect the change.
+            loadDirectoryContents()
+        }
+    }
 
     func loadDirectoryContents() {
         guard selectedFile != nil else {

@@ -2,7 +2,7 @@
 //  ADFService.swift
 //  ADFinder
 //
-//  Created by Mario Esposito on 5/23/25.
+//  Created by Mario Esposito on 5/25/25.
 //
 
 import Foundation
@@ -588,6 +588,83 @@ class ADFService {
         } else {
             log("ADFService: adfRemoveEntry failed for '\(entryToDelete.name)'. Check C-Log for details.")
             return "ADFLib failed to delete '\(entryToDelete.name)'."
+        }
+    }
+
+    // : This is the new function to handle moving an entry. It uses adfRenameEntry
+    // as moving is essentially renaming an entry into a new parent directory. #END_REVIEW
+    func moveEntry(entryNameToMove: String, toDestinationDirName: String) -> String? {
+        guard let vol = self.adfVolume else { return "Volume not mounted." }
+
+        // We assume we are in the parent directory of both the item to move and the destination folder.
+        let parentSector = vol.pointee.curDirPtr
+
+        // Get the sector of the destination directory.
+        let destDirSector = toDestinationDirName.withCString { cDestName in
+            return adfGetEntryBlockNum(vol, parentSector, cDestName)
+        }
+        
+        if destDirSector <= 0 {
+            return "Destination directory '\(toDestinationDirName)' not found."
+        }
+        
+        // Check if the destination is actually a directory.
+        var destBlock = AdfEntryBlock()
+        guard adfReadEntryBlock(vol, destDirSector, &destBlock) == ADF_RC_OK, destBlock.secType == ST_DIR_SWIFT else {
+            return "'\(toDestinationDirName)' is not a directory."
+        }
+        
+        // Perform the move. The new parent sector is the destination directory's sector.
+        // The name of the file does not change.
+        let success = entryNameToMove.withCString { cEntryNameToMove -> Bool in
+            return adfRenameEntry(vol, parentSector, cEntryNameToMove, destDirSector, cEntryNameToMove).rawValue == ADF_RC_OK_SWIFT
+        }
+
+        if success {
+            log("ADFService: Moved '\(entryNameToMove)' to '\(toDestinationDirName)'.")
+            populateDiskInfo()
+            return nil
+        } else {
+            log("ADFService: adfRenameEntry (for move) failed. Check C-Log for details.")
+            return "ADFLib failed to move the entry. An entry with the same name may already exist in the destination."
+        }
+    }
+    
+    // : This new function handles moving an entry to the parent directory. #END_REVIEW
+    func moveEntryToParent(entryNameToMove: String) -> String? {
+        guard let vol = self.adfVolume else { return "Volume not mounted." }
+        
+        // Ensure we are not at the root.
+        if currentPath.isEmpty {
+            return "Cannot move item up from the root directory."
+        }
+
+        // The source directory is the current directory.
+        let sourceDirSector = vol.pointee.curDirPtr
+        
+        // To get the destination (parent) sector, we must temporarily navigate up.
+        // The navigateToInternalPath() call in loadDirectoryContents() will reset this later.
+        if adfParentDir(vol) != ADF_RC_OK {
+            // Attempt to restore the directory pointer if the move fails.
+            _ = navigateToInternalPath()
+            return "Could not navigate to parent directory to perform move."
+        }
+        let destDirSector = vol.pointee.curDirPtr
+        
+        // Perform the move.
+        let success = entryNameToMove.withCString { cEntryName -> Bool in
+            return adfRenameEntry(vol, sourceDirSector, cEntryName, destDirSector, cEntryName).rawValue == ADF_RC_OK_SWIFT
+        }
+
+        if success {
+            log("ADFService: Moved '\(entryNameToMove)' up to parent directory.")
+            populateDiskInfo()
+            return nil
+        } else {
+            // Restore path and return error.
+            _ = navigateToInternalPath()
+            log("ADFService: moveEntryToParent failed. Check C-Log.")
+            return "ADFLib failed to move the entry up."
         }
     }
 

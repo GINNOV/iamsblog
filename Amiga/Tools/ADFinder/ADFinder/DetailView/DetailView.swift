@@ -200,7 +200,11 @@ struct DetailView: View {
                     handleEntryTap: handleEntryTap,
                     showInfoAlert: { entry in infoDialogConfig = InfoDialogConfig(entry: entry) },
                     viewFileContent: viewFileContent,
-                    viewAsText: viewTextContent
+                    viewAsText: viewTextContent,
+                    // : Pass the new handleMove function to the FileListView. #END_REVIEW
+                    handleMove: handleMove,
+                    // : Pass the new handler for moving items up one level. #END_REVIEW
+                    handleMoveToParent: handleMoveToParent
                 )
                 .refreshable { loadDirectoryContents() }
             }
