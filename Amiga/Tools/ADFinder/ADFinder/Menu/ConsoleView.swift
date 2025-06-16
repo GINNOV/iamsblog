@@ -8,10 +8,8 @@
 import SwiftUI
 
 struct ConsoleView: View {
-    // Access the shared log store from the environment.
     @Environment(LogStore.self) private var logStore
     
-    // A computed property to join all log entries into a single string.
     private var logText: String {
         logStore.entries.joined()
     }
@@ -32,14 +30,17 @@ struct ConsoleView: View {
             .frame(height: 40)
             .background(.thinMaterial)
 
-            // The main text view for logs
+            // : Using a ScrollView with a Text view and the .textSelection(.enabled)
+            // modifier is the correct, modern SwiftUI way to create a read-only,
+            // selectable text area. This replaces the flawed TextEditor implementation. #END_REVIEW
             ScrollViewReader { proxy in
                 ScrollView(.vertical) {
                     Text(logText)
                         .font(.system(.body, design: .monospaced))
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(5)
-                        .id("logContent") // An ID to allow scrolling to the bottom
+                        .textSelection(.enabled)
+                        .id("logContent") // ID for auto-scrolling
                 }
                 .onChange(of: logStore.entries) {
                     // Automatically scroll to the bottom when new entries are added.

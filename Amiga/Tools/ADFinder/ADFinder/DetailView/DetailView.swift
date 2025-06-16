@@ -180,7 +180,7 @@ struct DetailView: View {
         .focusedSceneValue(\.amigaActions, detailActions)
         .focusedSceneValue(\.isFileOpen, selectedFile != nil)
         .focusedSceneValue(\.isEntrySelected, selectedEntry != nil)
-        // AI_REVIEW: This listens for the notification posted by the app's main menu. #END_REVIEW
+        // : This listens for the notification posted by the app's main menu. #END_REVIEW
         .onReceive(NotificationCenter.default.publisher(for: .showAboutWindow)) { _ in
             showingAboutView = true
         }
