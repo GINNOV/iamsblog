@@ -126,39 +126,49 @@ ADF_RETCODE register_dump_driver_helper(void) {
     return adfAddDeviceDriver(&adfDeviceDriverDump);
 }
 
-// : The logic here is now corrected. Checksum is validated BEFORE byte swapping. #END_REVIEW
+// : The logic is now corrected to match the ADFLib source.
+// The checksum is calculated on the original big-endian data, and then
+// compared against the checksum value in the struct AFTER it's been
+// byte-swapped to the host order. #END_REVIEW
 ADF_RETCODE parse_boot_block(const uint8_t* data, struct AdfBootBlock* boot) {
     if (!data || !boot) return ADF_RC_NULLPTR;
     
-    // 1. Copy the raw bytes. The data is still in big-endian (network) order.
+    // 1. Calculate the checksum from the original big-endian data buffer.
+    uint32_t calculated_sum = adfBootSum(data);
+    
+    // 2. Copy the raw bytes into the struct.
     memcpy(boot, data, sizeof(struct AdfBootBlock));
     
-    // 2. Validate the checksum on the original big-endian data.
-    if (boot->checkSum != adfBootSum((uint8_t*)boot)) {
+    // 3. Swap the entire struct to host byte order (little-endian).
+    adfSwapEndian((uint8_t*)boot, ADF_SWBL_BOOT);
+    
+    // 4. Compare the now host-ordered checksum from the struct with the
+    //    checksum calculated from the original big-endian buffer.
+    if (boot->checkSum != calculated_sum) {
         return ADF_RC_BLOCKSUM;
     }
-    
-    // 3. Now that the block is validated, swap to host byte order for use in Swift.
-    adfSwapEndian((uint8_t*)boot, ADF_SWBL_BOOT);
     
     return ADF_RC_OK;
 }
 
-// : The logic here is now corrected. Checksum is validated BEFORE byte swapping. #END_REVIEW
 ADF_RETCODE parse_root_block(const uint8_t* adf_data, uint32_t block_size, uint32_t root_block_sector, struct AdfRootBlock* root) {
     if (!adf_data || !root) return ADF_RC_NULLPTR;
     
     const uint8_t* root_block_ptr = adf_data + (root_block_sector * block_size);
-    // 1. Copy the raw bytes. Data is still in big-endian order.
+    
+    // 1. Calculate checksum from the original big-endian data block.
+    uint32_t calculated_sum = adfNormalSum(root_block_ptr, offsetof(struct AdfRootBlock, checkSum), sizeof(struct AdfRootBlock));
+    
+    // 2. Copy the data into the root struct.
     memcpy(root, root_block_ptr, sizeof(struct AdfRootBlock));
     
-    // 2. Validate the checksum on the original big-endian data.
-    if (root->checkSum != adfNormalSum((uint8_t*)root, offsetof(struct AdfRootBlock, checkSum), sizeof(struct AdfRootBlock))) {
+    // 3. Swap the struct to host byte order.
+    adfSwapEndian((uint8_t*)root, ADF_SWBL_ROOT);
+    
+    // 4. Compare the now host-ordered checksum with the calculated one.
+    if (root->checkSum != calculated_sum) {
         return ADF_RC_BLOCKSUM;
     }
-    
-    // 3. Checksum is valid. Now swap to host byte order for use in Swift.
-    adfSwapEndian((uint8_t*)root, ADF_SWBL_ROOT);
     
     return ADF_RC_OK;
 }

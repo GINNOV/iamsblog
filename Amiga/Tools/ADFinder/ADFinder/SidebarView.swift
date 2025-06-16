@@ -27,8 +27,8 @@ struct SidebarView: View {
                     .scaledToFit()
                     .frame(width: 128, height: 128)
                 
-                Text("ADF.inder")
-                    .font(.largeTitle)
+//                Text("ADF.inder")
+//                    .font(.largeTitle)
             }
             .padding(.bottom)
             
