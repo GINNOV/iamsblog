@@ -42,6 +42,10 @@ struct ComparisonResult {
     let differentSectors: Int
     let sourceOnlySectors: Int
     let destinationOnlySectors: Int
+    let sourceBootBlock: AdfBootBlock?
+    let destBootBlock: AdfBootBlock?
+    let sourceRootBlock: AdfRootBlock?
+    let destRootBlock: AdfRootBlock?
 }
 
 
@@ -55,15 +59,24 @@ class ADFCompareService {
     
     /// Loads data from a URL for either the source or destination disk.
     func load(url: URL, for target: Target) -> Bool {
+        print("ADFCompareService: Attempting to load URL: \(url.path) for target: \(target)")
         // Securely access the file's data.
         let didStartAccessing = url.startAccessingSecurityScopedResource()
         defer {
             if didStartAccessing {
                 url.stopAccessingSecurityScopedResource()
+                print("ADFCompareService: Stopped accessing security-scoped resource.")
             }
         }
         
-        guard let data = try? Data(contentsOf: url) else {
+        // : Replaced try? with a do-catch block for detailed error logging.
+        // This will tell us exactly why the file data isn't loading. #END_REVIEW
+        let data: Data
+        do {
+            data = try Data(contentsOf: url)
+            print("ADFCompareService: Successfully loaded \(data.count) bytes.")
+        } catch {
+            print("ADFCompareService: FAILED to load data from URL. Error: \(error.localizedDescription)")
             return false
         }
         
@@ -88,8 +101,17 @@ class ADFCompareService {
     /// Performs the sector-by-sector comparison.
     func compare() {
         guard let sourceData = sourceData, let destinationData = destinationData else {
+            print("ADFCompareService.compare: Cannot compare, one or both data sources are nil.")
             return
         }
+        
+        print("ADFCompareService.compare: Starting comparison...")
+        
+        let sourceBoot = parseBootBlock(from: sourceData)
+        let sourceRoot = parseRootBlock(from: sourceData, bootBlock: sourceBoot)
+        
+        let destBoot = parseBootBlock(from: destinationData)
+        let destRoot = parseRootBlock(from: destinationData, bootBlock: destBoot)
         
         let sourceSectors = sourceData.count / sectorSize
         let destSectors = destinationData.count / sectorSize
@@ -131,7 +153,31 @@ class ADFCompareService {
             totalSectors: maxSectors,
             differentSectors: diffCount,
             sourceOnlySectors: sourceOnlyCount,
-            destinationOnlySectors: destOnlyCount
+            destinationOnlySectors: destOnlyCount,
+            sourceBootBlock: sourceBoot,
+            destBootBlock: destBoot,
+            sourceRootBlock: sourceRoot,
+            destRootBlock: destRoot
         )
+        print("ADFCompareService.compare: Comparison finished.")
+    }
+    
+    private func parseBootBlock(from data: Data) -> AdfBootBlock? {
+        var boot = AdfBootBlock()
+        let result = data.withUnsafeBytes { ptr -> ADF_RETCODE in
+            guard let baseAddress = ptr.baseAddress else { return ADF_RC_ERROR }
+            return parse_boot_block(baseAddress.assumingMemoryBound(to: UInt8.self), &boot)
+        }
+        return result == ADF_RC_OK ? boot : nil
+    }
+    
+    private func parseRootBlock(from data: Data, bootBlock: AdfBootBlock?) -> AdfRootBlock? {
+        guard let boot = bootBlock else { return nil }
+        var root = AdfRootBlock()
+        let result = data.withUnsafeBytes { ptr -> ADF_RETCODE in
+            guard let baseAddress = ptr.baseAddress else { return ADF_RC_ERROR }
+            return parse_root_block(baseAddress.assumingMemoryBound(to: UInt8.self), UInt32(sectorSize), UInt32(boot.rootBlock), &root)
+        }
+        return result == ADF_RC_OK ? root : nil
     }
 }

@@ -43,7 +43,7 @@ class ADFService {
             setup_logging()
             print("ADFService: ADFLib logging redirected to Swift console via C shim.")
 
-            // AI_REVIEW: This is the definitive fix for opening valid FFS disks.
+            // : This is the definitive fix for opening valid FFS disks.
             // It tells ADFLib to be less strict about checksums, which prevents
             // the "filesystem not supported" error on correctly formatted disks. #END_REVIEW
             adfEnvSetProperty(ADF_PR_IGNORE_CHECKSUM_ERRORS, 1)

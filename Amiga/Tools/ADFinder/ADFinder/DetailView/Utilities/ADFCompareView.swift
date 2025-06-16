@@ -38,9 +38,32 @@ struct ADFCompareView: View {
 
             Divider()
 
-            // Results section
             if let result = compareService.comparisonResult {
-                ComparisonResultsView(result: result)
+                TabView {
+                    ComparisonResultsView(result: result)
+                        .tabItem {
+                            Label("Sector Map", systemImage: "square.grid.3x3.fill")
+                        }
+
+                    HStack(spacing: 0) {
+                        BlockInspectorView(
+                            diskName: "Source",
+                            bootBlock: result.sourceBootBlock,
+                            rootBlock: result.sourceRootBlock,
+                            geometry: (80, 2, 11)
+                        )
+                        Divider()
+                        BlockInspectorView(
+                            diskName: "Destination",
+                            bootBlock: result.destBootBlock,
+                            rootBlock: result.destRootBlock,
+                            geometry: (80, 2, 11)
+                        )
+                    }
+                    .tabItem {
+                        Label("Block Inspector", systemImage: "magnifyingglass")
+                    }
+                }
             } else {
                 Text("Drop two ADF files above and click Compare.")
                     .foregroundColor(.secondary)
@@ -77,15 +100,12 @@ private struct FileDropTarget: View {
             RoundedRectangle(cornerRadius: 10)
                 .strokeBorder(isTargeted ? Color.accentColor : .gray.opacity(0.5), style: StrokeStyle(lineWidth: 2, dash: [5]))
         )
-        // AI_REVIEW: This is the definitive fix. This implementation now mirrors the
+        // : This is the definitive bug fix. This implementation now mirrors the
         // proven, working drag-and-drop handler from the main DetailView, which
         // correctly handles various data representations from Finder. #END_REVIEW
-        .onDrop(of: [ContentView.adfUType, .fileURL], isTargeted: $isTargeted) { providers in
-            guard let provider = providers.first else {
-                return false
-            }
+        .onDrop(of: [ContentView.adfUType, .fileURL], isTargeted: $isTargeted) { providers -> Bool in
+            guard let provider = providers.first else { return false }
 
-            // Check for our custom ADF type first.
             if provider.hasItemConformingToTypeIdentifier(ContentView.adfUType.identifier) {
                 provider.loadItem(forTypeIdentifier: ContentView.adfUType.identifier, options: nil) { (item, error) in
                     DispatchQueue.main.async {
@@ -105,7 +125,6 @@ private struct FileDropTarget: View {
                 return true
             }
 
-            // Fall back to the generic file URL type.
             if provider.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier) {
                 _ = provider.loadObject(ofClass: URL.self) { (url, error) in
                     DispatchQueue.main.async {
@@ -117,7 +136,6 @@ private struct FileDropTarget: View {
                 }
                 return true
             }
-            
             return false
         }
     }

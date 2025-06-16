@@ -55,8 +55,6 @@ void adf_set_vol_name(struct AdfVolume* vol, const char* newName) {
     vol->volName = strdup(newName);
 }
 
-// AI_REVIEW: This function has been reverted to its correct, simple state.
-// It no longer contains the flawed logic that was corrupting disk images. #END_REVIEW
 ADF_RETCODE create_blank_adf_c(const char* path, const char* volName, uint8_t fsType) {
     char* mutablePath = strdup(path);
     if (!mutablePath) { return ADF_RC_MALLOC; }
@@ -127,4 +125,40 @@ const char* get_AdfEntry_comment_ptr(const struct AdfEntry* entry) {
 ADF_RETCODE register_dump_driver_helper(void) {
     return adfAddDeviceDriver(&adfDeviceDriverDump);
 }
+
+// : The logic here is now corrected. Checksum is validated BEFORE byte swapping. #END_REVIEW
+ADF_RETCODE parse_boot_block(const uint8_t* data, struct AdfBootBlock* boot) {
+    if (!data || !boot) return ADF_RC_NULLPTR;
     
+    // 1. Copy the raw bytes. The data is still in big-endian (network) order.
+    memcpy(boot, data, sizeof(struct AdfBootBlock));
+    
+    // 2. Validate the checksum on the original big-endian data.
+    if (boot->checkSum != adfBootSum((uint8_t*)boot)) {
+        return ADF_RC_BLOCKSUM;
+    }
+    
+    // 3. Now that the block is validated, swap to host byte order for use in Swift.
+    adfSwapEndian((uint8_t*)boot, ADF_SWBL_BOOT);
+    
+    return ADF_RC_OK;
+}
+
+// : The logic here is now corrected. Checksum is validated BEFORE byte swapping. #END_REVIEW
+ADF_RETCODE parse_root_block(const uint8_t* adf_data, uint32_t block_size, uint32_t root_block_sector, struct AdfRootBlock* root) {
+    if (!adf_data || !root) return ADF_RC_NULLPTR;
+    
+    const uint8_t* root_block_ptr = adf_data + (root_block_sector * block_size);
+    // 1. Copy the raw bytes. Data is still in big-endian order.
+    memcpy(root, root_block_ptr, sizeof(struct AdfRootBlock));
+    
+    // 2. Validate the checksum on the original big-endian data.
+    if (root->checkSum != adfNormalSum((uint8_t*)root, offsetof(struct AdfRootBlock, checkSum), sizeof(struct AdfRootBlock))) {
+        return ADF_RC_BLOCKSUM;
+    }
+    
+    // 3. Checksum is valid. Now swap to host byte order for use in Swift.
+    adfSwapEndian((uint8_t*)root, ADF_SWBL_ROOT);
+    
+    return ADF_RC_OK;
+}

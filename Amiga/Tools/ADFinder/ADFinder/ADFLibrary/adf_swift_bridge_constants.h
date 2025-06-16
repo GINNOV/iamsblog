@@ -24,14 +24,14 @@ static const uint32_t FIBF_SCRIPT_SWIFT  = (1 << 6);
 static const uint32_t FIBF_PURE_SWIFT    = (1 << 5);
 static const uint32_t FIBF_ARCHIVE_SWIFT = (1 << 4);
 
-// AI_REVIEW: The R, W, E, D flags are *protection* bits (set = disallowed).
+// : The R, W, E, D flags are *protection* bits (set = disallowed).
 // These are the correct constants to use. #END_REVIEW
 static const uint32_t ACCMASK_R_SWIFT = (1 << 3); // Read protection
 static const uint32_t ACCMASK_W_SWIFT = (1 << 2); // Write protection
 static const uint32_t ACCMASK_E_SWIFT = (1 << 1); // Execute protection
 static const uint32_t ACCMASK_D_SWIFT = (1 << 0); // Delete protection
 
-// AI_REVIEW: Removed incorrect FIBF_ constants for READ, WRITE, EXECUTE, DELETE
+// : Removed incorrect FIBF_ constants for READ, WRITE, EXECUTE, DELETE
 // as they are not used by ADFLib and were a source of confusion.
 
 static const int32_t ST_FILE_SWIFT  = -3;
