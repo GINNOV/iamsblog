@@ -24,7 +24,11 @@ static const uint32_t FIBF_SCRIPT_SWIFT  = (1 << 6);
 static const uint32_t FIBF_PURE_SWIFT    = (1 << 5);
 static const uint32_t FIBF_ARCHIVE_SWIFT = (1 << 4);
 
-// : The R, W, E, D flags are *protection* bits (set = disallowed).
+// The H, S, P, A, R, W, E, D flags are *protection* bits (set = disallowed for R, W, E, D).
+static const uint32_t ACCMASK_H_SWIFT = (1 << 7); // Hold protection
+static const uint32_t ACCMASK_S_SWIFT = (1 << 6); // Script protection
+static const uint32_t ACCMASK_P_SWIFT = (1 << 5); // Pure protection
+static const uint32_t ACCMASK_A_SWIFT = (1 << 4); // Archive protection
 static const uint32_t ACCMASK_R_SWIFT = (1 << 3); // Read protection
 static const uint32_t ACCMASK_W_SWIFT = (1 << 2); // Write protection
 static const uint32_t ACCMASK_E_SWIFT = (1 << 1); // Execute protection
@@ -41,6 +45,5 @@ static const uint8_t FS_TYPE_OFS_SWIFT = ADF_DOSFS_OFS;
 static const uint8_t FS_TYPE_FFS_SWIFT = ADF_DOSFS_FFS;
 
 static const int HT_SIZE_SWIFT = 72;
-
 
 #endif /* ADF_SWIFT_BRIDGE_CONSTANTS_H */

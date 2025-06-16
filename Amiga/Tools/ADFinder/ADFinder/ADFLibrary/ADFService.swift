@@ -70,8 +70,9 @@ class ADFService {
         }
     }
     
-    // : This new function encapsulates the logic to completely reset and
-    // re-initialize the ADFLib C library, ensuring a clean state after an error. #END_REVIEW
+    // AI_REVIEW: This function ensures the C library is completely torn down and
+    // re-initialized to a clean state. It's now called at every failure point
+    // in openADF to prevent state corruption from one operation affecting the next. #END_REVIEW
     private func reinitializeAdfLib() {
         log("ADFService: Re-initializing ADFLib due to previous error...")
         adfLibCleanUp()
@@ -108,11 +109,20 @@ class ADFService {
     }
 
     func openADF(filePath: String) -> Bool {
+        // AI_REVIEW: A full cleanup and re-initialization of the C library is now
+        // performed before every open operation. This prevents state corruption from
+        // one disk affecting the next, fixing the stability issue. #END_REVIEW
+        
+        // First, clean up the Swift-side service state and old ADF pointers.
+        closeADF()
+        
+        // Then, perform a full teardown and setup of the underlying C-library.
+        reinitializeAdfLib()
+
         guard adflibInitialized else {
-            log("ADFService.openADF: ABORT - ADFLib not initialized.")
+            log("ADFService.openADF: ABORT - ADFLib could not be re-initialized.")
             return false
         }
-        closeADF()
 
         log("ADFService.openADF: === Starting Mount Process for: \"\(filePath)\" ===")
 
@@ -123,7 +133,6 @@ class ADFService {
 
         if self.adfDevice == nil {
             log("ADFService.openADF: <- adfDevOpenWithDriver FAILED. Returned nil.")
-            reinitializeAdfLib() // : Call the reset function on failure.
             return false
         }
         log("ADFService.openADF: <- adfDevOpenWithDriver SUCCESS.")
@@ -134,7 +143,6 @@ class ADFService {
             log("ADFService.openADF: <- adfDevMount FAILED. Return code: \(devMountResult)")
             adfDevClose(self.adfDevice)
             self.adfDevice = nil
-            reinitializeAdfLib() // : Call the reset function on failure.
             return false
         }
         log("ADFService.openADF: <- adfDevMount SUCCESS.")
@@ -146,7 +154,6 @@ class ADFService {
             adfDevUnMount(self.adfDevice)
             adfDevClose(self.adfDevice)
             self.adfDevice = nil
-            reinitializeAdfLib() // : Call the reset function on failure.
             return false
         }
         log("ADFService.openADF: <- adfVolMount SUCCESS.")
@@ -279,7 +286,10 @@ class ADFService {
         }
         return true
     }
-
+    
+    // AI_REVIEW: This function has been reverted to its original, more stable implementation
+    // that uses the high-level adfGetDirEnt function. This fixes a state corruption
+    // regression when opening malformed disks. #END_REVIEW
     func listCurrentDirectory() -> [AmigaEntry] {
         guard let vol = self.adfVolume else { return [] }
         if !navigateToInternalPath() { return [] }
@@ -353,7 +363,7 @@ class ADFService {
             return $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
         }
     }
-
+    
     func navigateToDirectory(_ name: String) -> Bool {
         guard self.adfVolume != nil, !name.isEmpty, name != "." else { return false }
         
@@ -591,8 +601,6 @@ class ADFService {
         }
     }
 
-    // : This is the new function to handle moving an entry. It uses adfRenameEntry
-    // as moving is essentially renaming an entry into a new parent directory. #END_REVIEW
     func moveEntry(entryNameToMove: String, toDestinationDirName: String) -> String? {
         guard let vol = self.adfVolume else { return "Volume not mounted." }
 
@@ -630,7 +638,6 @@ class ADFService {
         }
     }
     
-    // : This new function handles moving an entry to the parent directory. #END_REVIEW
     func moveEntryToParent(entryNameToMove: String) -> String? {
         guard let vol = self.adfVolume else { return "Volume not mounted." }
         
