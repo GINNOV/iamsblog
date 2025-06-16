@@ -19,16 +19,18 @@ So I start building it. Details and pre-built app are [here](https://ginnov.gith
 9.	✅ Rename files and folders
 10.	✅ Sorting (different kinds)
 11.	✅ Preferences
-12.	✅ Create blank image
+12.	✅ Create blank image for FSO/FFS
 13. ✅ Add files to image
+14. ✅ Set file permissions and attributes
+15. ✅ Retrieve permissions and attributes
+16. ✅ Text Editor built in
 
-## Work in Progress
+## Work in Progress / Thinking about
 19.	👷🏻 Add files via Drag and Drop
 20.	👷🏻 Compare two ADF images (raw or files matching?)
 21.	👷🏻 Auto convert audio when adding them to an image
 22.	👷🏻 Auto convert image format when adding them to an image
-23.	👷🏻 Text view (to copy files)
-24.	👷🏻 Download files	
+23.	👷🏻 Download files	
 
 
 ## Users requests
@@ -36,10 +38,4 @@ So I start building it. Details and pre-built app are [here](https://ginnov.gith
 
 
 # What it looks like?
-If you are just curios about the app, here are some screenshots.
-The main UI allows you to navigate folders and do some file operations on it.
-![](distribution/shot_2025-05-25-1.png)
-
-### Hex Viewer
-There are several tools built in, one of the them is a HEX editor.
-![](distribution/shot_2025-05-25-2.png)
+I took a bunch of screenshots, I don't always keep them up to date but [here](https://github.com/GINNOV/littlethings/blob/master/Amiga/Tools/ADFinder/docs/learned_lesson.md) you'll find what up now.

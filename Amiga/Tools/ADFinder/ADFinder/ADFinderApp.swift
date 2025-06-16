@@ -14,12 +14,17 @@ struct ADFinderApp: App {
     @AppStorage("autoEnableTabs") private var autoEnableTabs = false
     
     @State private var recentFilesService = RecentFilesService()
+    @State private var logStore = LogStore.shared
+    
+    // AI_REVIEW: Access the openWindow environment action to programmatically open windows. #END_REVIEW
+    @Environment(\.openWindow) private var openWindow
 
     static let adfUType = UTType("public.retro.adf")!
     
     var body: some Scene {
         WindowGroup {
             ContentView(recentFilesService: recentFilesService)
+                .environment(logStore)
         }
         .commands {
             AmigaMenuCommands()
@@ -50,10 +55,24 @@ struct ADFinderApp: App {
                     }
                 }
             }
+
+            // AI_REVIEW: This command group has been corrected to use the openWindow action.
+            // This is the correct way to open a secondary window scene. #END_REVIEW
+            CommandGroup(after: .windowList) {
+                Button("Show ADFlib Console") {
+                    openWindow(id: "console-window")
+                }
+                .keyboardShortcut("l", modifiers: [.command, .shift])
+            }
         }
         
         Settings {
             PreferencesView()
+        }
+        
+        Window("ADFlib Console", id: "console-window") {
+            ConsoleView()
+                .environment(logStore)
         }
     }
 }

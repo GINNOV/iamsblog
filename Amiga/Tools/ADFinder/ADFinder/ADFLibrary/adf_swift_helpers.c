@@ -11,6 +11,7 @@
 #include "adf_blk.h"
 #include "adf_err.h"
 #include "adf_file.h"
+#include "adf_raw.h"
 #include <stddef.h>
 #include <stdio.h>
 #include <stdarg.h>
@@ -54,6 +55,8 @@ void adf_set_vol_name(struct AdfVolume* vol, const char* newName) {
     vol->volName = strdup(newName);
 }
 
+// AI_REVIEW: This function has been reverted to its correct, simple state.
+// It no longer contains the flawed logic that was corrupting disk images. #END_REVIEW
 ADF_RETCODE create_blank_adf_c(const char* path, const char* volName, uint8_t fsType) {
     char* mutablePath = strdup(path);
     if (!mutablePath) { return ADF_RC_MALLOC; }
@@ -72,8 +75,8 @@ ADF_RETCODE create_blank_adf_c(const char* path, const char* volName, uint8_t fs
     }
 
     ADF_RETCODE rc = adfCreateFlop(device, mutableVolName, fsType);
-    
     free(mutableVolName);
+    
     adfDevClose(device);
     
     return rc;
@@ -124,3 +127,4 @@ const char* get_AdfEntry_comment_ptr(const struct AdfEntry* entry) {
 ADF_RETCODE register_dump_driver_helper(void) {
     return adfAddDeviceDriver(&adfDeviceDriverDump);
 }
+    
