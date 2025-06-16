@@ -9,8 +9,7 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct DetailView: View {
-    // : Add the openWindow environment value to programmatically open new windows. #END_REVIEW
-    @Environment(\.openWindow) private var openWindow
+        @Environment(\.openWindow) private var openWindow
     @Bindable var adfService: ADFService
     @Bindable var recentFilesService: RecentFilesService
     @Binding var selectedFile: URL?
@@ -107,8 +106,7 @@ struct DetailView: View {
                 }
             },
             about: { showingAboutView = true },
-            // : Implement the actions for the new Tools menu by calling openWindow with the correct ID. #END_REVIEW
-            showConsole: { openWindow(id: "console-window") },
+                        showConsole: { openWindow(id: "console-window") },
             showComparator: { openWindow(id: "compare-window") }
         )
     }
@@ -185,8 +183,7 @@ struct DetailView: View {
         .focusedSceneValue(\.amigaActions, detailActions)
         .focusedSceneValue(\.isFileOpen, selectedFile != nil)
         .focusedSceneValue(\.isEntrySelected, selectedEntry != nil)
-        // : This listens for the notification posted by the app's main menu. #END_REVIEW
-        .onReceive(NotificationCenter.default.publisher(for: .showAboutWindow)) { _ in
+                .onReceive(NotificationCenter.default.publisher(for: .showAboutWindow)) { _ in
             showingAboutView = true
         }
     }
@@ -206,10 +203,8 @@ struct DetailView: View {
                     showInfoAlert: { entry in infoDialogConfig = InfoDialogConfig(entry: entry) },
                     viewFileContent: viewFileContent,
                     viewAsText: viewTextContent,
-                    // : Pass the new handleMove function to the FileListView. #END_REVIEW
-                    handleMove: handleMove,
-                    // : Pass the new handler for moving items up one level. #END_REVIEW
-                    handleMoveToParent: handleMoveToParent
+                                        handleMove: handleMove,
+                                        handleMoveToParent: handleMoveToParent
                 )
                 .refreshable { loadDirectoryContents() }
             }

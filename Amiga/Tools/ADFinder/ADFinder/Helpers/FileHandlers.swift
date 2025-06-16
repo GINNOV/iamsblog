@@ -12,8 +12,7 @@ extension DetailView {
 
     // MARK: - Core ADF Operations
     
-    // : New handler to process moving an entry to its parent directory. #END_REVIEW
-    func handleMoveToParent(sourceEntryID: AmigaEntry.ID) {
+        func handleMoveToParent(sourceEntryID: AmigaEntry.ID) {
         guard let sourceEntry = currentEntries.first(where: { $0.id == sourceEntryID }) else {
             showAlert(message: "Could not find the source item to move.")
             return
@@ -26,8 +25,7 @@ extension DetailView {
         }
     }
     
-    // : New handler to process the drag-and-drop move operation. #END_REVIEW
-    func handleMove(sourceEntryID: AmigaEntry.ID, destinationEntry: AmigaEntry) {
+        func handleMove(sourceEntryID: AmigaEntry.ID, destinationEntry: AmigaEntry) {
         // Find the source entry from the ID.
         guard let sourceEntry = currentEntries.first(where: { $0.id == sourceEntryID }) else {
             showAlert(message: "Could not find the source item to move.")

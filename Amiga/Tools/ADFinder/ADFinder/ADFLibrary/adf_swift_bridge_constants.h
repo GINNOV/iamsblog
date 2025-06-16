@@ -25,14 +25,10 @@ static const uint32_t FIBF_PURE_SWIFT    = (1 << 5);
 static const uint32_t FIBF_ARCHIVE_SWIFT = (1 << 4);
 
 // : The R, W, E, D flags are *protection* bits (set = disallowed).
-// These are the correct constants to use. #END_REVIEW
 static const uint32_t ACCMASK_R_SWIFT = (1 << 3); // Read protection
 static const uint32_t ACCMASK_W_SWIFT = (1 << 2); // Write protection
 static const uint32_t ACCMASK_E_SWIFT = (1 << 1); // Execute protection
 static const uint32_t ACCMASK_D_SWIFT = (1 << 0); // Delete protection
-
-// : Removed incorrect FIBF_ constants for READ, WRITE, EXECUTE, DELETE
-// as they are not used by ADFLib and were a source of confusion.
 
 static const int32_t ST_FILE_SWIFT  = -3;
 static const int32_t ST_DIR_SWIFT   =  2;
@@ -43,5 +39,8 @@ static const int32_t ADF_RC_OK_SWIFT = 0;
 
 static const uint8_t FS_TYPE_OFS_SWIFT = ADF_DOSFS_OFS;
 static const uint8_t FS_TYPE_FFS_SWIFT = ADF_DOSFS_FFS;
+
+static const int HT_SIZE_SWIFT = 72;
+
 
 #endif /* ADF_SWIFT_BRIDGE_CONSTANTS_H */

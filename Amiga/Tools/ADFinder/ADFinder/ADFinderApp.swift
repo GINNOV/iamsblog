@@ -28,8 +28,7 @@ struct ADFinderApp: App {
         .commands {
             AmigaMenuCommands()
             
-            // : This replaces the default "About" menu item. #END_REVIEW
-            CommandGroup(replacing: .appInfo) {
+                        CommandGroup(replacing: .appInfo) {
                 Button("About ADFinder") {
                     // : Posting a notification is a clean way to trigger an action
                     // in a view that isn't directly in the hierarchy. #END_REVIEW

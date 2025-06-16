@@ -47,7 +47,6 @@ ADF_RETCODE add_file_to_adf_c(
     uint32_t bufferSize
 );
 
-// : Declarations for new C helper functions to parse raw block data. #END_REVIEW
 ADF_RETCODE parse_boot_block(const uint8_t* data, struct AdfBootBlock* boot);
 ADF_RETCODE parse_root_block(const uint8_t* adf_data, uint32_t block_size, uint32_t root_block_sector, struct AdfRootBlock* root);
 

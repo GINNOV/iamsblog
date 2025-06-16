@@ -98,7 +98,6 @@ struct BlockInspectorView: View {
     }
 }
 
-// : A custom container view to provide consistent styling for each inspector section. #END_REVIEW
 private struct InspectorSection<Content: View>: View {
     let header: String
     @ViewBuilder let content: Content
@@ -119,7 +118,6 @@ private struct InspectorSection<Content: View>: View {
     }
 }
 
-// : A custom view for a standard label-value row, ensuring consistent alignment and styling. #END_REVIEW
 private struct InfoRow: View {
     let label: String
     let value: String
@@ -138,7 +136,6 @@ private struct InfoRow: View {
     }
 }
 
-// : A dedicated view to display errors consistently. #END_REVIEW
 private struct ErrorRow: View {
     let message: String
     
