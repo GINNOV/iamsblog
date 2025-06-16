@@ -117,7 +117,7 @@ jobs:
             echo "Committing the new DMG..."
             # Extract the build number from the filename for the commit message
             BUILD_NUMBER=$(echo "$DMG_TO_COMMIT" | sed -n 's/.*_//; s/.dmg//p')
-            git commit -m "CI: Add DMG for build ${BUILD_NUMBER}"
+            git commit -m "CI: Built ${BUILD_NUMBER} version and generated DMG."
             
             # Push the commit to the master branch
             echo "Pushing changes to master..."
