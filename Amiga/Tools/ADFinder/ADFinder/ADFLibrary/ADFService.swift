@@ -12,7 +12,11 @@ import SwiftUI
 func swift_log_bridge(msg: UnsafePointer<CChar>?) {
     guard let msg = msg else { return }
     let logMessage = String(cString: msg)
-    print("[ADFLib C-Log]: \(logMessage)", terminator: "")
+    
+    // : The C bridge now uses the shared logging function. #END_REVIEW
+    Task {
+        await LogStore.shared.add(message: "[ADFLib C-Log]: \(logMessage)")
+    }
 }
 
 
@@ -38,21 +42,18 @@ class ADFService {
     init() {
         if adfLibInit() == ADF_RC_OK {
             adflibInitialized = true
-            print("ADFService: ADFLib Initialized OK.")
+            log("ADFService: ADFLib Initialized OK.")
             
             setup_logging()
-            print("ADFService: ADFLib logging redirected to Swift console via C shim.")
+            log("ADFService: ADFLib logging redirected to Swift console via C shim.")
 
-            // : This is the definitive fix for opening valid FFS disks.
-            // It tells ADFLib to be less strict about checksums, which prevents
-            // the "filesystem not supported" error on correctly formatted disks. #END_REVIEW
             adfEnvSetProperty(ADF_PR_IGNORE_CHECKSUM_ERRORS, 1)
 
             if register_dump_driver_helper() != ADF_RC_OK {
-                print("ADFService: Warning - Failed to add dump device driver via helper.")
+                log("ADFService: Warning - Failed to add dump device driver via helper.")
             }
         } else {
-            print("ADFService: Error - Failed to initialize ADFLib.")
+            log("ADFService: Error - Failed to initialize ADFLib.")
         }
     }
 
@@ -62,9 +63,20 @@ class ADFService {
             adfLibCleanUp()
         }
     }
+    
+    // : This new centralized logging function ensures that all messages go to
+    // both the Xcode console (via print) and the in-app console (via LogStore). #END_REVIEW
+    private func log(_ message: String) {
+        print(message)
+        Task {
+            await LogStore.shared.add(message: message + "\n")
+        }
+    }
 
     private func getADFLibError(context: String) -> String {
-        return "ADFLib operation failed: \(context)."
+        let errorMessage = "ADFLib operation failed: \(context)."
+        log(errorMessage)
+        return errorMessage
     }
 
     private func resetDiskInfo() {
@@ -81,51 +93,51 @@ class ADFService {
 
     func openADF(filePath: String) -> Bool {
         guard adflibInitialized else {
-            print("ADFService.openADF: ABORT - ADFLib not initialized.")
+            log("ADFService.openADF: ABORT - ADFLib not initialized.")
             return false
         }
         closeADF()
 
-        print("ADFService.openADF: === Starting Mount Process for: \"\(filePath)\" ===")
+        log("ADFService.openADF: === Starting Mount Process for: \"\(filePath)\" ===")
 
-        print("ADFService.openADF: -> Calling adfDevOpenWithDriver...")
+        log("ADFService.openADF: -> Calling adfDevOpenWithDriver...")
         self.adfDevice = filePath.withCString { cFilePath -> UnsafeMutablePointer<AdfDevice>? in
             return adfDevOpenWithDriver("dump", cFilePath, AdfAccessMode(rawValue: UInt32(ACCESS_MODE_READWRITE_SWIFT)))
         }
 
         if self.adfDevice == nil {
-            print("ADFService.openADF: <- adfDevOpenWithDriver FAILED. Returned nil.")
+            log("ADFService.openADF: <- adfDevOpenWithDriver FAILED. Returned nil.")
             return false
         }
-        print("ADFService.openADF: <- adfDevOpenWithDriver SUCCESS.")
+        log("ADFService.openADF: <- adfDevOpenWithDriver SUCCESS.")
 
-        print("ADFService.openADF: -> Calling adfDevMount...")
+        log("ADFService.openADF: -> Calling adfDevMount...")
         let devMountResult = adfDevMount(self.adfDevice)
         if devMountResult != ADF_RC_OK {
-            print("ADFService.openADF: <- adfDevMount FAILED. Return code: \(devMountResult)")
+            log("ADFService.openADF: <- adfDevMount FAILED. Return code: \(devMountResult)")
             adfDevClose(self.adfDevice)
             self.adfDevice = nil
             return false
         }
-        print("ADFService.openADF: <- adfDevMount SUCCESS.")
+        log("ADFService.openADF: <- adfDevMount SUCCESS.")
         
-        print("ADFService.openADF: -> Calling adfVolMount...")
+        log("ADFService.openADF: -> Calling adfVolMount...")
         self.adfVolume = adfVolMount(self.adfDevice, 0, AdfAccessMode(rawValue: UInt32(ACCESS_MODE_READWRITE_SWIFT)))
         if self.adfVolume == nil {
-            print("ADFService.openADF: <- adfVolMount FAILED. Returned nil. Check C-Log for details.")
+            log("ADFService.openADF: <- adfVolMount FAILED. Returned nil. Check C-Log for details.")
             adfDevUnMount(self.adfDevice)
             adfDevClose(self.adfDevice)
             self.adfDevice = nil
             return false
         }
-        print("ADFService.openADF: <- adfVolMount SUCCESS.")
+        log("ADFService.openADF: <- adfVolMount SUCCESS.")
         
         currentPath = []
-        print("ADFService.openADF: -> Populating disk info...")
+        log("ADFService.openADF: -> Populating disk info...")
         populateDiskInfo()
-        print("ADFService.openADF: <- Disk info populated.")
+        log("ADFService.openADF: <- Disk info populated.")
 
-        print("ADFService.openADF: === Mount Process SUCCESS for volume: \(self.currentVolumeName ?? "N/A") ===")
+        log("ADFService.openADF: === Mount Process SUCCESS for volume: \(self.currentVolumeName ?? "N/A") ===")
         return true
     }
 
@@ -163,7 +175,7 @@ class ADFService {
             isBootable = (dosTypeString == "DOS")
         } else {
             isBootable = false
-            print("ADFService: Could not read boot block.")
+            log("ADFService: Could not read boot block.")
         }
 
         let rootBlockSector = adfVolCalcRootBlk(vol)
@@ -188,7 +200,7 @@ class ADFService {
             }
         } else {
             creationDateString = "N/A (RootBlock Error)"
-            print("ADFService: Failed to read root block.")
+            log("ADFService: Failed to read root block.")
         }
 
         let totalBlocks = Int64(adfVolGetSizeInBlocks(vol))
@@ -213,7 +225,7 @@ class ADFService {
             }
         } else {
             diskSizeString = "N/A"; usedSizeString = "N/A"; freeSizeString = "N/A"; percentFullString = "N/A";
-            print("ADFService: Invalid block size from volume.")
+            log("ADFService: Invalid block size from volume.")
         }
     }
 
@@ -230,18 +242,18 @@ class ADFService {
         }
         resetDiskInfo()
         currentPath = []
-        print("ADFService: ADF closed.")
+        log("ADFService: ADF closed.")
     }
 
     private func navigateToInternalPath() -> Bool {
         guard let vol = self.adfVolume else { return false }
         if adfToRootDir(vol) != ADF_RC_OK {
-            print(getADFLibError(context: "adfToRootDir"))
+            _ = getADFLibError(context: "adfToRootDir")
             return false
         }
         for dirName in currentPath {
             if !dirName.withCString({ cDirName -> Bool in adfChangeDir(vol, cDirName) == ADF_RC_OK }) {
-                print(getADFLibError(context: "adfChangeDir to \(dirName)"))
+                _ = getADFLibError(context: "adfChangeDir to \(dirName)")
                 adfToRootDir(vol)
                 return false
             }
@@ -330,14 +342,14 @@ class ADFService {
             if currentPath.isEmpty { return false }
             currentPath.removeLast()
             if !navigateToInternalPath() {
-                 print("ADFService: Failed to navigate up to parent directory.")
+                 log("ADFService: Failed to navigate up to parent directory.")
                  return false
             }
             return true
         } else {
             currentPath.append(name)
             if !navigateToInternalPath() {
-                print("ADFService: Failed to navigate into '\(name)'.")
+                log("ADFService: Failed to navigate into '\(name)'.")
                 currentPath.removeLast() // Revert path change
                 return false
             }
@@ -354,7 +366,7 @@ class ADFService {
     func readFileContent(entry: AmigaEntry) -> Data? {
         guard let vol = self.adfVolume, entry.type == .file else { return nil }
         if !navigateToInternalPath() {
-            print(getADFLibError(context: "navigateToInternalPath for \(entry.name) before readFileContent"))
+            _ = getADFLibError(context: "navigateToInternalPath for \(entry.name) before readFileContent")
             return nil
         }
         var fileData = Data()
@@ -366,7 +378,7 @@ class ADFService {
         }
 
         if adfFilePtr == nil {
-            print(getADFLibError(context: "adfFileOpen for \(entry.name)"))
+            _ = getADFLibError(context: "adfFileOpen for \(entry.name)")
             return nil
         }
         defer { adfFileClose(adfFilePtr) }
@@ -412,11 +424,11 @@ class ADFService {
         }
         
         if result.rawValue == ADF_RC_OK_SWIFT {
-            print("ADFService: Successfully wrote to '\(entry.name)'.")
+            log("ADFService: Successfully wrote to '\(entry.name)'.")
             populateDiskInfo() // Refresh disk info, as size may have changed.
             return nil
         } else {
-            print("ADFService: add_file_to_adf_c failed for '\(entry.name)'. Check C-Log for details.")
+            log("ADFService: add_file_to_adf_c failed for '\(entry.name)'. Check C-Log for details.")
             return "ADFlib failed to write the file. The disk may be full."
         }
     }
@@ -435,7 +447,7 @@ class ADFService {
                 return "An entry named '\(amigaPath)' already exists and it is a directory. Cannot overwrite."
             }
             
-            print("ADFService: File '\(amigaPath)' exists. Deleting it before overwrite.")
+            log("ADFService: File '\(amigaPath)' exists. Deleting it before overwrite.")
             if let deleteError = self.deleteEntryRecursively(entry: existingEntry, force: true) {
                 return "Failed to delete existing file to overwrite: \(deleteError)"
             }
@@ -453,7 +465,7 @@ class ADFService {
             data = try Data(contentsOf: url)
         } catch {
             let errorMessage = "Could not read data from local file. Reason: \(error.localizedDescription)"
-            print("ADFService Error: \(errorMessage)")
+            log("ADFService Error: \(errorMessage)")
             return errorMessage
         }
         
@@ -466,11 +478,11 @@ class ADFService {
         }
         
         if result.rawValue == ADF_RC_OK_SWIFT {
-            print("ADFService: Successfully added '\(amigaPath)'.")
+            log("ADFService: Successfully added '\(amigaPath)'.")
             populateDiskInfo()
             return nil
         } else {
-            print("ADFService: add_file_to_adf_c failed for '\(amigaPath)'. Check C-Log for details.")
+            log("ADFService: add_file_to_adf_c failed for '\(amigaPath)'. Check C-Log for details.")
             return "ADFlib failed to write the file. The disk may be full."
         }
     }
@@ -503,7 +515,7 @@ class ADFService {
             populateDiskInfo()
             return nil
         } else {
-            print("ADFService: adfCreateDir failed. Check C-Log for details.")
+            log("ADFService: adfCreateDir failed. Check C-Log for details.")
             return "ADFLib failed to create the directory."
         }
     }
@@ -513,7 +525,7 @@ class ADFService {
         let result = _deleteRecursively(entryToDelete: entry, force: force)
         self.currentPath = originalPath
         if !navigateToInternalPath() {
-            print("ADFService: CRITICAL - Failed to restore path to \(originalPath.joined(separator: "/")) after deletion operation.")
+            log("ADFService: CRITICAL - Failed to restore path to \(originalPath.joined(separator: "/")) after deletion operation.")
         }
         if result == nil {
             populateDiskInfo()
@@ -552,10 +564,10 @@ class ADFService {
         }
         
         if success {
-            print("ADFService: Successfully deleted '\(entryToDelete.name)'.")
+            log("ADFService: Successfully deleted '\(entryToDelete.name)'.")
             return nil
         } else {
-            print("ADFService: adfRemoveEntry failed for '\(entryToDelete.name)'. Check C-Log for details.")
+            log("ADFService: adfRemoveEntry failed for '\(entryToDelete.name)'. Check C-Log for details.")
             return "ADFLib failed to delete '\(entryToDelete.name)'."
         }
     }
@@ -576,10 +588,10 @@ class ADFService {
         }
         
         if success {
-            print("ADFService: Renamed '\(oldName)' to '\(newName)'.")
+            log("ADFService: Renamed '\(oldName)' to '\(newName)'.")
             return nil
         } else {
-            print("ADFService: adfRenameEntry failed. Check C-Log for details.")
+            log("ADFService: adfRenameEntry failed. Check C-Log for details.")
             return "ADFLib failed to rename the entry. A file with the new name may already exist."
         }
     }
@@ -669,7 +681,7 @@ class ADFService {
             }
             
             if !goUpDirectory() {
-                 return "Failed to navigate out of directory '\(entry.name)' after emptying it. Cannot complete deletion."
+                 return "Failed to navigate up from ADF directory '\(entry.name)' after emptying it. Cannot complete deletion."
             }
         }
         
@@ -682,7 +694,7 @@ class ADFService {
         let tempURL = tempDir.appendingPathComponent(fileName)
         let tempPath = tempURL.path
         
-        print("ADFService: Creating new blank ADF at: \(tempPath) with FS Type: \(fsType)")
+        log("ADFService: Creating new blank ADF at: \(tempPath) with FS Type: \(fsType)")
         
         let success = tempPath.withCString { cPath in
             volumeName.withCString { cVolName in
@@ -691,15 +703,15 @@ class ADFService {
         }
 
         guard success else {
-            print("ADFService: create_blank_adf_c helper failed.")
+            log("ADFService: create_blank_adf_c helper failed.")
             return nil
         }
         
         if openADF(filePath: tempPath) {
-            print("ADFService: Successfully created and opened new ADF.")
+            log("ADFService: Successfully created and opened new ADF.")
             return tempURL
         } else {
-            print("ADFService: Failed to open the newly created ADF.")
+            log("ADFService: Failed to open the newly created ADF.")
             return nil
         }
     }
@@ -718,10 +730,10 @@ class ADFService {
         }
         
         if result.rawValue == ADF_RC_OK_SWIFT {
-            print("ADFService: Successfully set protection bits for '\(entry.name)'.")
+            log("ADFService: Successfully set protection bits for '\(entry.name)'.")
             return nil
         } else {
-            print("ADFService: adfSetEntryAccess failed for '\(entry.name)'. Check C-Log.")
+            log("ADFService: adfSetEntryAccess failed for '\(entry.name)'. Check C-Log.")
             return "ADFLib failed to set permissions for the entry."
         }
     }
