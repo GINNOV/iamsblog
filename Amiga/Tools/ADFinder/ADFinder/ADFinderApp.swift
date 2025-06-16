@@ -16,7 +16,6 @@ struct ADFinderApp: App {
     @State private var recentFilesService = RecentFilesService()
     @State private var logStore = LogStore.shared
     
-    // AI_REVIEW: Access the openWindow environment action to programmatically open windows. #END_REVIEW
     @Environment(\.openWindow) private var openWindow
 
     static let adfUType = UTType("public.retro.adf")!
@@ -38,15 +37,12 @@ struct ADFinderApp: App {
             
             CommandGroup(after: .importExport) {
                 Menu("Open Recent") {
-                    // Dynamically create a menu item for each recent file.
                     ForEach(recentFilesService.recentFiles, id: \.self) { url in
                         Button(url.lastPathComponent) {
-                            // Post a notification with the URL to open.
                             NotificationCenter.default.post(name: .openSpecificAdfFile, object: url)
                         }
                     }
                     
-                    // Add the "Clear Menu" item if the list is not empty.
                     if !recentFilesService.recentFiles.isEmpty {
                         Divider()
                         Button("Clear Menu") {
@@ -56,13 +52,16 @@ struct ADFinderApp: App {
                 }
             }
 
-            // AI_REVIEW: This command group has been corrected to use the openWindow action.
-            // This is the correct way to open a secondary window scene. #END_REVIEW
             CommandGroup(after: .windowList) {
                 Button("Show ADFlib Console") {
                     openWindow(id: "console-window")
                 }
                 .keyboardShortcut("l", modifiers: [.command, .shift])
+                
+                                Button("Show Disk Comparator") {
+                    openWindow(id: "compare-window")
+                }
+                .keyboardShortcut("d", modifiers: [.command, .shift])
             }
         }
         
@@ -73,6 +72,10 @@ struct ADFinderApp: App {
         Window("ADFlib Console", id: "console-window") {
             ConsoleView()
                 .environment(logStore)
+        }
+        
+                Window("ADF Disk Comparator", id: "compare-window") {
+            ADFCompareView()
         }
     }
 }

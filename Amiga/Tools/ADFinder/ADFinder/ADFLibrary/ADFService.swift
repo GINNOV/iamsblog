@@ -8,19 +8,11 @@
 import Foundation
 import SwiftUI
 
-// AI_REVIEW: This function now forwards logs to the shared LogStore. #END_REVIEW
 @_cdecl("swift_log_bridge")
 func swift_log_bridge(msg: UnsafePointer<CChar>?) {
     guard let msg = msg else { return }
     let logMessage = String(cString: msg)
-    
-    // Print to the Xcode console for developer convenience.
     print("[ADFLib C-Log]: \(logMessage)", terminator: "")
-    
-    // Add the message to our shared log store for the in-app console.
-    Task {
-        await LogStore.shared.add(message: logMessage)
-    }
 }
 
 
