@@ -30,6 +30,9 @@ struct DetailToolbar: ToolbarContent {
         let rename: () -> Void
         let delete: () -> Void
         let about: () -> Void
+        // : Add actions for the new Tools menu to open the console and comparator windows. #END_REVIEW
+        let showConsole: () -> Void
+        let showComparator: () -> Void
     }
     let actions: Actions
     
@@ -114,6 +117,19 @@ struct DetailToolbar: ToolbarContent {
                 .help("Delete Selected Item")
                 .disabled(selectedEntry == nil)
             }
+            
+            // : Add a new "Tools" menu to provide quick access to the console and comparator windows. #END_REVIEW
+            Menu {
+                Button(action: actions.showConsole) {
+                    Label("Console", systemImage: "terminal")
+                }
+                Button(action: actions.showComparator) {
+                    Label("Compare Disks", systemImage: "arrow.left.and.right.square")
+                }
+            } label: {
+                Label("Tools", systemImage: "wrench.and.screwdriver")
+            }
+            .help("Show Tools")
             
             // About Button
             Button(action: actions.about) {

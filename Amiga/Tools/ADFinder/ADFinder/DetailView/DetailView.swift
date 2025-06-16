@@ -9,6 +9,8 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct DetailView: View {
+    // : Add the openWindow environment value to programmatically open new windows. #END_REVIEW
+    @Environment(\.openWindow) private var openWindow
     @Bindable var adfService: ADFService
     @Bindable var recentFilesService: RecentFilesService
     @Binding var selectedFile: URL?
@@ -104,7 +106,10 @@ struct DetailView: View {
                     }))
                 }
             },
-            about: { showingAboutView = true }
+            about: { showingAboutView = true },
+            // : Implement the actions for the new Tools menu by calling openWindow with the correct ID. #END_REVIEW
+            showConsole: { openWindow(id: "console-window") },
+            showComparator: { openWindow(id: "compare-window") }
         )
     }
     
