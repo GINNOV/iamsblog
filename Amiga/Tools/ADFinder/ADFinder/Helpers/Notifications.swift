@@ -14,4 +14,5 @@ extension Notification.Name {
     static let openAdfFile = Notification.Name("com.adfinder.openAdfFile")
     // recent files
     static let openSpecificAdfFile = Notification.Name("com.adfinder.openSpecificAdfFile")
+    static let showAboutWindow = Notification.Name("show-about-window")
 }

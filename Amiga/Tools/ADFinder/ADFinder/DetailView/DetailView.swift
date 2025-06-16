@@ -78,7 +78,6 @@ struct DetailView: View {
                             if let errorMsg = adfService.setProtectionBits(for: entry, newBits: newBits) {
                                 showAlert(message: "Failed to set permissions: \(errorMsg)")
                             }
-                            // Refresh directory to reflect potential changes if needed
                             loadDirectoryContents()
                         }
                     )
@@ -181,6 +180,10 @@ struct DetailView: View {
         .focusedSceneValue(\.amigaActions, detailActions)
         .focusedSceneValue(\.isFileOpen, selectedFile != nil)
         .focusedSceneValue(\.isEntrySelected, selectedEntry != nil)
+        // AI_REVIEW: This listens for the notification posted by the app's main menu. #END_REVIEW
+        .onReceive(NotificationCenter.default.publisher(for: .showAboutWindow)) { _ in
+            showingAboutView = true
+        }
     }
 
     @ViewBuilder
@@ -228,7 +231,6 @@ struct DetailView: View {
                 })
             }
         }
-        // call to add a recent file
         .onChange(of: selectedFile) { _, newValue in
             if let newFile = newValue {
                 processDroppedURL(newFile)

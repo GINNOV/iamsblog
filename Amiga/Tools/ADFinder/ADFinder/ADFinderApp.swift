@@ -28,6 +28,15 @@ struct ADFinderApp: App {
         .commands {
             AmigaMenuCommands()
             
+            // AI_REVIEW: This replaces the default "About" menu item. #END_REVIEW
+            CommandGroup(replacing: .appInfo) {
+                Button("About ADFinder") {
+                    // AI_REVIEW: Posting a notification is a clean way to trigger an action
+                    // in a view that isn't directly in the hierarchy. #END_REVIEW
+                    NotificationCenter.default.post(name: .showAboutWindow, object: nil)
+                }
+            }
+            
             CommandGroup(replacing: .importExport) {
                 Button("Open ADF...") {
                     NotificationCenter.default.post(name: .openAdfFile, object: nil)
@@ -58,7 +67,7 @@ struct ADFinderApp: App {
                 }
                 .keyboardShortcut("l", modifiers: [.command, .shift])
                 
-                                Button("Show Disk Comparator") {
+                Button("Show Disk Comparator") {
                     openWindow(id: "compare-window")
                 }
                 .keyboardShortcut("d", modifiers: [.command, .shift])
@@ -74,7 +83,7 @@ struct ADFinderApp: App {
                 .environment(logStore)
         }
         
-                Window("ADF Disk Comparator", id: "compare-window") {
+        Window("ADF Disk Comparator", id: "compare-window") {
             ADFCompareView()
         }
     }
