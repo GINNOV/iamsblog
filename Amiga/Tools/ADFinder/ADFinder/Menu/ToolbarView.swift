@@ -32,8 +32,9 @@ struct DetailToolbar: ToolbarContent {
         let about: () -> Void
         let showConsole: () -> Void
         let showComparator: () -> Void
-        // AI_REVIEW: Add an action for the new Disk Dump tool. #END_REVIEW
         let diskDump: () -> Void
+        
+        let generateList: () -> Void
     }
     let actions: Actions
     
@@ -126,9 +127,13 @@ struct DetailToolbar: ToolbarContent {
                 Button(action: actions.showComparator) {
                     Label("Compare Disks", systemImage: "arrow.left.and.right.square")
                 }
-                // AI_REVIEW: Added a new button for the Disk Dump tool. #END_REVIEW
                 Button(action: actions.diskDump) {
                     Label("Disk Dump", systemImage: "printer.dotmatrix")
+                }
+                .disabled(selectedFile == nil)
+                
+                Button(action: actions.generateList) {
+                    Label("Generate List", systemImage: "list.bullet.rectangle.portrait")
                 }
                 .disabled(selectedFile == nil)
 

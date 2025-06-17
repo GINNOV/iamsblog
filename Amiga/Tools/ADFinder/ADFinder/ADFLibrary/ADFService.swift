@@ -351,7 +351,6 @@ class ADFService {
         }
     }
     
-    // AI_REVIEW: New function to generate a hexdump and save it to a file. #END_REVIEW
     func createDiskDump(fileURL: URL) -> (String?, URL?) {
         do {
             let data = try Data(contentsOf: fileURL)
@@ -391,6 +390,72 @@ class ADFService {
         } catch {
             return ("Failed to create disk dump: \(error.localizedDescription)", nil)
         }
+    }
+    
+    
+    func generateDirectoryListing() -> (String?, URL?) {
+        guard self.adfVolume != nil else {
+            return ("Volume not mounted.", nil)
+        }
+
+        let originalPath = self.currentPath
+        // Ensure we start from the root for a full listing.
+        self.currentPath = []
+        _ = navigateToInternalPath()
+        
+        var output = "Directory listing for: \(self.volumeLabel)\n"
+        output += String(repeating: "=", count: output.count) + "\n\n"
+
+        let listing = _recursiveList(pathPrefix: "")
+        output += listing
+
+        // Restore the original path so the UI doesn't change.
+        self.currentPath = originalPath
+        if !navigateToInternalPath() {
+            log("ADFService: CRITICAL - Failed to restore path after directory listing.")
+        }
+
+        do {
+            guard let downloadsURL = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first else {
+                return ("Could not find the Downloads directory.", nil)
+            }
+
+            let baseName = self.volumeLabel.isEmpty ? "UntitledDisk" : self.volumeLabel
+            let invalidChars = CharacterSet(charactersIn: ":/\\?%*|\"<>")
+            let cleanName = baseName.components(separatedBy: invalidChars).joined(separator: "_")
+            let outputURL = downloadsURL.appendingPathComponent("\(cleanName)_dirs.txt")
+
+            try output.write(to: outputURL, atomically: true, encoding: .utf8)
+            
+            return (nil, outputURL)
+        } catch {
+            return ("Failed to save directory listing: \(error.localizedDescription)", nil)
+        }
+    }
+
+    
+    private func _recursiveList(pathPrefix: String) -> String {
+        var resultString = ""
+        let entries = self.listCurrentDirectory()
+
+        let sortedEntries = entries.sorted {
+            if $0.type == .directory && $1.type != .directory { return true }
+            if $0.type != .directory && $1.type == .directory { return false }
+            return $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+        }
+
+        for entry in sortedEntries {
+            if entry.type == .directory {
+                resultString += "\(pathPrefix)+ \(entry.name)\n"
+                if navigateToDirectory(entry.name) {
+                    resultString += _recursiveList(pathPrefix: pathPrefix + "  ")
+                    _ = goUpDirectory()
+                }
+            } else if entry.type == .file {
+                resultString += "\(pathPrefix)- \(entry.name) (\(entry.size) bytes)\n"
+            }
+        }
+        return resultString
     }
 
     func navigateToDirectory(_ name: String) -> Bool {

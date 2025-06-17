@@ -108,7 +108,6 @@ struct DetailView: View {
             about: { showingAboutView = true },
             showConsole: { openWindow(id: "console-window") },
             showComparator: { openWindow(id: "compare-window") },
-            // AI_REVIEW: Implement the diskDump action. #END_REVIEW
             diskDump: {
                 guard let url = selectedFile else { return }
                 let (error, path) = adfService.createDiskDump(fileURL: url)
@@ -116,6 +115,15 @@ struct DetailView: View {
                     showAlert(message: error)
                 } else if let path = path {
                     showAlert(message: "Disk dump saved to:\n\(path.path)")
+                }
+            },
+            
+            generateList: {
+                let (error, path) = adfService.generateDirectoryListing()
+                if let error = error {
+                    showAlert(message: error)
+                } else if let path = path {
+                    showAlert(message: "Directory list saved to:\n\(path.path)")
                 }
             }
         )
