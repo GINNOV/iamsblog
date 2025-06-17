@@ -351,6 +351,7 @@ class ADFService {
         }
     }
     
+    // AI_REVIEW: Helper to get the correct download URL, respecting user preferences and sandboxing.
     private func getDownloadURL() -> URL? {
         // Check for a user-set download location via a security-scoped bookmark.
         if let bookmarkData = UserDefaults.standard.data(forKey: "downloadLocationBookmark") {
@@ -443,8 +444,10 @@ class ADFService {
         self.currentPath = []
         _ = navigateToInternalPath()
         
-        var output = "Directory listing for: \(self.volumeLabel)\n"
-        output += String(repeating: "=", count: output.count) + "\n\n"
+        var output = "Contents of \(self.volumeLabel)\n"
+        output += String(repeating: "-", count: 79) + "\n"
+        output += " PERMSSN    UID  GID    PACKED    SIZE RATIO     CRC-STAMP         NAME\n"
+        output += String(repeating: "-", count: 79) + "\n"
 
         let listing = _recursiveList(pathPrefix: "")
         output += listing
@@ -453,7 +456,7 @@ class ADFService {
         if !navigateToInternalPath() {
             log("ADFService: CRITICAL - Failed to restore path after directory listing.")
         }
-        
+
         var downloadURL: URL?
         var needsToStopAccessing = false
         if let resolvedURL = getDownloadURL() {
@@ -487,29 +490,58 @@ class ADFService {
         }
     }
 
-    private func _recursiveList(pathPrefix: String) -> String {
-        var resultString = ""
-        let entries = self.listCurrentDirectory()
-
-        let sortedEntries = entries.sorted {
-            if $0.type == .directory && $1.type != .directory { return true }
-            if $0.type != .directory && $1.type == .directory { return false }
-            return $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
-        }
-
-        for entry in sortedEntries {
-            if entry.type == .directory {
-                resultString += "\(pathPrefix)+ \(entry.name)\n"
-                if navigateToDirectory(entry.name) {
-                    resultString += _recursiveList(pathPrefix: pathPrefix + "  ")
-                    _ = goUpDirectory()
-                }
-            } else if entry.type == .file {
-                resultString += "\(pathPrefix)- \(entry.name) (\(entry.size) bytes)\n"
-            }
-        }
-        return resultString
+    private func protectionBitsToString(_ bits: UInt32) -> String {
+        var string = "---"
+        string += (bits & FIBF_HOLD_SWIFT) != 0 ? "h" : "-"
+        string += (bits & FIBF_SCRIPT_SWIFT) != 0 ? "s" : "-"
+        string += (bits & FIBF_PURE_SWIFT) != 0 ? "p" : "-"
+        string += (bits & FIBF_ARCHIVE_SWIFT) != 0 ? "a" : "-"
+        string += (bits & ACCMASK_R_SWIFT) == 0 ? "r" : "-"
+        string += (bits & ACCMASK_W_SWIFT) == 0 ? "w" : "-"
+        string += (bits & ACCMASK_E_SWIFT) == 0 ? "e" : "-"
+        string += (bits & ACCMASK_D_SWIFT) == 0 ? "d" : "-"
+        return string
     }
+
+    // AI_REVIEW: This function is now state-safe. It saves the current path, navigates, recurses,
+    // and then explicitly restores the original path, preventing the stack overflow crash. #END_REVIEW
+    private func _recursiveList(pathPrefix: String) -> String {
+            var resultString = ""
+            let entries = self.listCurrentDirectory()
+
+            let sortedEntries = entries.sorted {
+                if $0.type == .directory && $1.type != .directory { return true }
+                if $0.type != .directory && $1.type == .directory { return false }
+                return $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+            }
+
+            for entry in sortedEntries {
+                let fullPath = pathPrefix + entry.name
+                
+                if entry.type == .directory {
+                    let perms = protectionBitsToString(entry.protectionBits).padding(toLength: 10, withPad: " ", startingAt: 0)
+                    let line = "\(perms)    0    0         -       - ---       ---- -------- \(fullPath)/\n"
+                    resultString += line
+                    
+                    let parentPath = self.currentPath
+                    if navigateToDirectory(entry.name) {
+                        resultString += _recursiveList(pathPrefix: fullPath + "/")
+                        self.currentPath = parentPath
+                        _ = self.navigateToInternalPath()
+                    }
+                } else if entry.type == .file {
+                    let perms = protectionBitsToString(entry.protectionBits).padding(toLength: 10, withPad: " ", startingAt: 0)
+                    let sizeStr = String(entry.size).padding(toLength: 8, withPad: " ", startingAt: 0)
+                    let dateFormatter = DateFormatter()
+                    dateFormatter.dateFormat = "dd-MMM-yyyy"
+                    let dateStr = (entry.date != nil ? dateFormatter.string(from: entry.date!) : "-----------").padding(toLength: 12, withPad: " ", startingAt: 0)
+
+                    let line = "\(perms)    0    0 \(sizeStr) \(sizeStr) 100.0%%    ---- \(dateStr) \(fullPath)\n"
+                    resultString += line
+                }
+            }
+            return resultString
+        }
 
     func navigateToDirectory(_ name: String) -> Bool {
         guard self.adfVolume != nil, !name.isEmpty, name != "." else { return false }
