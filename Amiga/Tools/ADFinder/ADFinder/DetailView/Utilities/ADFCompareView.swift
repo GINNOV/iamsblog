@@ -72,7 +72,6 @@ struct ADFCompareView: View {
         }
         .padding()
         .navigationTitle("ADF Disk Comparator")
-        // AI_REVIEW: Increased the width to accommodate two columns. #END_REVIEW
         .frame(minWidth: 900, minHeight: 800)
     }
 }
@@ -163,7 +162,7 @@ private struct ComparisonResultsView: View {
             Divider()
             
             ScrollView {
-                // AI_REVIEW: The main grid is now in an HStack to create two columns. #END_REVIEW
+                
                 HStack(alignment: .top, spacing: 20) {
                     let totalRows = (result.sectorStates.count + columns - 1) / columns
                     let midPoint = (totalRows + 1) / 2
@@ -192,7 +191,7 @@ private struct ComparisonResultsView: View {
     }
 }
 
-// AI_REVIEW: A new reusable view to render one column of the sector grid. #END_REVIEW
+
 private struct SectorGridColumn: View {
     let result: ComparisonResult
     let rows: Range<Int>

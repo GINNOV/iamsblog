@@ -12,21 +12,32 @@ struct PreferencesView: View {
     @AppStorage("rememberWindowSize") private var rememberWindowSize = false
     
     var body: some View {
-        Form {
-            Section(header: Text("General")) {
-                Toggle("Auto enable tabs", isOn: $autoEnableTabs)
-                Toggle("Remember window size", isOn: $rememberWindowSize)
-            }
-            
-            Divider()
-            
-            Section(header: Text("Updates")) {
+        HStack(alignment: .center, spacing: 20) {
+            Image("prefs") // Using the existing 'prefs' asset.
+                .resizable()
+                .scaledToFit()
+                .frame(width: 64, height: 64)
 
-                Link("Show new feature list on GitHub", destination: URL(string: "https://github.com/GINNOV/littlethings/tree/master/Amiga/Tools/ADFinder")!)
+            VStack(alignment: .leading, spacing: 15) {
+                Text("General")
+                    .font(.headline)
+                
+                Toggle("Auto enable tabs for new windows", isOn: $autoEnableTabs)
+                Toggle("Remember window size and position", isOn: $rememberWindowSize)
+
+                Divider()
+
+                Text("Updates")
+                    .font(.headline)
+                
+                Link("Check for new versions on GitHub...", destination: URL(string: "https://github.com/GINNOV/littlethings/tree/master/Amiga/Tools/ADFinder")!)
+                    .foregroundColor(.accentColor)
+                
+                Spacer()
             }
         }
         .padding(20)
-        .frame(width: 350, height: 150)
+        .frame(width: 480, height: 180)
     }
 }
 
