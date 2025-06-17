@@ -1,3 +1,11 @@
+# This workflow builds the ADFinder application, packages it into a .dmg,
+# and then commits the DMG file back to the repository.
+#
+# Trigger:
+# - Runs on a push to the 'master' branch ONLY if the commit message
+#   includes the string '#build-adfinder'.
+# - Manual runs via 'workflow_dispatch' will be skipped by the job's 'if' condition.
+
 name: Build and Commit ADFinder DMG
 
 on:
@@ -6,19 +14,28 @@ on:
   workflow_dispatch:
 
 jobs:
+  # This single job handles all steps: dependency installation, building,
+  # packaging the DMG, and committing the result.
   build-and-commit-dmg:
+    # This condition ensures the job only runs if the push commit message
+    # contains the '#build-adfinder' trigger.
     if: contains(github.event.head_commit.message, '#build-adfinder')
     runs-on: macos-latest
     steps:
+      # Step 1: Check out the repository's code.
+      # We use a personal access token (PAT) with write permissions to be able
+      # to push the commit back to the repository.
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-          token: ${{ secrets.GH_PAT }}
+          fetch-depth: 0 # Needed for commit history
+          token: ${{ secrets.GH_PAT }} # Use a PAT to allow pushing
 
+      # Step 2: Install the 'create-dmg' utility.
       - name: Install create-dmg dependency
         run: brew install create-dmg
 
+      # Step 3: Select the required Xcode version.
       - name: Check and select Xcode version
         run: |
           echo "Default Xcode version:"
@@ -42,27 +59,35 @@ jobs:
              exit 1
           fi
 
+      # Step 4: Run the build and package script.
       - name: Build .app and Create .dmg
-        id: build_step
+        id: build_step # Give this step an ID to access its outputs
         run: |
           set -euo pipefail
           
+          # Navigate into the script directory
           cd Amiga/Tools/ADFinder/distribution
 
+          # Modify the DMG output directory variable in the build script.
           echo "Updating DMG output directory in build script..."
           sed -i '' 's|DMG_DIR="${SCRIPT_DIR}/../releases"|DMG_DIR="${SCRIPT_DIR}/../../releases"|' build_and_package.sh
+
+          # Modify the DMG filename format in the gendmg script.
+          echo "Updating DMG filename format in gendmg script..."
+          sed -i '' 's|DMG_PATH="$DMG_DIR/${DMG_BASE}-${APP_VERSION}_${BUILD_NUMBER}.dmg"|DMG_PATH="$DMG_DIR/adfinder_build_${BUILD_NUMBER}.dmg"|' gendmg.sh
           
-          # Update DMG filename in gendmg.sh to adfinder_build_##.dmg
-          sed -i '' 's|DMG_NAME="ADFinder.*"|DMG_NAME="adfinder_build_${BUILD_NUMBER}.dmg"|' gendmg.sh
-          
+          # Make scripts executable
           chmod +x build_and_package.sh
           chmod +x gendmg.sh
           
           echo "▶ Starting build and package script..."
+          # Execute the main build script
           ./build_and_package.sh --project ../ADFinder.xcodeproj --scheme "ADFinder - Release" --configuration Release
           
+          # Go back to the repository root before finding the file
           cd ../../../..
 
+          # Find the *newest* created DMG in the correct location relative to the repo root.
           DMG_FILE=$(find Amiga/Tools/releases -name "adfinder_build_*.dmg" -type f -print0 | xargs -0 ls -t | head -n1)
           if [ -z "$DMG_FILE" ]; then
             echo "::error::Could not find the created DMG file from the repo root."
@@ -73,33 +98,45 @@ jobs:
           
           echo "✅ Build and package script completed successfully."
 
-      - name: Keep only last three DMG builds
-        run: |
-          cd Amiga/Tools/releases
-          # List DMGs, sort by time (oldest first), skip newest 3, delete the rest
-          ls -t adfinder_build_*.dmg | tail -n +4 | xargs -I {} git rm {}
-          cd ../../..
-
-      - name: Commit and Push DMG
+      # Step 5: Commit the generated DMG file back to the repository.
+      - name: Commit, Clean, and Push DMG
         run: |
           set -euo pipefail
+          # Configure Git with the Actions bot user
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
 
+          # Discard changes made to the build scripts by the sed commands.
           git checkout -- Amiga/Tools/ADFinder/distribution/build_and_package.sh
           git checkout -- Amiga/Tools/ADFinder/distribution/gendmg.sh
           
+          # Get the correct file path from the previous step's output
           DMG_TO_COMMIT="${{ steps.build_step.outputs.DMG_FILE }}"
           echo "Adding '$DMG_TO_COMMIT' to Git."
           git add "$DMG_TO_COMMIT"
+
+          # Clean up old builds, keeping the latest 3.
+          echo "Cleaning up old builds..."
+          cd Amiga/Tools/releases
+          FILES_TO_DELETE=$(ls -t adfinder_build_*.dmg | tail -n +4)
+          if [ -n "$FILES_TO_DELETE" ]; then
+            echo "Deleting old DMGs:"
+            echo "$FILES_TO_DELETE"
+            # Use git rm to delete the files and stage the deletion
+            echo "$FILES_TO_DELETE" | xargs git rm
+          else
+            echo "No old builds to delete (fewer than 4 found)."
+          fi
+          cd ../../.. # Go back to repo root
           
+          # Commit the file if there are any staged changes (new file or deletions).
           if ! git diff --staged --quiet; then
-            echo "Committing the new DMG..."
-            BUILD_NUMBER=$(echo "$DMG_TO_COMMIT" | sed -n 's/.*_build_//; s/.dmg//p')
-            git commit -m "CI: Built ${BUILD_NUMBER} version and generated DMG."
+            echo "Committing changes..."
+            BUILD_NUMBER=$(echo "$DMG_TO_COMMIT" | sed -n 's/.*_//; s/.dmg//p')
+            git commit -m "CI: Add ADFinder build ${BUILD_NUMBER}"
             
             echo "Pushing changes to master..."
             git push origin master
           else
-            echo "No new DMG file was created or added. Nothing to commit."
+            echo "No new file or deletions to commit."
           fi
