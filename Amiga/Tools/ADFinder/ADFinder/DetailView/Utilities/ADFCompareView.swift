@@ -72,6 +72,7 @@ struct ADFCompareView: View {
         }
         .padding()
         .navigationTitle("ADF Disk Comparator")
+        .frame(minWidth: 800, minHeight: 800)
     }
 }
 
@@ -100,7 +101,6 @@ private struct FileDropTarget: View {
             RoundedRectangle(cornerRadius: 10)
                 .strokeBorder(isTargeted ? Color.accentColor : .gray.opacity(0.5), style: StrokeStyle(lineWidth: 2, dash: [5]))
         )
-        
         .onDrop(of: [ContentView.adfUType, .fileURL], isTargeted: $isTargeted) { providers -> Bool in
             guard let provider = providers.first else { return false }
 
@@ -143,33 +143,69 @@ private struct FileDropTarget: View {
 // A view to display the graphical comparison results.
 private struct ComparisonResultsView: View {
     let result: ComparisonResult
-    private let columns = [GridItem(.adaptive(minimum: 12), spacing: 2)]
+    private let columns = 11
+    private let spacing: CGFloat = 5
+    private let boxSize: CGFloat = 28
 
     var body: some View {
-        VStack {
-            ScrollView {
-                LazyVGrid(columns: columns, spacing: 2) {
-                    ForEach(0..<result.sectorStates.count, id: \.self) { index in
-                        Rectangle()
-                            .fill(result.sectorStates[index].color)
-                            .frame(width: 12, height: 12)
-                            .help("Sector \(index): \(result.sectorStates[index].description)")
-                    }
-                }
-                .padding()
-            }
-            
+        VStack(spacing: 5) {
             // Legend and summary
             HStack(spacing: 15) {
                 LegendItem(color: .green, label: "Identical")
                 LegendItem(color: .red, label: "Different (\(result.differentSectors))")
                 LegendItem(color: .blue, label: "Source Only (\(result.sourceOnlySectors))")
                 LegendItem(color: .yellow, label: "Destination Only (\(result.destinationOnlySectors))")
+                Spacer()
             }
-            .padding(.top, 5)
+            .padding(.horizontal)
+
+            Divider()
+            
+            ScrollView {
+                VStack(alignment: .leading, spacing: spacing) {
+                    // Column headers
+                    HStack(spacing: spacing) {
+                        Spacer().frame(width: 60)
+                        ForEach(0..<columns, id: \.self) { col in
+                            Text(String(col))
+                                // AI_REVIEW: Made font bold and slightly larger for readability. #END_REVIEW
+                                .font(.system(size: 12, design: .monospaced).bold())
+                                .frame(width: boxSize, height: boxSize)
+                        }
+                    }
+                    
+                    // Grid for the sectors with row headers.
+                    let rowCount = (result.sectorStates.count + columns - 1) / columns
+                    ForEach(0..<rowCount, id: \.self) { row in
+                        HStack(spacing: spacing) {
+                            // Row number header
+                            // AI_REVIEW: Removed trailing hyphen and made font bold and larger. #END_REVIEW
+                            Text("\(row * columns)")
+                                .font(.system(size: 12, design: .monospaced).bold())
+                                .frame(width: 60, alignment: .trailing)
+                            
+                            // Sector state rectangles for the current row
+                            ForEach(0..<columns, id: \.self) { col in
+                                let index = row * columns + col
+                                if index < result.sectorStates.count {
+                                    Rectangle()
+                                        .fill(result.sectorStates[index].color)
+                                        .frame(width: boxSize, height: boxSize)
+                                        .help("Sector \(index): \(result.sectorStates[index].description)")
+                                } else {
+                                    // Add empty spacer for incomplete rows
+                                    Spacer().frame(width: boxSize, height: boxSize)
+                                }
+                            }
+                        }
+                    }
+                }
+                .padding()
+            }
         }
     }
 }
+
 
 // A small helper view for the legend.
 private struct LegendItem: View {
