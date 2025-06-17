@@ -10,7 +10,6 @@ import SwiftUI
 struct PreferencesView: View {
     @AppStorage("autoEnableTabs") private var autoEnableTabs = false
     @AppStorage("rememberWindowSize") private var rememberWindowSize = false
-    // AI_REVIEW: Store bookmark data for the download location to persist access across app launches.
     @AppStorage("downloadLocationBookmark") private var downloadLocationBookmark: Data?
 
     // State for displaying the resolved path
@@ -35,7 +34,6 @@ struct PreferencesView: View {
 
                 Divider()
 
-                // AI_REVIEW: New section for managing the download location.
                 Text("Downloads")
                     .font(.headline)
 

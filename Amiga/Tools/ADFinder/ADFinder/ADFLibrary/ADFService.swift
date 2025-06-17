@@ -351,7 +351,6 @@ class ADFService {
         }
     }
     
-    // AI_REVIEW: Helper to get the correct download URL, respecting user preferences and sandboxing.
     private func getDownloadURL() -> URL? {
         // Check for a user-set download location via a security-scoped bookmark.
         if let bookmarkData = UserDefaults.standard.data(forKey: "downloadLocationBookmark") {
