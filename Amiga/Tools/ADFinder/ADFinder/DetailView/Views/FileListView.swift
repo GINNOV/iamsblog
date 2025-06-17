@@ -69,8 +69,7 @@ struct FileListView: View {
                                         .onDrag {
                         NSItemProvider(object: entry.id.uuidString as NSString)
                     }
-                    // : The .onDrop modifier accepts the drop, validates it's a directory,
-                    // extracts the source ID, and calls the handleMove closure. #END_REVIEW
+                    
                     .onDrop(of: [.plainText], isTargeted: Binding(get: {
                         dragOverId == entry.id
                     }, set: { isTargeted in

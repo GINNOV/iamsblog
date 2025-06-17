@@ -126,10 +126,7 @@ ADF_RETCODE register_dump_driver_helper(void) {
     return adfAddDeviceDriver(&adfDeviceDriverDump);
 }
 
-// : The logic is now corrected to match the ADFLib source.
-// The checksum is calculated on the original big-endian data, and then
-// compared against the checksum value in the struct AFTER it's been
-// byte-swapped to the host order. #END_REVIEW
+
 ADF_RETCODE parse_boot_block(const uint8_t* data, struct AdfBootBlock* boot) {
     if (!data || !boot) return ADF_RC_NULLPTR;
     

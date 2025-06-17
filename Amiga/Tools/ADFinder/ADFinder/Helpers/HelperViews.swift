@@ -204,8 +204,7 @@ struct ProtectionBitsView: View {
                     .font(.caption2)
                     .foregroundColor(.secondary)
                 HStack {
-                    // : Loop over all permission flags and apply the INVERTED logic.
-                    // A permission is active if its corresponding protection bit is NOT set. #END_REVIEW
+                    
                     ForEach(permissionFlags, id: \.label) { flagInfo in
                         ProtectionBitView(
                             label: flagInfo.label,
@@ -240,8 +239,7 @@ private struct ProtectionBitView: View {
     let isProtection: Bool
 
     private var statusColor: Color {
-        // : Simplified color logic. Active permissions are green, active attributes are blue.
-        // Inactive flags are a faded gray. #END_REVIEW
+        
         if isSet {
             return isProtection ? .green.opacity(0.8) : .blue.opacity(0.8)
         } else {

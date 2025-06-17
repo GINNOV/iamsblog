@@ -100,9 +100,7 @@ private struct FileDropTarget: View {
             RoundedRectangle(cornerRadius: 10)
                 .strokeBorder(isTargeted ? Color.accentColor : .gray.opacity(0.5), style: StrokeStyle(lineWidth: 2, dash: [5]))
         )
-        // : This is the definitive bug fix. This implementation now mirrors the
-        // proven, working drag-and-drop handler from the main DetailView, which
-        // correctly handles various data representations from Finder. #END_REVIEW
+        
         .onDrop(of: [ContentView.adfUType, .fileURL], isTargeted: $isTargeted) { providers -> Bool in
             guard let provider = providers.first else { return false }
 

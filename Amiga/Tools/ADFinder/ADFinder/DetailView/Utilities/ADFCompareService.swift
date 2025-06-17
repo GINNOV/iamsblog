@@ -69,8 +69,7 @@ class ADFCompareService {
             }
         }
         
-        // : Replaced try? with a do-catch block for detailed error logging.
-        // This will tell us exactly why the file data isn't loading. #END_REVIEW
+        
         let data: Data
         do {
             data = try Data(contentsOf: url)

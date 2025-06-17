@@ -30,8 +30,7 @@ struct ADFinderApp: App {
             
                         CommandGroup(replacing: .appInfo) {
                 Button("About ADFinder") {
-                    // : Posting a notification is a clean way to trigger an action
-                    // in a view that isn't directly in the hierarchy. #END_REVIEW
+                    
                     NotificationCenter.default.post(name: .showAboutWindow, object: nil)
                 }
             }

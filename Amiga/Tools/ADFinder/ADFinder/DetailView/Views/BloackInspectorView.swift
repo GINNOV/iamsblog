@@ -14,8 +14,7 @@ struct BlockInspectorView: View {
     let geometry: (cylinders: Int, heads: Int, sectors: Int)
 
     var body: some View {
-        // : Switched from a Form to a VStack with a ScrollView
-        // for more precise layout control and a custom aesthetic. #END_REVIEW
+        
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
                 // Header for the entire inspector pane

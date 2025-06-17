@@ -11,8 +11,7 @@ struct SetPermissionsDialogView: View {
     let config: SetPermissionsDialogConfig
     @Environment(\.dismiss) var dismiss
     
-    // : State variables now reflect direct permissions (e.g., isReadable)
-    // instead of inverted protections for clarity and correct logic. #END_REVIEW
+    
     @State private var isDeletable: Bool
     @State private var isWritable: Bool
     @State private var isReadable: Bool
@@ -29,9 +28,7 @@ struct SetPermissionsDialogView: View {
         self.config = config
         let bits = config.initialBits
         
-        // : The logic is now inverted for protection bits to match user expectation.
-        // A "set" protection bit means the action is NOT allowed.
-        // So, isDeletable is true if the protection bit is NOT set. #END_REVIEW
+        
         _isDeletable = State(initialValue: (bits & ACCMASK_D_SWIFT) == 0)
         _isWritable = State(initialValue: (bits & ACCMASK_W_SWIFT) == 0)
         _isReadable = State(initialValue: (bits & ACCMASK_R_SWIFT) == 0)
@@ -46,8 +43,7 @@ struct SetPermissionsDialogView: View {
 
     private var calculatedBits: UInt32 {
         var bits: UInt32 = 0
-        // : Invert the logic again when constructing the final bitmask.
-        // If deletable, the protection bit must be cleared. If not deletable, it must be set. #END_REVIEW
+        
         if !isDeletable { bits |= ACCMASK_D_SWIFT }
         if !isWritable { bits |= ACCMASK_W_SWIFT }
         if !isReadable { bits |= ACCMASK_R_SWIFT }

@@ -30,9 +30,7 @@ struct ConsoleView: View {
             .frame(height: 40)
             .background(.thinMaterial)
 
-            // : Using a ScrollView with a Text view and the .textSelection(.enabled)
-            // modifier is the correct, modern SwiftUI way to create a read-only,
-            // selectable text area. This replaces the flawed TextEditor implementation. #END_REVIEW
+            
             ScrollViewReader { proxy in
                 ScrollView(.vertical) {
                     Text(logText)
