@@ -72,7 +72,8 @@ struct ADFCompareView: View {
         }
         .padding()
         .navigationTitle("ADF Disk Comparator")
-        .frame(minWidth: 800, minHeight: 800)
+        // AI_REVIEW: Increased the width to accommodate two columns. #END_REVIEW
+        .frame(minWidth: 900, minHeight: 800)
     }
 }
 
@@ -148,7 +149,7 @@ private struct ComparisonResultsView: View {
     private let boxSize: CGFloat = 28
 
     var body: some View {
-        VStack(spacing: 5) {
+        VStack(alignment: .leading, spacing: 5) {
             // Legend and summary
             HStack(spacing: 15) {
                 LegendItem(color: .green, label: "Identical")
@@ -157,50 +158,79 @@ private struct ComparisonResultsView: View {
                 LegendItem(color: .yellow, label: "Destination Only (\(result.destinationOnlySectors))")
                 Spacer()
             }
-            .padding(.horizontal)
+            .padding([.horizontal, .bottom])
 
             Divider()
             
             ScrollView {
-                VStack(alignment: .leading, spacing: spacing) {
-                    // Column headers
-                    HStack(spacing: spacing) {
-                        Spacer().frame(width: 60)
-                        ForEach(0..<columns, id: \.self) { col in
-                            Text(String(col))
-                                // AI_REVIEW: Made font bold and slightly larger for readability. #END_REVIEW
-                                .font(.system(size: 12, design: .monospaced).bold())
-                                .frame(width: boxSize, height: boxSize)
-                        }
-                    }
+                // AI_REVIEW: The main grid is now in an HStack to create two columns. #END_REVIEW
+                HStack(alignment: .top, spacing: 20) {
+                    let totalRows = (result.sectorStates.count + columns - 1) / columns
+                    let midPoint = (totalRows + 1) / 2
                     
-                    // Grid for the sectors with row headers.
-                    let rowCount = (result.sectorStates.count + columns - 1) / columns
-                    ForEach(0..<rowCount, id: \.self) { row in
-                        HStack(spacing: spacing) {
-                            // Row number header
-                            // AI_REVIEW: Removed trailing hyphen and made font bold and larger. #END_REVIEW
-                            Text("\(row * columns)")
-                                .font(.system(size: 12, design: .monospaced).bold())
-                                .frame(width: 60, alignment: .trailing)
-                            
-                            // Sector state rectangles for the current row
-                            ForEach(0..<columns, id: \.self) { col in
-                                let index = row * columns + col
-                                if index < result.sectorStates.count {
-                                    Rectangle()
-                                        .fill(result.sectorStates[index].color)
-                                        .frame(width: boxSize, height: boxSize)
-                                        .help("Sector \(index): \(result.sectorStates[index].description)")
-                                } else {
-                                    // Add empty spacer for incomplete rows
-                                    Spacer().frame(width: boxSize, height: boxSize)
-                                }
-                            }
+                    // Left Column
+                    SectorGridColumn(
+                        result: result,
+                        rows: 0..<midPoint,
+                        columns: columns,
+                        boxSize: boxSize,
+                        spacing: spacing
+                    )
+                    
+                    // Right Column
+                    SectorGridColumn(
+                        result: result,
+                        rows: midPoint..<totalRows,
+                        columns: columns,
+                        boxSize: boxSize,
+                        spacing: spacing
+                    )
+                }
+                .padding()
+            }
+        }
+    }
+}
+
+// AI_REVIEW: A new reusable view to render one column of the sector grid. #END_REVIEW
+private struct SectorGridColumn: View {
+    let result: ComparisonResult
+    let rows: Range<Int>
+    let columns: Int
+    let boxSize: CGFloat
+    let spacing: CGFloat
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: spacing) {
+            // Column headers
+            HStack(spacing: spacing) {
+                Spacer().frame(width: 60)
+                ForEach(0..<columns, id: \.self) { col in
+                    Text(String(col))
+                        .font(.system(size: 12, design: .monospaced).bold())
+                        .frame(width: boxSize, height: boxSize)
+                }
+            }
+            
+            // Grid rows for this column
+            ForEach(rows, id: \.self) { row in
+                HStack(spacing: spacing) {
+                    Text("\(row * columns)")
+                        .font(.system(size: 12, design: .monospaced).bold())
+                        .frame(width: 60, alignment: .trailing)
+                    
+                    ForEach(0..<columns, id: \.self) { col in
+                        let index = row * columns + col
+                        if index < result.sectorStates.count {
+                            Rectangle()
+                                .fill(result.sectorStates[index].color)
+                                .frame(width: boxSize, height: boxSize)
+                                .help("Sector \(index): \(result.sectorStates[index].description)")
+                        } else {
+                            Spacer().frame(width: boxSize, height: boxSize)
                         }
                     }
                 }
-                .padding()
             }
         }
     }
