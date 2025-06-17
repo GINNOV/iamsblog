@@ -70,9 +70,6 @@ class ADFService {
         }
     }
     
-    // AI_REVIEW: This function ensures the C library is completely torn down and
-    // re-initialized to a clean state. It's now called at every failure point
-    // in openADF to prevent state corruption from one operation affecting the next. #END_REVIEW
     private func reinitializeAdfLib() {
         log("ADFService: Re-initializing ADFLib due to previous error...")
         adfLibCleanUp()
@@ -109,14 +106,7 @@ class ADFService {
     }
 
     func openADF(filePath: String) -> Bool {
-        // AI_REVIEW: A full cleanup and re-initialization of the C library is now
-        // performed before every open operation. This prevents state corruption from
-        // one disk affecting the next, fixing the stability issue. #END_REVIEW
-        
-        // First, clean up the Swift-side service state and old ADF pointers.
         closeADF()
-        
-        // Then, perform a full teardown and setup of the underlying C-library.
         reinitializeAdfLib()
 
         guard adflibInitialized else {
@@ -287,9 +277,6 @@ class ADFService {
         return true
     }
     
-    // AI_REVIEW: This function has been reverted to its original, more stable implementation
-    // that uses the high-level adfGetDirEnt function. This fixes a state corruption
-    // regression when opening malformed disks. #END_REVIEW
     func listCurrentDirectory() -> [AmigaEntry] {
         guard let vol = self.adfVolume else { return [] }
         if !navigateToInternalPath() { return [] }
@@ -364,6 +351,48 @@ class ADFService {
         }
     }
     
+    // AI_REVIEW: New function to generate a hexdump and save it to a file. #END_REVIEW
+    func createDiskDump(fileURL: URL) -> (String?, URL?) {
+        do {
+            let data = try Data(contentsOf: fileURL)
+            var hexdumpString = ""
+            let bytesPerRow = 16
+            
+            for i in stride(from: 0, to: data.count, by: bytesPerRow) {
+                let offsetStr = String(format: "%08x", i)
+                let chunk = data[i..<min(i + bytesPerRow, data.count)]
+                
+                var hexPart = ""
+                for (j, byte) in chunk.enumerated() {
+                    if j == 8 { hexPart += " " }
+                    hexPart += String(format: "%02x ", byte)
+                }
+                
+                var asciiPart = ""
+                for byte in chunk {
+                    asciiPart += (byte >= 32 && byte <= 126) ? String(UnicodeScalar(byte)) : "."
+                }
+                
+                hexdumpString += "\(offsetStr)  \(hexPart.padding(toLength: bytesPerRow * 3 + 1, withPad: " ", startingAt: 0))|\(asciiPart)|\n"
+            }
+
+            guard let downloadsURL = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first else {
+                return ("Could not find the Downloads directory.", nil)
+            }
+
+            let baseName = self.volumeLabel.isEmpty ? fileURL.deletingPathExtension().lastPathComponent : self.volumeLabel
+            let invalidChars = CharacterSet(charactersIn: ":/\\?%*|\"<>")
+            let cleanName = baseName.components(separatedBy: invalidChars).joined(separator: "_")
+            let outputURL = downloadsURL.appendingPathComponent("\(cleanName)_dump.txt")
+
+            try hexdumpString.write(to: outputURL, atomically: true, encoding: .utf8)
+            
+            return (nil, outputURL) // Success
+        } catch {
+            return ("Failed to create disk dump: \(error.localizedDescription)", nil)
+        }
+    }
+
     func navigateToDirectory(_ name: String) -> Bool {
         guard self.adfVolume != nil, !name.isEmpty, name != "." else { return false }
         
@@ -428,7 +457,6 @@ class ADFService {
             return getADFLibError(context: "navigateToInternalPath for \(entry.name) before writeTextFile")
         }
 
-        // Pre-process the string to replace common macOS "smart" punctuation with plain ASCII.
         var processedContent = content
             .replacingOccurrences(of: "“", with: "\"")
             .replacingOccurrences(of: "”", with: "\"")
@@ -437,7 +465,6 @@ class ADFService {
             .replacingOccurrences(of: "…", with: "...")
             .replacingOccurrences(of: "—", with: "--")
         
-        // Normalize line endings to LF (\n), which is standard for AmigaDOS.
         processedContent = processedContent.replacingOccurrences(of: "\r\n", with: "\n")
         
         guard let data = processedContent.data(using: .isoLatin1) else {
@@ -454,7 +481,7 @@ class ADFService {
         
         if result.rawValue == ADF_RC_OK_SWIFT {
             log("ADFService: Successfully wrote to '\(entry.name)'.")
-            populateDiskInfo() // Refresh disk info, as size may have changed.
+            populateDiskInfo()
             return nil
         } else {
             log("ADFService: add_file_to_adf_c failed for '\(entry.name)'. Check C-Log for details.")
@@ -604,10 +631,8 @@ class ADFService {
     func moveEntry(entryNameToMove: String, toDestinationDirName: String) -> String? {
         guard let vol = self.adfVolume else { return "Volume not mounted." }
 
-        // We assume we are in the parent directory of both the item to move and the destination folder.
         let parentSector = vol.pointee.curDirPtr
 
-        // Get the sector of the destination directory.
         let destDirSector = toDestinationDirName.withCString { cDestName in
             return adfGetEntryBlockNum(vol, parentSector, cDestName)
         }
@@ -616,14 +641,11 @@ class ADFService {
             return "Destination directory '\(toDestinationDirName)' not found."
         }
         
-        // Check if the destination is actually a directory.
         var destBlock = AdfEntryBlock()
         guard adfReadEntryBlock(vol, destDirSector, &destBlock) == ADF_RC_OK, destBlock.secType == ST_DIR_SWIFT else {
             return "'\(toDestinationDirName)' is not a directory."
         }
         
-        // Perform the move. The new parent sector is the destination directory's sector.
-        // The name of the file does not change.
         let success = entryNameToMove.withCString { cEntryNameToMove -> Bool in
             return adfRenameEntry(vol, parentSector, cEntryNameToMove, destDirSector, cEntryNameToMove).rawValue == ADF_RC_OK_SWIFT
         }
@@ -641,24 +663,18 @@ class ADFService {
     func moveEntryToParent(entryNameToMove: String) -> String? {
         guard let vol = self.adfVolume else { return "Volume not mounted." }
         
-        // Ensure we are not at the root.
         if currentPath.isEmpty {
             return "Cannot move item up from the root directory."
         }
 
-        // The source directory is the current directory.
         let sourceDirSector = vol.pointee.curDirPtr
         
-        // To get the destination (parent) sector, we must temporarily navigate up.
-        // The navigateToInternalPath() call in loadDirectoryContents() will reset this later.
         if adfParentDir(vol) != ADF_RC_OK {
-            // Attempt to restore the directory pointer if the move fails.
             _ = navigateToInternalPath()
             return "Could not navigate to parent directory to perform move."
         }
         let destDirSector = vol.pointee.curDirPtr
         
-        // Perform the move.
         let success = entryNameToMove.withCString { cEntryName -> Bool in
             return adfRenameEntry(vol, sourceDirSector, cEntryName, destDirSector, cEntryName).rawValue == ADF_RC_OK_SWIFT
         }
@@ -668,7 +684,6 @@ class ADFService {
             populateDiskInfo()
             return nil
         } else {
-            // Restore path and return error.
             _ = navigateToInternalPath()
             log("ADFService: moveEntryToParent failed. Check C-Log.")
             return "ADFLib failed to move the entry up."
@@ -828,7 +843,6 @@ class ADFService {
         
         let parentSector = vol.pointee.curDirPtr
         let result = entry.name.withCString { cName in
-            // The C function expects a signed Int32 for the access bits.
             return adfSetEntryAccess(vol, parentSector, cName, Int32(bitPattern: newBits))
         }
         

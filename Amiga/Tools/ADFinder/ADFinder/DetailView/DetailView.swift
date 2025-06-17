@@ -9,7 +9,7 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct DetailView: View {
-        @Environment(\.openWindow) private var openWindow
+    @Environment(\.openWindow) private var openWindow
     @Bindable var adfService: ADFService
     @Bindable var recentFilesService: RecentFilesService
     @Binding var selectedFile: URL?
@@ -106,8 +106,18 @@ struct DetailView: View {
                 }
             },
             about: { showingAboutView = true },
-                        showConsole: { openWindow(id: "console-window") },
-            showComparator: { openWindow(id: "compare-window") }
+            showConsole: { openWindow(id: "console-window") },
+            showComparator: { openWindow(id: "compare-window") },
+            // AI_REVIEW: Implement the diskDump action. #END_REVIEW
+            diskDump: {
+                guard let url = selectedFile else { return }
+                let (error, path) = adfService.createDiskDump(fileURL: url)
+                if let error = error {
+                    showAlert(message: error)
+                } else if let path = path {
+                    showAlert(message: "Disk dump saved to:\n\(path.path)")
+                }
+            }
         )
     }
     
@@ -183,7 +193,7 @@ struct DetailView: View {
         .focusedSceneValue(\.amigaActions, detailActions)
         .focusedSceneValue(\.isFileOpen, selectedFile != nil)
         .focusedSceneValue(\.isEntrySelected, selectedEntry != nil)
-                .onReceive(NotificationCenter.default.publisher(for: .showAboutWindow)) { _ in
+        .onReceive(NotificationCenter.default.publisher(for: .showAboutWindow)) { _ in
             showingAboutView = true
         }
     }
@@ -203,8 +213,8 @@ struct DetailView: View {
                     showInfoAlert: { entry in infoDialogConfig = InfoDialogConfig(entry: entry) },
                     viewFileContent: viewFileContent,
                     viewAsText: viewTextContent,
-                                        handleMove: handleMove,
-                                        handleMoveToParent: handleMoveToParent
+                    handleMove: handleMove,
+                    handleMoveToParent: handleMoveToParent
                 )
                 .refreshable { loadDirectoryContents() }
             }
