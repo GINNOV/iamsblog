@@ -1,11 +1,3 @@
-# This workflow builds the ADFinder application, packages it into a .dmg,
-# and then commits the DMG file back to the repository.
-#
-# Trigger:
-# - Runs on a push to the 'master' branch ONLY if the commit message
-#   includes the string '#build-adfinder'.
-# - Manual runs via 'workflow_dispatch' will be skipped by the job's 'if' condition.
-
 name: Build and Commit ADFinder DMG
 
 on:
@@ -14,28 +6,19 @@ on:
   workflow_dispatch:
 
 jobs:
-  # This single job handles all steps: dependency installation, building,
-  # packaging the DMG, and committing the result.
   build-and-commit-dmg:
-    # This condition ensures the job only runs if the push commit message
-    # contains the '#build-adfinder' trigger.
     if: contains(github.event.head_commit.message, '#build-adfinder')
     runs-on: macos-latest
     steps:
-      # Step 1: Check out the repository's code.
-      # We use a personal access token (PAT) with write permissions to be able
-      # to push the commit back to the repository.
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Needed for commit history
-          token: ${{ secrets.GH_PAT }} # Use a PAT to allow pushing
+          fetch-depth: 0
+          token: ${{ secrets.GH_PAT }}
 
-      # Step 2: Install the 'create-dmg' utility.
       - name: Install create-dmg dependency
         run: brew install create-dmg
 
-      # Step 3: Select the required Xcode version.
       - name: Check and select Xcode version
         run: |
           echo "Default Xcode version:"
@@ -59,34 +42,28 @@ jobs:
              exit 1
           fi
 
-      # Step 4: Run the build and package script.
       - name: Build .app and Create .dmg
-        id: build_step # Give this step an ID to access its outputs
+        id: build_step
         run: |
           set -euo pipefail
           
-          # Navigate into the script directory
           cd Amiga/Tools/ADFinder/distribution
 
-          # Modify the DMG output directory variable in the build script.
-          # This is more robust than trying to match the full path string.
           echo "Updating DMG output directory in build script..."
           sed -i '' 's|DMG_DIR="${SCRIPT_DIR}/../releases"|DMG_DIR="${SCRIPT_DIR}/../../releases"|' build_and_package.sh
           
-          # Make scripts executable
+          # Update DMG filename in gendmg.sh to adfinder_build_##.dmg
+          sed -i '' 's|DMG_NAME="ADFinder.*"|DMG_NAME="adfinder_build_${BUILD_NUMBER}.dmg"|' gendmg.sh
+          
           chmod +x build_and_package.sh
           chmod +x gendmg.sh
           
           echo "▶ Starting build and package script..."
-          # Execute the main build script
           ./build_and_package.sh --project ../ADFinder.xcodeproj --scheme "ADFinder - Release" --configuration Release
           
-          # Go back to the repository root before finding the file
           cd ../../../..
 
-          # Find the *newest* created DMG in the correct location relative to the repo root.
-          # This prevents finding an old, pre-existing file.
-          DMG_FILE=$(find Amiga/Tools/releases -name "ADFinder*.dmg" -type f -print0 | xargs -0 ls -t | head -n1)
+          DMG_FILE=$(find Amiga/Tools/releases -name "adfinder_build_*.dmg" -type f -print0 | xargs -0 ls -t | head -n1)
           if [ -z "$DMG_FILE" ]; then
             echo "::error::Could not find the created DMG file from the repo root."
             exit 1
@@ -96,30 +73,31 @@ jobs:
           
           echo "✅ Build and package script completed successfully."
 
-      # Step 5: Commit the generated DMG file back to the repository.
+      - name: Keep only last three DMG builds
+        run: |
+          cd Amiga/Tools/releases
+          # List DMGs, sort by time (oldest first), skip newest 3, delete the rest
+          ls -t adfinder_build_*.dmg | tail -n +4 | xargs -I {} git rm {}
+          cd ../../..
+
       - name: Commit and Push DMG
         run: |
           set -euo pipefail
-          # Configure Git with the Actions bot user
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
 
-          # Discard changes made to the build script by the sed command to keep the commit clean.
           git checkout -- Amiga/Tools/ADFinder/distribution/build_and_package.sh
+          git checkout -- Amiga/Tools/ADFinder/distribution/gendmg.sh
           
-          # Get the correct file path from the previous step's output
           DMG_TO_COMMIT="${{ steps.build_step.outputs.DMG_FILE }}"
           echo "Adding '$DMG_TO_COMMIT' to Git."
           git add "$DMG_TO_COMMIT"
           
-          # Commit the file if there are any staged changes.
           if ! git diff --staged --quiet; then
             echo "Committing the new DMG..."
-            # Extract the build number from the filename for the commit message
-            BUILD_NUMBER=$(echo "$DMG_TO_COMMIT" | sed -n 's/.*_//; s/.dmg//p')
+            BUILD_NUMBER=$(echo "$DMG_TO_COMMIT" | sed -n 's/.*_build_//; s/.dmg//p')
             git commit -m "CI: Built ${BUILD_NUMBER} version and generated DMG."
             
-            # Push the commit to the master branch
             echo "Pushing changes to master..."
             git push origin master
           else
