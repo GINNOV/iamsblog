@@ -261,5 +261,5 @@ struct DetailView: View {
                 currentEntries = []
             }
         }
-    }
+    }    
 }

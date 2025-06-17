@@ -351,7 +351,50 @@ class ADFService {
         }
     }
     
+    // AI_REVIEW: Helper to get the correct download URL, respecting user preferences and sandboxing.
+    private func getDownloadURL() -> URL? {
+        // Check for a user-set download location via a security-scoped bookmark.
+        if let bookmarkData = UserDefaults.standard.data(forKey: "downloadLocationBookmark") {
+            do {
+                var isStale = false
+                let url = try URL(resolvingBookmarkData: bookmarkData, options: .withSecurityScope, relativeTo: nil, bookmarkDataIsStale: &isStale)
+                
+                // If the bookmark data is stale, it's good practice to create a new one.
+                if isStale {
+                    let newBookmarkData = try url.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil)
+                    UserDefaults.standard.set(newBookmarkData, forKey: "downloadLocationBookmark")
+                }
+                
+                return url
+            } catch {
+                print("Error resolving bookmark: \(error.localizedDescription). Falling back to default.")
+                // If resolving fails, fall back to the default Downloads directory.
+                return FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first
+            }
+        } else {
+            // If no bookmark is set, use the default Downloads directory.
+            return FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first
+        }
+    }
+
+    
     func createDiskDump(fileURL: URL) -> (String?, URL?) {
+        var downloadURL: URL?
+        var needsToStopAccessing = false
+        if let resolvedURL = getDownloadURL() {
+            downloadURL = resolvedURL
+            if resolvedURL.startAccessingSecurityScopedResource() {
+                needsToStopAccessing = true
+            }
+        } else {
+             return ("Could not determine download location.", nil)
+        }
+        defer {
+            if needsToStopAccessing {
+                downloadURL?.stopAccessingSecurityScopedResource()
+            }
+        }
+        
         do {
             let data = try Data(contentsOf: fileURL)
             var hexdumpString = ""
@@ -375,14 +418,14 @@ class ADFService {
                 hexdumpString += "\(offsetStr)  \(hexPart.padding(toLength: bytesPerRow * 3 + 1, withPad: " ", startingAt: 0))|\(asciiPart)|\n"
             }
 
-            guard let downloadsURL = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first else {
-                return ("Could not find the Downloads directory.", nil)
+            guard let finalDownloadURL = downloadURL else {
+                return ("Download location is invalid.", nil)
             }
 
             let baseName = self.volumeLabel.isEmpty ? fileURL.deletingPathExtension().lastPathComponent : self.volumeLabel
             let invalidChars = CharacterSet(charactersIn: ":/\\?%*|\"<>")
             let cleanName = baseName.components(separatedBy: invalidChars).joined(separator: "_")
-            let outputURL = downloadsURL.appendingPathComponent("\(cleanName)_dump.txt")
+            let outputURL = finalDownloadURL.appendingPathComponent("\(cleanName)_dump.txt")
 
             try hexdumpString.write(to: outputURL, atomically: true, encoding: .utf8)
             
@@ -392,14 +435,12 @@ class ADFService {
         }
     }
     
-    
     func generateDirectoryListing() -> (String?, URL?) {
         guard self.adfVolume != nil else {
             return ("Volume not mounted.", nil)
         }
 
         let originalPath = self.currentPath
-        // Ensure we start from the root for a full listing.
         self.currentPath = []
         _ = navigateToInternalPath()
         
@@ -409,21 +450,35 @@ class ADFService {
         let listing = _recursiveList(pathPrefix: "")
         output += listing
 
-        // Restore the original path so the UI doesn't change.
         self.currentPath = originalPath
         if !navigateToInternalPath() {
             log("ADFService: CRITICAL - Failed to restore path after directory listing.")
         }
+        
+        var downloadURL: URL?
+        var needsToStopAccessing = false
+        if let resolvedURL = getDownloadURL() {
+            downloadURL = resolvedURL
+            if resolvedURL.startAccessingSecurityScopedResource() {
+                needsToStopAccessing = true
+            }
+        } else {
+             return ("Could not determine download location.", nil)
+        }
+        defer {
+            if needsToStopAccessing {
+                downloadURL?.stopAccessingSecurityScopedResource()
+            }
+        }
 
         do {
-            guard let downloadsURL = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first else {
-                return ("Could not find the Downloads directory.", nil)
+            guard let finalDownloadURL = downloadURL else {
+                return ("Download location is invalid.", nil)
             }
-
             let baseName = self.volumeLabel.isEmpty ? "UntitledDisk" : self.volumeLabel
             let invalidChars = CharacterSet(charactersIn: ":/\\?%*|\"<>")
             let cleanName = baseName.components(separatedBy: invalidChars).joined(separator: "_")
-            let outputURL = downloadsURL.appendingPathComponent("\(cleanName)_dirs.txt")
+            let outputURL = finalDownloadURL.appendingPathComponent("\(cleanName)_dirs.txt")
 
             try output.write(to: outputURL, atomically: true, encoding: .utf8)
             
@@ -433,7 +488,6 @@ class ADFService {
         }
     }
 
-    
     private func _recursiveList(pathPrefix: String) -> String {
         var resultString = ""
         let entries = self.listCurrentDirectory()
@@ -473,7 +527,7 @@ class ADFService {
             currentPath.append(name)
             if !navigateToInternalPath() {
                 log("ADFService: Failed to navigate into '\(name)'.")
-                currentPath.removeLast() // Revert path change
+                currentPath.removeLast()
                 return false
             }
             return true
