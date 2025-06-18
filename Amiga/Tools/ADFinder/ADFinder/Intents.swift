@@ -10,6 +10,7 @@
 
 import AppIntents
 import SwiftUI
+import UniformTypeIdentifiers
 
 // MARK: - Supporting Enum for Filesystem Type
 
@@ -67,7 +68,7 @@ struct AddFilesToADFIntent: AppIntent {
     static var description: IntentDescription = "Adds one or more files to an existing ADF disk image."
     static var openAppWhenRun: Bool = false
     
-    @Parameter(title: "ADF File", supportedTypeIdentifiers: ["public.retro.adf"])
+    @Parameter(title: "ADF File", supportedContentTypes: [UTType(filenameExtension: "adf")!])
     var adfFile: IntentFile
     
     @Parameter(title: "Files to Add")
@@ -127,7 +128,7 @@ struct RenameVolumeIntent: AppIntent {
     static var description: IntentDescription = "Changes the volume name (label) of an ADF disk image."
     static var openAppWhenRun: Bool = false
 
-    @Parameter(title: "ADF File", supportedTypeIdentifiers: ["public.retro.adf"])
+    @Parameter(title: "ADF File", supportedContentTypes: [UTType(filenameExtension: "adf")!])
     var adfFile: IntentFile
     
     @Parameter(title: "New Volume Name")

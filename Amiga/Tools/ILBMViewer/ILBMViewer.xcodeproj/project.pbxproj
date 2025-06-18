@@ -6,56 +6,46 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		ACB6F2942E03837D00D2CCB3 /* CLibIFF in Frameworks */ = {isa = PBXBuildFile; productRef = ACB6F2932E03837D00D2CCB3 /* CLibIFF */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
-		AC779D402DE101C300210E27 /* ADFinder.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ADFinder.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		AC779D712DE1039800210E27 /* ADFinder-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "ADFinder-Bridging-Header.h"; path = "ADFinder/ADFinder-Bridging-Header.h"; sourceTree = "<group>"; };
+		ACB6F2832E037E7200D2CCB3 /* ILBMViewer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ILBMViewer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		AC77A89B2DE17C6F00210E27 /* Exceptions for "ADFinder" folder in "ADFinder" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Info.plist,
-			);
-			target = AC779D3F2DE101C300210E27 /* ADFinder */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		AC779D422DE101C300210E27 /* ADFinder */ = {
+		ACB6F2852E037E7200D2CCB3 /* ILBMViewer */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				AC77A89B2DE17C6F00210E27 /* Exceptions for "ADFinder" folder in "ADFinder" target */,
-			);
-			path = ADFinder;
+			path = ILBMViewer;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		AC779D3D2DE101C300210E27 /* Frameworks */ = {
+		ACB6F2802E037E7100D2CCB3 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				ACB6F2942E03837D00D2CCB3 /* CLibIFF in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		AC779D372DE101C300210E27 = {
+		ACB6F27A2E037E7100D2CCB3 = {
 			isa = PBXGroup;
 			children = (
-				AC779D712DE1039800210E27 /* ADFinder-Bridging-Header.h */,
-				AC779D422DE101C300210E27 /* ADFinder */,
-				AC779D412DE101C300210E27 /* Products */,
+				ACB6F2852E037E7200D2CCB3 /* ILBMViewer */,
+				ACB6F2842E037E7200D2CCB3 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		AC779D412DE101C300210E27 /* Products */ = {
+		ACB6F2842E037E7200D2CCB3 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				AC779D402DE101C300210E27 /* ADFinder.app */,
+				ACB6F2832E037E7200D2CCB3 /* ILBMViewer.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -63,65 +53,68 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		AC779D3F2DE101C300210E27 /* ADFinder */ = {
+		ACB6F2822E037E7100D2CCB3 /* ILBMViewer */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = AC779D4C2DE101C400210E27 /* Build configuration list for PBXNativeTarget "ADFinder" */;
+			buildConfigurationList = ACB6F28F2E037E7300D2CCB3 /* Build configuration list for PBXNativeTarget "ILBMViewer" */;
 			buildPhases = (
-				AC779D3C2DE101C300210E27 /* Sources */,
-				AC779D3D2DE101C300210E27 /* Frameworks */,
-				AC779D3E2DE101C300210E27 /* Resources */,
+				ACB6F27F2E037E7100D2CCB3 /* Sources */,
+				ACB6F2802E037E7100D2CCB3 /* Frameworks */,
+				ACB6F2812E037E7100D2CCB3 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				AC779D422DE101C300210E27 /* ADFinder */,
+				ACB6F2852E037E7200D2CCB3 /* ILBMViewer */,
 			);
-			name = ADFinder;
+			name = ILBMViewer;
 			packageProductDependencies = (
+				ACB6F2932E03837D00D2CCB3 /* CLibIFF */,
 			);
-			productName = ADFinder;
-			productReference = AC779D402DE101C300210E27 /* ADFinder.app */;
+			productName = ILBMViewer;
+			productReference = ACB6F2832E037E7200D2CCB3 /* ILBMViewer.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		AC779D382DE101C300210E27 /* Project object */ = {
+		ACB6F27B2E037E7100D2CCB3 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1630;
+				LastSwiftUpdateCheck = 1640;
 				LastUpgradeCheck = 1640;
 				TargetAttributes = {
-					AC779D3F2DE101C300210E27 = {
-						CreatedOnToolsVersion = 16.3;
-						LastSwiftMigration = 1630;
+					ACB6F2822E037E7100D2CCB3 = {
+						CreatedOnToolsVersion = 16.4;
 					};
 				};
 			};
-			buildConfigurationList = AC779D3B2DE101C300210E27 /* Build configuration list for PBXProject "ADFinder" */;
+			buildConfigurationList = ACB6F27E2E037E7100D2CCB3 /* Build configuration list for PBXProject "ILBMViewer" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
 				Base,
 			);
-			mainGroup = AC779D372DE101C300210E27;
+			mainGroup = ACB6F27A2E037E7100D2CCB3;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				ACB6F2922E03837D00D2CCB3 /* XCLocalSwiftPackageReference "LocalPackages/CLibIFF" */,
+			);
 			preferredProjectObjectVersion = 77;
-			productRefGroup = AC779D412DE101C300210E27 /* Products */;
+			productRefGroup = ACB6F2842E037E7200D2CCB3 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				AC779D3F2DE101C300210E27 /* ADFinder */,
+				ACB6F2822E037E7100D2CCB3 /* ILBMViewer */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		AC779D3E2DE101C300210E27 /* Resources */ = {
+		ACB6F2812E037E7100D2CCB3 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -131,7 +124,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		AC779D3C2DE101C300210E27 /* Sources */ = {
+		ACB6F27F2E037E7100D2CCB3 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -141,7 +134,7 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		AC779D4A2DE101C400210E27 /* Debug */ = {
+		ACB6F28D2E037E7300D2CCB3 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -174,12 +167,9 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_ENTITLEMENTS = "$(SRCROOT)/ADFinder/ADFinder.entitlements";
 				COPY_PHASE_STRIP = NO;
-				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = QQ9PTQU945;
-				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -197,21 +187,18 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				HEADER_SEARCH_PATHS = "$(SRCROOT)/ADFinder/ADFHeaders";
-				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/ADFinder/ADFLibrary";
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 15.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.5;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
-				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/ADFinder/ADFinder-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
 		};
-		AC779D4B2DE101C400210E27 /* Release */ = {
+		ACB6F28E2E037E7300D2CCB3 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -244,13 +231,10 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_ENTITLEMENTS = "$(SRCROOT)/ADFinder/ADFinder.entitlements";
 				COPY_PHASE_STRIP = NO;
-				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = QQ9PTQU945;
 				ENABLE_NS_ASSERTIONS = NO;
-				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
@@ -261,102 +245,63 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				HEADER_SEARCH_PATHS = "$(SRCROOT)/ADFinder/ADFHeaders";
-				LIBRARY_SEARCH_PATHS = "$(SRCROOT)/ADFinder/ADFLibrary";
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MACOSX_DEPLOYMENT_TARGET = 15.4;
+				MACOSX_DEPLOYMENT_TARGET = 15.5;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
 				SWIFT_COMPILATION_MODE = wholemodule;
-				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/ADFinder/ADFinder-Bridging-Header.h";
 			};
 			name = Release;
 		};
-		AC779D4D2DE101C400210E27 /* Debug */ = {
+		ACB6F2902E037E7300D2CCB3 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = arm64;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = "$(SRCROOT)/ADFinder/ADFinder.entitlements";
-				CODE_SIGN_IDENTITY = "Apple Development";
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
+				CODE_SIGN_ENTITLEMENTS = ILBMViewer/ILBMViewer.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 703;
-				DEAD_CODE_STRIPPING = YES;
-				DEBUG_INFORMATION_FORMAT = dwarf;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = QQ9PTQU945;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				HEADER_SEARCH_PATHS = "$(SRCROOT)/ADFinder/ADFHeaders";
-				INFOPLIST_FILE = "$(SRCROOT)/ADFinder/Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = "";
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/ADFinder/ADFLibrary",
-				);
-				MACOSX_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 1.1;
-				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = com.theblifemovement.ADFinder;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.theblifemovement.ILBMViewer;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
 				REGISTER_APP_GROUPS = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
-		AC779D4E2DE101C400210E27 /* Release */ = {
+		ACB6F2912E037E7300D2CCB3 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = arm64;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = "$(SRCROOT)/ADFinder/ADFinder.entitlements";
-				CODE_SIGN_IDENTITY = "Apple Development";
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
+				CODE_SIGN_ENTITLEMENTS = ILBMViewer/ILBMViewer.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 703;
-				DEAD_CODE_STRIPPING = YES;
-				DEBUG_INFORMATION_FORMAT = dwarf;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = QQ9PTQU945;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				HEADER_SEARCH_PATHS = "$(SRCROOT)/ADFinder/ADFHeaders";
-				INFOPLIST_FILE = "$(SRCROOT)/ADFinder/Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = "";
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/ADFinder/ADFLibrary",
-				);
-				MACOSX_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 1.1;
-				ONLY_ACTIVE_ARCH = NO;
-				OTHER_LDFLAGS = "";
-				PRODUCT_BUNDLE_IDENTIFIER = com.theblifemovement.ADFinder;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.theblifemovement.ILBMViewer;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
 				REGISTER_APP_GROUPS = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -366,25 +311,39 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		AC779D3B2DE101C300210E27 /* Build configuration list for PBXProject "ADFinder" */ = {
+		ACB6F27E2E037E7100D2CCB3 /* Build configuration list for PBXProject "ILBMViewer" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				AC779D4A2DE101C400210E27 /* Debug */,
-				AC779D4B2DE101C400210E27 /* Release */,
+				ACB6F28D2E037E7300D2CCB3 /* Debug */,
+				ACB6F28E2E037E7300D2CCB3 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		AC779D4C2DE101C400210E27 /* Build configuration list for PBXNativeTarget "ADFinder" */ = {
+		ACB6F28F2E037E7300D2CCB3 /* Build configuration list for PBXNativeTarget "ILBMViewer" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				AC779D4D2DE101C400210E27 /* Debug */,
-				AC779D4E2DE101C400210E27 /* Release */,
+				ACB6F2902E037E7300D2CCB3 /* Debug */,
+				ACB6F2912E037E7300D2CCB3 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		ACB6F2922E03837D00D2CCB3 /* XCLocalSwiftPackageReference "LocalPackages/CLibIFF" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = LocalPackages/CLibIFF;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		ACB6F2932E03837D00D2CCB3 /* CLibIFF */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = CLibIFF;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
-	rootObject = AC779D382DE101C300210E27 /* Project object */;
+	rootObject = ACB6F27B2E037E7100D2CCB3 /* Project object */;
 }

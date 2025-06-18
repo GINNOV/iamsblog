@@ -21,11 +21,11 @@ struct SidebarView: View {
     
     var body: some View {
         VStack(alignment: .leading) {
-            HStack {
+            HStack(alignment: .center) {
                 Image("disk_maker")
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 128, height: 128)
+                    .frame(width: 256, height: 256)
                 
 //                Text("ADF.inder")
 //                    .font(.largeTitle)
@@ -35,7 +35,7 @@ struct SidebarView: View {
             Button {
                 showingFileImporter = true
             } label: {
-                Label("Open ADF File", systemImage: "doc.badge.plus")
+                Label("Open ADF Disk", systemImage: "doc.badge.plus")
             }
             .padding(.bottom)
 
