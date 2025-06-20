@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Slideshow - Back to Amiga Dev Hub</title>
+    <!-- Corrected relative paths for files in the root directory -->
+    <link rel="stylesheet" href="common/style.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+  </head>
+  <body class="dark-theme">
+    <div id="header-placeholder"></div>
+
+    <main class="content-page">
+      <section>
+        <h2>Amiga Nostalgia Trip</h2>
+        <p>
+          A collection of classic Amiga imagery, from the iconic boot screens to
+          legendary demo art and game intros. Sit back and enjoy the show.
+        </p>
+
+        <!-- The slideshow container -->
+        <div class="slideshow-container">
+          <!-- Main image and description -->
+          <div class="slide">
+            <img
+              src=""
+              alt="Slideshow Image"
+              class="slide-image"
+              id="slideImage"
+            />
+            <div class="slide-description" id="slideDescription"></div>
+          </div>
+
+          <!-- Next/previous buttons -->
+          <a class="slide-prev" id="prevBtn">&#10094;</a>
+          <a class="slide-next" id="nextBtn">&#10095;</a>
+        </div>
+
+        <!-- Controls -->
+        <div class="slide-controls">
+          <button id="playPauseBtn" class="project-button learn-button">
+            <i class="fas fa-pause"></i><span>Pause</span>
+          </button>
+        </div>
+      </section>
+    </main>
+
+    <div id="footer-placeholder"></div>
+
+    <!-- Corrected relative paths for files in the root directory -->
+    <script src="common/js/_load-header-footer.js"></script>
+    <script src="common/js/slideshow.js"></script>
+  </body>
+</html>

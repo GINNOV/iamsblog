@@ -293,13 +293,16 @@ a.project-button:hover {
 .learn-button:hover { background-color: #D97706; }
 
 .project-image {
-    object-fit: cover;
-    aspect-ratio: 16 / 9;
     width: 100%;
-    height: auto;
-    border-radius: 0.375rem; 
-    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); 
+    max-width: 100%; /* Add this constraint */
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border-radius: 0.375rem;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 
+                0 2px 4px -1px rgba(0,0,0,0.06);
+    display: block;
 }
+
 body.dark-theme .project-image {
      border: 2px solid #7C3AED; 
 }
@@ -309,8 +312,10 @@ body:not(.dark-theme) .project-image {
 
 .md-img-container {
     width: 100%; 
-    margin-bottom: 1.5rem; 
+    margin-bottom: 1.5rem;
+    overflow: hidden;
 }
+
 .md-text-container {
     width: 100%; 
 }
@@ -379,4 +384,82 @@ code {
     .md-text-container { width: 60%; }
     .project-button-container { flex-direction: row; gap: 1rem; }
     .project-button { margin-bottom: 0; }
+}
+
+/* === Slideshow Specific Styles === */
+.slideshow-container {
+  position: relative;
+  max-width: 800px;
+  margin: auto;
+  margin-top: 2rem;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  border: 2px solid #4b5563; /* gray-600 */
+  background-color: #000; /* Black background for images */
+}
+
+.slide {
+  display: block; 
+}
+
+.slide-image {
+  width: 100%;
+  aspect-ratio: 16 / 9; /* Maintain a consistent aspect ratio */
+  object-fit: contain; /* Ensure the whole image fits without being cropped */
+  vertical-align: middle;
+  background-color: #000;
+}
+
+.slide-description {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  color: #e2e8f0;
+  font-family: 'Inter', sans-serif;
+  padding: 1rem;
+  text-align: center;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  min-height: 4rem; /* Ensure space for text */
+}
+
+.slide-prev,
+.slide-next {
+  cursor: pointer;
+  position: absolute;
+  top: 50%;
+  width: auto;
+  transform: translateY(-50%); /* Better vertical centering */
+  padding: 16px;
+  color: white;
+  font-weight: bold;
+  font-size: 20px;
+  transition: 0.6s ease;
+  border-radius: 0 3px 3px 0;
+  user-select: none;
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+.slide-next {
+  right: 0;
+  border-radius: 3px 0 0 3px;
+}
+
+.slide-prev:hover,
+.slide-next:hover {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+.slide-controls {
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.slide-controls .project-button {
+    margin: 0; 
+}
+.slide-controls .project-button span {
+    margin-left: 0.5rem;
 }
