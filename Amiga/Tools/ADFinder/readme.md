@@ -22,15 +22,20 @@ So I start building it. Details and pre-built app are [here](https://ginnov.gith
 12.	✅ Create blank image for FSO/FFS
 13. ✅ Add files to image
 14. ✅ Set file permissions and attributes
-15. ✅ Retrieve permissions and attributes
-16. ✅ Text Editor built in
+15. ✅ Get Info of permissions and attributes
+16. ✅ Text Editor built in for startup sequence galore!
+17. ✅ Compare two ADFs by (Sector map / Block inspector)
+18. ✅ Export files to macOS
+19. ✅ Generate disk content report (dir and pemissions)
+20. ✅ Generate HexDump of a disk
 
 ## Work in Progress / Thinking about
-19.	👷🏻 Add files via Drag and Drop
-20.	👷🏻 Compare two ADF images (raw or files matching?)
+the items below move up as they get done.
+
+19.	👷🏻 Add files via Drag and Drop (lo pri)
 21.	👷🏻 Auto convert audio when adding them to an image
-22.	👷🏻 Auto convert image format when adding them to an image
-23.	👷🏻 Download files	
+22.	👷🏻 IFF Image viewer
+23.	👷🏻 IFF image converter	
 
 
 ## Users requests
@@ -38,4 +43,4 @@ So I start building it. Details and pre-built app are [here](https://ginnov.gith
 
 
 # What it looks like?
-I took a bunch of screenshots, I don't always keep them up to date but [here](https://github.com/GINNOV/littlethings/blob/master/Amiga/Tools/ADFinder/docs/learned_lesson.md) you'll find what up now.
+I took a bunch of screenshots, I don't always keep them up to date but [here](https://https://ginnov.github.io/littlethings/adfinder_learnmore.html) you'll find what's up now.
