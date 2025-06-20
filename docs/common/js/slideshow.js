@@ -5,26 +5,45 @@ document.addEventListener('DOMContentLoaded', () => {
   // IMPORTANT: The paths must be absolute from the site root.
   const slides = [
     {
-      image: '/littlethings/images/slideshow/1_kickstart.png',
-      description: "The iconic Kickstart 1.3 boot screen. A sight that welcomed millions of Amiga users.",
+      image: './images/slideshow/1_adfinder.png',
+      description: "It looks like the Apple Finder with one magic touch, it works on Amiga Disk. Custom images aren't supported yet.",
     },
     {
-      image: '/littlethings/images/slideshow/2_deluxe_paint.png',
-      description: "Deluxe Paint was the Amiga's killer app for artists, defining a generation of pixel art.",
+      image: './images/slideshow/2_adfinder.png',
+      description: "Create a new image using one of the two file systems supported.",
     },
     {
-      image: '/littlethings/images/slideshow/3_shadow_of_the_beast.png',
-      description: "The parallax scrolling and stunning visuals of Shadow of the Beast showcased the Amiga's power.",
+      image: './images/slideshow/3_adfinder.png',
+      description: "Sort like a real Amiga champ.",
     },
     {
-      image: '/littlethings/images/slideshow/4_workbench.png',
-      description: 'The Amiga Workbench, a pioneering graphical user interface with multi-tasking capabilities.',
+      image: './images/slideshow/4_adfinder.png',
+      description: 'Delete files and folder by either honoring the original settings or using God powers.',
     },
-    // Add more slides here, e.g.:
-    // {
-    //   image: '/littlethings/images/slideshow/5_another_image.png',
-    //   description: 'Description for the fifth image.',
-    // },
+    {
+      image: './images/slideshow/5_adfinder.png',
+      description: 'An Hex/Ascii viewer that allows you to export the dump of a file.',
+    },
+    {
+      image: './images/slideshow/6_adfinder.png',
+      description: 'A small but effective text editor to make startup sequene tweaks or just write a note.',
+    },
+    {
+      image: './images/slideshow/7_adfinder.png',
+      description: 'Inspect the disk blocks like a real Amiga surgeon',
+    },
+    {
+      image: './images/slideshow/8_adfinder.png',
+      description: 'Set permissions and attributes on files.',
+    },
+    {
+      image: './images/slideshow/9_adfinder.png',
+      description: 'Inspet sectors like an Amiga proctologist. Useful to compare two disks.',
+    },
+    {
+      image: './images/slideshow/10_adfinder.png',
+      description: 'Retrieve current permissions in the same fashion you do on Finder and with the same shortcuts!',
+    },  
   ];
 
   let currentSlideIndex = 0;
