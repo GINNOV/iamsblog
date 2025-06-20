@@ -43,4 +43,4 @@ the items below move up as they get done.
 
 
 # What it looks like?
-I took a bunch of screenshots, I don't always keep them up to date but [here](https://https://ginnov.github.io/littlethings/adfinder_learnmore.html) you'll find what's up now.
+I took a bunch of screenshots, I don't always keep them up to date but [here](https://ginnov.github.io/littlethings/adfinder_learnmore.html) you'll find what's up now.
