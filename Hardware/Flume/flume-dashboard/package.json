@@ -14,7 +14,7 @@
     "@next/mdx": "^16.2.6",
     "@types/cookie": "^0.6.0",
     "@types/mdx": "^2.0.13",
-    "axios": "^1.18.1",
+    "axios": "^1.20.0",
     "cookie": "^1.1.1",
     "date-fns": "^4.1.0",
     "lucide-react": "^0.575.0",
