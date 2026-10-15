@@ -14,6 +14,7 @@ For the Amiga, the most polished entries are collected on the project [site](htt
 | `Apple_Watch_Apps/` | Small Apple Watch experiments. | Small, silly, and useful watchOS projects. |
 | `Web_Apps/` | Browser-based experiments and small web apps. | Project-specific setup lives nearby. (XBook Console has transitioned to its own standalone repository at [GINNOV/xbook](https://github.com/GINNOV/xbook)). |
 | `useful_scripts/` | Shell scripts for media and file organization tasks. | Small utilities, usually self-contained. |
+| `skills/` | Autonomous AI agent skills & automated engineering workflows. | Includes `autonomous-screencast` for automated HD video tutorial production. |
 | `site/` | Hugo source for the public Amiga project site. | Built and published by the repository workflow. |
 
 ## PROJECT STATUS

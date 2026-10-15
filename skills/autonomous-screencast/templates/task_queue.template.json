@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Configuration task input for Autonomous Screencast Generator supporting Single, Batch, and Auto-Discovery modes.",
+  "EXECUTION_MODE": "BATCH",
+  "BASE_URL": "https://viscardibomboniere.com",
+  "LANGUAGE": "it-IT",
+  "VOICE": "it-IT-IsabellaNeural",
+  "CREDENTIALS": {
+    "use_login": false,
+    "login_url": "https://viscardibomboniere.com/mio-account",
+    "username_or_email": "",
+    "password": ""
+  },
+  "FEATURE_QUEUE": [
+    {
+      "video_code": "VB-001_ricerca-e-filtri",
+      "feature_name": "Ricerca nel catalogo e utilizzo dei filtri per evento",
+      "start_url": "https://viscardibomboniere.com",
+      "pre_recording_setup": "Accetta i cookie e chiudi eventuali popup promozionali prima di avviare la registrazione (frame 0).",
+      "must_demonstrate": [
+        "Mostrare la barra di navigazione principale e le categorie di eventi (Matrimonio, Battesimo, Comunione, Laurea)",
+        "Cliccare su una categoria specifica",
+        "Utilizzare i filtri (es. fascia di prezzo o disponibilità) per restringere i risultati",
+        "Aprire la scheda di una bomboniera per mostrarne i dettagli e le foto"
+      ],
+      "out_of_scope": "Non procedere al pagamento o al checkout in questo video; fermati alla scheda prodotto.",
+      "target_duration_seconds": 60
+    },
+    {
+      "video_code": "VB-002_personalizzazione-bomboniera",
+      "feature_name": "Come personalizzare una bomboniera (confetti, bigliettino e confezione)",
+      "start_url": "https://viscardibomboniere.com",
+      "pre_recording_setup": "Naviga direttamente su una scheda prodotto che supporta la personalizzazione prima del frame 0.",
+      "must_demonstrate": [
+        "Selezionare il gusto/colore dei confetti",
+        "Inserire i dati per il bigliettino personalizzato (nomi e data evento)",
+        "Impostare la quantità desiderata",
+        "Cliccare su Aggiungi al Carrello e mostrare il riepilogo delle personalizzazioni"
+      ],
+      "out_of_scope": "Non spiegare la registrazione dell'account o il pagamento finale.",
+      "target_duration_seconds": 75
+    }
+  ]
+}

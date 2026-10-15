@@ -1,0 +1,67 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Action-Audio Script Matrix",
+  "video_code": "VB-001_ricerca-e-filtri",
+  "feature_name": "Ricerca nel catalogo e utilizzo dei filtri per evento",
+  "start_url": "https://viscardibomboniere.com",
+  "pre_recording_setup_actions": [
+    {
+      "type": "click",
+      "selector": "#cookie-accept, button:has-text('Accetta')"
+    }
+  ],
+  "scenes": [
+    {
+      "scene_id": 1,
+      "narration_it": "Benvenuto su Viscardi Bomboniere. In questa guida vedremo come esplorare il catalogo e filtrare i prodotti per il tuo evento speciale.",
+      "lead_in_ms": 300,
+      "lead_out_ms": 600,
+      "browser_actions": [
+        {
+          "type": "hover",
+          "selector": "nav, .main-navigation",
+          "wait_after_ms": 400
+        }
+      ]
+    },
+    {
+      "scene_id": 2,
+      "narration_it": "Per iniziare, portati con il mouse sulla voce Matrimonio nella barra di navigazione e clicca per aprire la collezione dedicata.",
+      "lead_in_ms": 300,
+      "lead_out_ms": 600,
+      "browser_actions": [
+        {
+          "type": "click",
+          "selector": "a:has-text('Matrimonio')",
+          "wait_after_ms": 800
+        }
+      ]
+    },
+    {
+      "scene_id": 3,
+      "narration_it": "Nella barra laterale dei filtri, puoi scegliere la fascia di prezzo desiderata o selezionare solo gli articoli con disponibilità immediata.",
+      "lead_in_ms": 300,
+      "lead_out_ms": 600,
+      "browser_actions": [
+        {
+          "type": "click",
+          "selector": ".filter-price, .filter-availability input",
+          "wait_after_ms": 500
+        }
+      ]
+    },
+    {
+      "scene_id": 4,
+      "narration_it": "Una volta individuata la bomboniera perfetta, clicca sulla sua immagine per accedere alla scheda completa con foto dettagliate e informazioni sui materiali.",
+      "lead_in_ms": 300,
+      "lead_out_ms": 800,
+      "browser_actions": [
+        {
+          "type": "click",
+          "selector": ".product-card a, .woocommerce-loop-product__link",
+          "wait_after_ms": 1000
+        }
+      ]
+    }
+  ]
+}
